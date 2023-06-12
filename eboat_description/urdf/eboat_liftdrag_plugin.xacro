@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <!--Sailing physics - Gazebo Plugin for lift and drag-->
+    <xacro:macro name="eboat_sail_gazebo" params="name">
+        <gazebo>
+            <plugin name="liftdrag_${name}" filename="libLiftDragForces.so">
+                <air_density>1.201</air_density>
+                <area>3.18776</area>
+                <forward>1 0 0</forward>
+                <upward>0 0 1</upward>
+                <boom_link_name>boom_link</boom_link_name>
+                <base_link_name>base_link</base_link_name>
+                <joint_name>boom_joint</joint_name>
+                <sail_cp>0.012 0 1.5</sail_cp>
+                <rudder_link_name>rudder_link</rudder_link_name>
+                <rudder_forward>1 0 0</rudder_forward>
+                <rudder_upward>0 0 1</rudder_upward>
+                <rudder_area>0.2</rudder_area>
+                <rudder_cp>0 0 0</rudder_cp>
+                <water_density>997.0</water_density>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <!--Sail/Wind simulation - Gazebo Plugin for simulating EBoat sail liftdrag-->
+    <xacro:macro name="eboat_biruta_gazebo" params="name">
+        <gazebo>
+            <plugin name="liftdrag_${name}" filename="libWindsockPlugin.so">
+                <air_density>1.201</air_density>
+                <area>${3570.037/1000000}</area>
+                <upward>0 0 1</upward>
+                <forward>1 0 0</forward>
+                <boom_link_name>biruta_link</boom_link_name>
+                <joint_name>biruta_joint</joint_name>
+                <cp>0 0 0</cp>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+</robot>

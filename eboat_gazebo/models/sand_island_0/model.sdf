@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+    <model name="sand_island_0">
+        <pose>0 0 0 0 0 0</pose>
+        <static>true</static>
+        <link name="base_link">
+            <visual name="visual">
+                <!---<pose>0 0 0 0 0 0</pose>-->
+                <geometry>
+                    <mesh><uri>model://sand_island_0/media/island.dae</uri></mesh>
+                </geometry>
+	            <material>
+                    <script>
+                        <uri>model://sand_island_0/media/scripts</uri>
+                        <uri>model://sand_island_0/media/Textures</uri>
+                        <name>RepeatedSand/Diffuse</name>
+                    </script>
+                </material>
+            </visual>
+            <collision name="collision">
+                <geometry>
+                    <mesh><uri>model://sand_island_0/media/island.dae</uri></mesh>
+                </geometry>
+            </collision>
+        </link>
+    </model>
+</sdf>

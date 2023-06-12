@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="world"             default="$(find eboat_gazebo)/worlds/ocean.world" /> <!-- Gazebo world to load -->
+    <arg name="gui"               default="true" />                                    <!-- If true, run gazebo GUI -->
+    <arg name="verbose"           default="true"/>                                     <!-- If true, run gazebo in verbose mode -->
+    <arg name="extra_gazebo_args" default=""/>                                         <!-- Set various other gazebo arguments-->
+    <arg name="namespace"         default="eboat"/>                                    <!-- Start in a default namespace -->
+    <arg name="robot_locked"      default="false" />                                   <!-- Do we lock the vessel to the world? -->
+    <arg name="paused"            default="false"/>                                    <!-- Start paused? -->
+    <arg name="joy"               default="false"/>                                    <!-- Joystick control? -->
+
+    <!-- Start Gazebo with the world file -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name"        value="$(arg world)"/>
+        <arg name="verbose"           value="$(arg verbose)"/>
+        <arg name="paused"            value="$(arg paused)"/>
+        <arg name="use_sim_time"      value="true"/>
+        <arg name="gui"               value="$(arg gui)" />
+        <arg name="extra_gazebo_args" value="$(arg extra_gazebo_args)"/>
+    </include>
+
+    <!-- Convert an xacro and put on parameter server -->
+	<param name="robot_description" command="$(find xacro)/xacro $(find fortune612_description)/urdf/fortune612.urdf.xacro" />
+	
+	<!-- Spawn a robot into Gazebo -->
+	<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model eboat" />
+
+</launch>

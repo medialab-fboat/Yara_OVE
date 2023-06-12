@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <!--CONTROL INTERFACES PLUS ROS PLUS ROS COMMUNICATION (NODES+TOPICS)-->
+    <xacro:macro name="propulsor_control_interface" params="name">
+        <gazebo>
+            <plugin name="propulsor_control_interface_${name}" filename="libPropulsorControllerPlugin.so">
+                <propulsor_joint_name>propeller_joint</propulsor_joint_name>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="rudder_control_interface" params="name">
+        <gazebo>
+            <plugin name="rudder_control_interface_${name}" filename="libRudderControllerPlugin.so">
+            <rudder_joint_name>rudder_joint</rudder_joint_name>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="sail_control_interface" params="name">
+        <gazebo>
+            <plugin name="sail_control_interface_${name}" filename="libSailControllerPlugin.so">
+                <sail_joint_name>boom_joint</sail_joint_name>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="mission_control" params="name">
+        <gazebo>
+            <plugin name="mission_control_${name}" filename="libMissionControlPlugin.so">
+                <link_name>base_link</link_name>
+                <way_point>wayPointMarker</way_point>
+                <frequency>4</frequency>
+                <propulsor_joint_name>propeller_joint</propulsor_joint_name>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+</robot>

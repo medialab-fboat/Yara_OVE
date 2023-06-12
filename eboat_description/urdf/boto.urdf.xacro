@@ -1,0 +1,476 @@
+<?xml version="1.0" ?>
+
+<robot name="boto" xmlns:xacro="http://ros.org/wiki/xacro">
+    <!--MACROS-->
+    <!-- Solid cuboid of length l, width w, height h, and mass m -->
+    <!-- l relates to X axis, d to Z axis, and h to Y axis -->
+    <xacro:macro name="solid_cuboid_inertia" params="m l w h">
+        <inertia  ixx="${(m*(w*w+h*h))/12}" ixy = "0" ixz = "0"
+                iyy="${(m*(l*l+h*h))/12}" iyz = "0"
+                izz="${(m*(l*l+w*w))/12}"
+        />
+    </xacro:macro>
+
+    <link name="base_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </link>
+
+    <joint name="base_link_to_base" type="fixed">
+        <parent link="base_link"/>
+        <child link="hull_link" />
+        <origin  xyz="0 0 0" rpy="0 0 0.2"/>
+    </joint>
+
+    <link name="hull_link">
+        <visual>
+            <origin xyz="-0.488788 -0.00436959 -0.0953268" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/hull_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.488788 -0.00436959 -0.0953268" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/hull_link.stl"/>
+            </geometry>
+        </collision>
+        <visual>
+            <origin xyz="-0.488788 -0.00436959 -0.0953268" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/core.stl"/>
+            </geometry>
+        </visual>
+        <inertial>
+            <origin xyz="-0.0301772 -0.00436924 0.000987735" rpy="0 0 0"/>
+            <mass value="1.60025" />
+            <inertia ixx="0.00772781" ixy="4.40058e-07"  ixz="-0.0002396" iyy="0.101354" iyz="9.99207e-09" izz="0.100962" />
+        </inertial>
+    </link>
+
+    <link name="mast_link">
+        <visual>
+            <origin xyz="-0.5235 -5.9848e-17 -0.13959" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/mast_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.5235 -5.9848e-17 -0.13959" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/mast_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 4.93811e-19 0.668763" rpy="0 0 0"/>
+            <mass value="0.166277" />
+            <inertia ixx="0.0249757" ixy="0"  ixz="0" iyy="0.0249843" iyz="0" izz="1.67269e-05" />
+        </inertial>
+    </link>
+
+    <link name="boom_main_link">
+        <visual>
+            <origin xyz="-0.5035 0 -0.237165" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/boom_main_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.5035 0 -0.237165" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/boom_main_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="-0.190716 -1.39515e-09 0.0005118" rpy="0 0 0"/>
+            <mass value="0.0778684" />
+            <inertia ixx="4.0722e-06" ixy="2.19024e-11"  ixz="6.7402e-07" iyy="0.000956274" iyz="8.70869e-13" izz="0.000953139" />
+        </inertial>
+    </link>
+
+    <link name="main_sail_link">
+        <visual>
+            <origin xyz="-0.5035 0 -0.25459" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/main_sail_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.5035 0 -0.25459" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/main_sail_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="-0.126667 -1.43329e-17 0.406667" rpy="0 0 0"/>
+            <mass value="0.0002318" />
+            <inertia ixx="1.91673e-05" ixy="0"  ixz="-2.98507e-06" iyy="2.10268e-05" iyz="0" izz="1.85957e-06" />
+        </inertial>
+    </link>
+
+    <joint name="main_sail_joint" type="fixed">
+        <origin xyz="0 0 0.017425" rpy="0 -0 0" />
+        <parent link="boom_main_link" />
+        <child link="main_sail_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" />
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <joint name="boom_main_joint" type="revolute">
+        <origin xyz="-0.02 -4.33681e-18 0.097575" rpy="0 -0 0" />
+        <parent link="mast_link" />
+        <child link="boom_main_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1000" velocity="20" lower="-1.39626" upper="1.39626"/>
+        <dynamics damping="0.0" friction="0.0"/>
+    </joint>
+
+    <joint name="mast_joint" type="fixed">
+        <origin xyz="0.0347117 -0.00436959 0.0442632" rpy="0 -0 0" />
+        <parent link="hull_link" />
+        <child link="mast_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" />
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <link name="deck">
+        <visual>
+            <origin xyz="-0.5085 4.45476e-08 -0.175263" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/deck.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.5085 4.45476e-08 -0.175263" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/deck.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0" />
+            <inertia ixx="0" ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+        </inertial>
+    </link>
+
+    <joint name="deck_joint" type="fixed">
+        <origin xyz="0.0197117 -0.00436963 0.0799358" rpy="0 -0 0" />
+        <parent link="hull_link" />
+        <child link="deck" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" />
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <link name="keel_link">
+        <visual>
+            <origin xyz="-0.495 0 -0.01" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/keel_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.495 0 -0.01" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/keel_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="-0.0165711 2.35181e-08 -0.0902999" rpy="0 0 0"/>
+            <mass value="0.0828168" />
+            <inertia ixx="0.000310833" ixy="3.04817e-11"  ixz="-3.8118e-05" iyy="0.000345339" iyz="5.30748e-10" izz="3.51009e-05" />
+        </inertial>
+    </link>
+
+    <link name="keel_weight_link">
+        <visual>
+            <origin xyz="-0.47 0 0.198" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/keel_weight_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.47 0 0.198" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/keel_weight_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="-0.0345017 -4.42192e-08 -0.02" rpy="0 0 0"/>
+            <mass value="1.27985" />
+            <inertia ixx="0.000209495" ixy="1.9501e-09"  ixz="0" iyy="0.00410597" iyz="0" izz="0.00410597" />
+        </inertial>
+    </link>
+
+    <link name="right_wing_link">
+        <visual>
+            <origin xyz="-0.405 0.017 0.227" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/right_wing_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.405 0.017 0.227" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/right_wing_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0.0013967 -0.0185975 -7.32609e-06" rpy="0 0 0"/>
+            <mass value="0.00167197" />
+            <inertia ixx="2.47606e-07" ixy="9.70513e-09"  ixz="-1.58154e-12" iyy="6.34259e-08" iyz="2.28843e-10" izz="3.10077e-07" />
+        </inertial>
+    </link>
+
+    <joint name="right_wing_joint" type="fixed">
+        <origin xyz="-0.065 -0.017 -0.029" rpy="0 -0 0" />
+        <parent link="keel_weight_link" />
+        <child link="right_wing_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" />
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <link name="left_wing_link">
+        <visual>
+            <origin xyz="-0.405 -0.017 0.227" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/left_wing_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.405 -0.017 0.227" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/left_wing_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0.00139672 0.018598 -7.32397e-06" rpy="0 0 0"/>
+            <mass value="0.00167199" />
+            <inertia ixx="2.47615e-07" ixy="-9.70556e-09"  ixz="-1.68829e-12" iyy="6.34252e-08" iyz="-2.28708e-10" izz="3.10086e-07" />
+        </inertial>
+    </link>
+
+    <joint name="left_wing_joint" type="fixed">
+        <origin xyz="-0.065 0.017 -0.029" rpy="0 -0 0" />
+        <parent link="keel_weight_link" />
+        <child link="left_wing_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" />
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <joint name="keel_weight_joint" type="fixed">
+        <origin xyz="-0.025 0 -0.208" rpy="0 -0 0" />
+        <parent link="keel_link" />
+        <child link="keel_weight_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" />
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <joint name="keel_joint" type="revolute">
+        <origin xyz="0.00621169 -0.00436959 -0.0853268" rpy="0 0 0" />
+        <parent link="hull_link" />
+        <child link="keel_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" lower="0" upper="0"/>
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <link name="rudder_link">
+        <visual>
+            <origin xyz="-0.13 0 -0.1" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/rudder_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.13 0 -0.1" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/rudder_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+        <origin xyz="-0.00838044 3.54741e-08 -0.128428" rpy="0 0 0"/>
+        <mass value="0.0214529" />
+        <inertia ixx="4.01694e-05" ixy="0.0"  ixz="-3.36634e-06" iyy="4.22378e-05" iyz="0.0" izz="2.13517e-06" />
+        </inertial>
+    </link>
+
+    <joint name="rudder_joint" type="revolute">
+        <origin xyz="-0.358788 -0.00436959 0.00467324" rpy="0 -0 0" />
+        <parent link="hull_link" />
+        <child link="rudder_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="50" velocity="20" lower="-0.523599" upper="0.523599"/>
+        <dynamics damping="0.0" friction="2.0"/>
+    </joint>
+
+    <link name="boom_jib_link">
+        <visual>
+            <origin xyz="-0.967348 0 0.198884" rpy="0.0 0.427464 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/boom_jib_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.967348 0 0.198884" rpy="0.0 0.427464 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/boom_jib_link.stl"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="-0.186554 6.64341e-19 0.0899857" rpy="0 0 0"/>
+            <mass value="0.0322013" />
+            <inertia ixx="7.78934e-05" ixy="0.0"  ixz="-0.000170102" iyy="0.000451288" iyz="0.0" izz="0.000373797" />
+        </inertial>
+    </link>
+
+    <link name="jib_sail_link">
+        <visual>
+            <origin xyz="-0.550683 -6.15827e-17 -0.23459" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/jib_sail_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.550683 -6.15827e-17 -0.23459" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/boto/meshes/jib_sail_link.stl"/>
+            </geometry>
+        </collision>
+            <inertial>
+            <origin xyz="0.136667 1.54609e-17 0.3" rpy="0 0 0"/>
+            <mass value="0.0001845" />
+            <inertia ixx="8.30252e-06" ixy="0"  ixz="1.89113e-06" iyy="1.00255e-05" iyz="0" izz="1.72304e-06" />
+        </inertial>
+    </link>
+
+    <joint name="jib_sail_joint" type="fixed">
+        <origin xyz="-0.368963 1.82146e-17 0.184072" rpy="0.0 0.427464 0" />
+        <parent link="boom_jib_link" />
+        <child link="jib_sail_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" />
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <joint name="boom_jib_joint" type="revolute">
+        <origin xyz="0.473968 -0.00436959 0.124713" rpy="5.78493e-17 -0.427464 0.0" />
+        <parent link="hull_link" />
+        <child link="boom_jib_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1000" velocity="20" lower="-1.39626" upper="1.39626"/>
+        <dynamics damping="0.0" friction="0.0"/>
+    </joint>
+
+    <!--PHYSICS-->
+    <gazebo>
+      <plugin name="usv_dynamics_boto" filename="libusv_gazebo_dynamics_plugin.so">
+        <bodyName>base_link</bodyName>
+        <!-- Must be same as the ocean model!-->
+        <waterLevel>0</waterLevel>
+        <waterDensity>997.0</waterDensity>
+        <!-- Added mass -->
+        <xDotU>0</xDotU>
+        <yDotV>${0.79 * 3.6 * 0.1}</yDotV>
+        <zDotW>${0.94 * 3.6 * 0.1}</zDotW>
+        <kDotP>0.0</kDotP>
+        <mDotQ>0.0</mDotQ>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>${0.01 * 51.3}</xU>
+        <xUU>${0.01 * 72.4}</xUU>
+        <yV>${0.02 * 80.0}</yV>
+        <yVV>${0.02 * 1600.0}</yVV>
+        <zW>${0.03 * 500.0}</zW>
+        <zWW>0.0</zWW>
+        <kP>${0.01 * 50.0}</kP>
+        <mQ>${0.01 * 50.0}</mQ>
+        <nR>${0.015 * 400.0}</nR>
+        <nRR>0.0</nRR>
+        <!-- General dimensions -->
+        <hullRadius>0.04</hullRadius>
+        <boatWidth>0.08</boatWidth>
+        <boatLength>0.99</boatLength>
+        <!-- Length discretization, AKA, "N" -->
+        <length_n>2</length_n>
+        <!-- Wave model -->
+        <wave_model>ocean_waves</wave_model>
+      </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="liftdrag_boto" filename="libLiftDragForces.so">
+            <air_density>1.201</air_density>
+            <sail_forward>1 0 0</sail_forward>
+            <sail_upward>0 0 1</sail_upward>
+            <boom_link_name>boom_main_link</boom_link_name>
+            <base_link_name>base_link</base_link_name>
+            <boom_joint_name>boom_main_joint</boom_joint_name>
+            <boom_length>0.24</boom_length>
+            <sail_area>${0.82*0.24}</sail_area>                <!-- sail base = 24 cm ; sail height = 82 cm-->
+            <sail_cp>-${0.24*0.25} 0 ${0.82*0.55}</sail_cp>    <!-- (25% of sail base, 0, 55% of sail height)-->
+            <rudder_link_name>rudder_link</rudder_link_name>
+            <rudder_forward>1 0 0</rudder_forward>
+            <rudder_upward>0 0 1</rudder_upward>
+            <rudder_area>${0.1*0.025 * 5}</rudder_area>            <!-- rudder base = 2.5 cm ; rudder height = 10 cm-->
+            <rudder_cp>0 0 0</rudder_cp>
+            <keel_area>${0.18*0.04 * 10}</keel_area>                <!-- keel base = 4 cm ; keel height = 18 cm-->
+            <water_density>997.0</water_density>
+        </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="jibsailliftdrag_boto" filename="libSailLiftDragForces.so">
+            <air_density>1.201</air_density>
+            <sail_forward>1 0 0</sail_forward>
+            <sail_upward>0 0 1</sail_upward>
+            <boom_link_name>boom_jib_link</boom_link_name>
+            <base_link_name>base_link</base_link_name>
+            <boom_joint_name>boom_jib_joint</boom_joint_name>
+            <boom_length>0.24</boom_length>
+            <sail_area>${0.64*0.24}</sail_area>                <!-- sail base = 24 cm ; sail height = 64 cm-->
+            <sail_cp>-${0.24*0.25} 0 ${0.64*0.55}</sail_cp>    <!-- (25% of sail base, 0, 55% of sail height)-->
+        </plugin>
+    </gazebo>
+
+    <!--CONTROLS-->
+    <gazebo> <!--Boom of the Main Sail-->
+        <plugin name="sail_control_interface_boto" filename="libSailControllerPlugin.so">
+            <sail_joint_name>boom_main_joint</sail_joint_name>
+            <ros_topic_id>/boto/control_interface/sail</ros_topic_id>
+        </plugin>
+    </gazebo>
+
+    <gazebo> <!--Boom of the Jib Sail-->
+        <plugin name="sail_control_interface_boto" filename="libSailControllerPlugin.so">
+            <sail_joint_name>boom_jib_joint</sail_joint_name>
+            <ros_topic_id>/boto/control_interface/sail</ros_topic_id>
+        </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="rudder_control_interface_boto" filename="libRudderControllerPlugin.so">
+        <rudder_joint_name>rudder_joint</rudder_joint_name>
+        <ros_topic_id>/boto/control_interface/rudder</ros_topic_id>
+        </plugin>
+    </gazebo>
+
+    <!--COLORS-->
+    <gazebo reference="hull_link">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="mast_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="boom_main_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="boom_jib_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+</robot>

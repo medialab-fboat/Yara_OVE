@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <!--FOILS DYNAMICS USING LIFT AND DRAG (RUDDER, KEEL AND SAIL)-->
+    <xacro:macro name="eboat_foil_gazebo" params="name">
+        <gazebo>
+            <plugin name="liftdrag_${name}" filename="libLiftDragForces.so">
+                <air_density>1.201</air_density>
+                <sail_area>3.18776</sail_area>
+                <sail_forward>1 0 0</sail_forward>
+                <sail_upward>0 0 1</sail_upward>
+                <boom_link_name>boom_link</boom_link_name>
+                <base_link_name>base_link</base_link_name>
+                <boom_joint_name>boom_joint</boom_joint_name>
+                <sail_cp>-0.012 0 1.5</sail_cp>
+                <rudder_link_name>rudder_link</rudder_link_name>
+                <rudder_forward>1 0 0</rudder_forward>
+                <rudder_upward>0 0 1</rudder_upward>
+                <rudder_area>0.2</rudder_area>
+                <rudder_cp>0 0 0</rudder_cp>
+                <water_density>997.0</water_density>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <!--FOILS DYNAMICS USING LIFT AND DRAG (WIND VANE - "BIRUTA")-->
+    <xacro:macro name="eboat_windvane_gazebo" params="name">
+        <gazebo>
+            <plugin name="liftdrag_${name}" filename="libWindsockPlugin.so">
+                <air_density>1.201</air_density>
+                <area>${3570.037/1000000}</area>
+                <upward>0 0 1</upward>
+                <forward>1 0 0</forward>
+                <boom_link_name>biruta_link</boom_link_name>
+                <joint_name>biruta_joint</joint_name>
+                <cp>0 0 0</cp>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <!--6DOF MODEL FOR SIMULATE THE HULL DYNAMICS (HYDRODYNAMICS + HYDROSTATICS + RIGID BODY CINEMATICS)-->
+    <xacro:macro name="usv_dynamics_gazebo" params="name">
+    <!--Gazebo Plugin for simulating EBoat dynamics-->
+    <gazebo>
+      <plugin name="usv_dynamics_${name}" filename="libusv_gazebo_dynamics_plugin.so">
+        <bodyName>base_link</bodyName>
+        <!-- Must be same as the ocean model!-->
+        <waterLevel>0</waterLevel>
+        <waterDensity>997.0</waterDensity>
+        <!-- Added mass -->
+        <xDotU>0</xDotU>
+        <yDotV>124</yDotV>
+        <zDotW>148</zDotW>
+        <kDotP>0.0</kDotP>
+        <mDotQ>0.0</mDotQ>
+        <nDotR>0.0</nDotR>
+        <!-- Linear and quadratic drag -->
+        <xU>${0.1 * 51.3}</xU>
+        <xUU>${0.1 * 72.4}</xUU>
+        <yV>${0.2 * 80.0}</yV>
+        <yVV>${0.2 * 1600.0}</yVV>
+        <zW>${0.5 * 500.0}</zW>
+        <zWW>0.0</zWW>
+        <kP>${0.5 * 50.0}</kP>
+        <mQ>${0.5 * 50.0}</mQ>
+        <nR>${0.15 * 400.0}</nR>
+        <nRR>0.0</nRR>
+        <!-- General dimensions -->
+        <hullRadius>0.4</hullRadius>
+        <boatWidth>0.9</boatWidth>
+        <boatLength>2.4</boatLength>
+        <!-- Length discretization, AKA, "N" -->
+        <length_n>2</length_n>
+        <!-- Wave model -->
+        <wave_model>ocean_waves</wave_model>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+</robot>

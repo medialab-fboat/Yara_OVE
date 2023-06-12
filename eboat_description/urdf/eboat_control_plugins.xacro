@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <!--Sail Control - Gazebo Plugin for simulating the boom control with a cable-->
+    <xacro:macro name="eboat_sailcontrol_gazebo" params="name">
+        <gazebo>
+            <plugin name="sailcontrol_${name}" filename="libsail_control.so">
+                <link_name>boom_link</link_name>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <!--Sailor - Gazebo Plugin to implement the sailor agent-->
+    <xacro:macro name="eboat_sailor_gazebo" params="name">
+        <gazebo>
+            <plugin name="sailor_${name}" filename="libsailor.so">
+                <sail_joint_name>boom_joint</sail_joint_name>
+                <rudder_joint_name>rudder_joint</rudder_joint_name>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+</robot>

@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+    <model name="buoy_red">
+        <link name="base_link">
+            <frame name="part_1_frame"><pose>0 0 0 0 0 0</pose></frame>
+            <visual name="part_1_0_part_1_visual">
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                <mesh><uri>meshes/part_1.stl</uri></mesh>
+                </geometry>
+                <material><ambient>1 0 0 1</ambient><diffuse>1 0 0 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+            </visual>
+            <collision name="part_1_0_part_1_visual">
+                <pose>0 0 0 0 -0 0</pose>
+                <geometry>
+                    <mesh><uri>meshes/part_1.stl</uri></mesh>
+                </geometry>
+            </collision>
+            <!--<collision name="part_1_0_part_1_visual">
+                <pose>0 0 1.45 0 0 0</pose>
+                <geometry>
+                    <cylinder>
+                        <radius>1.2</radius>
+                        <length>4.75</length>
+                    </cylinder>
+                </geometry>
+            </collision>-->
+            <inertial>
+                <pose frame="part_1_frame">0 0 0.73927 0 0 0</pose>
+                <mass>446.912</mass>
+                <inertia><ixx>339.973</ixx><ixy>0</ixy><ixz>0</ixz><iyy>339.973</iyy><iyz>0</iyz><izz>231.574</izz></inertia>
+            </inertial>
+        </link>
+
+        <link name="underwater_link">
+            <frame name="part_2_frame"><pose>0 0 0 0 0 0</pose></frame>
+            <visual name="part_2_0_part_2_visual">
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                <mesh><uri>meshes/part_2.stl</uri></mesh>
+                </geometry>
+                <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
+            </visual>
+            <collision name="part_2_0_part_2_visual">
+                <pose>0 -3.46945e-17 0 0 -0 0</pose>
+                <geometry>
+                <mesh><uri>meshes/part_2.stl</uri></mesh>
+                </geometry>
+            </collision>
+            <inertial>
+                <pose frame="part_2_frame">0 0 -0.465354 0 0 0</pose>
+                <mass>393.41</mass>
+                <inertia><ixx>58.7982</ixx><ixy>0</ixy><ixz>0</ixz><iyy>58.7982</iyy><iyz>0</iyz><izz>50.2168</izz></inertia>
+            </inertial>
+        </link>
+
+        <joint name="buoy_joint" type="fixed">
+            <pose>0 0 0 0 0 0</pose>
+            <parent>base_link</parent>
+            <child>underwater_link</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+            </axis>
+        </joint>
+
+        <plugin name="BuoyancyPlugin" filename="libbuoyancy_gazebo_plugin.so">
+            <wave_model>ocean_waves</wave_model>
+            <fluid_density>997</fluid_density>
+            <fluid_level>0.0</fluid_level>
+            <linear_drag>25.0</linear_drag>
+            <angular_drag>2.0</angular_drag>
+            <buoyancy name="buoyancy_sphere">
+                <link_name>base_link</link_name>
+                <pose>0 0 0.8 0 0 0</pose>
+                <geometry>
+                <sphere>
+                    <radius>1.0</radius>
+                </sphere>
+                </geometry>
+            </buoyancy>
+        </plugin>
+    </model>
+</sdf>

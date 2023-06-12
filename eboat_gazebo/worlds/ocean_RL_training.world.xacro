@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<sdf version="1.6" xmlns:xacro="http://ros.org/wiki/xacro">
+    <world name="ocean">
+        <xacro:include filename="$(find eboat_gazebo)/worlds/ocean.xacro" />
+        <xacro:ocean />
+
+        <!--WAYPOINT OBJECT-->
+        <include>
+            <name>wayPointMarker</name>
+            <pose>0 100.0 0 0 0 0</pose>
+            <uri>/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker</uri>
+        </include>
+
+        <!--PHYSICS ENGINE-->
+        <physics type="ode">
+            <ode>
+                <solver>
+                    <type>world</type>
+                </solver>
+            </ode>
+            <max_step_size>0.01</max_step_size>
+            <real_time_update_rate>0</real_time_update_rate>
+        </physics>
+    </world>
+</sdf>

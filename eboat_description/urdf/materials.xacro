@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <!-- Specify colors that will work just in RViz-->
+    <material name="hull_material">
+        <color rgba="1 1 1 1" />
+    </material>
+    <material name="mast_material">
+        <color rgba="0.501961 0.501961 0.501961 1.0" />
+    </material>
+    <material name="amarra_material">
+        <color rgba="0.768627 0.886275 0.952941 1.0" />
+    </material>
+    <material name="sail_material">
+        <color rgba="0.231373 0.380392 0.705882 1.0" />
+    </material>
+    <material name="eletric_engine_material">
+        <color rgba="0.701961 0.682353 0.623529 1.0"/>
+    </material>
+    <material name="turbine_material">
+        <color rgba="0.501961 0.486275 0.439216 1.0"/>
+    </material>
+</robot>
