@@ -1,0 +1,19 @@
+# ignore all npy files
+*.npy
+
+# ignore zip
+*.zip
+
+fboat_data*.py
+
+# ignore logs
+logs/
+*.log
+
+# ignore models
+/models/
+
+__pycache__/
+#/eboat_gym_gaz/envs/__pycache__/
+
+*.csv
