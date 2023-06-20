@@ -31,4 +31,4 @@ dependencies:
     - gym
     - stable-baselines3
   
-prefix: /home/eduardo/miniconda3/envs/esailor
+prefix: s/home/eduardo/miniconda3/envs/esailor2

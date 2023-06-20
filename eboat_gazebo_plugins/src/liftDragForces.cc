@@ -180,12 +180,6 @@ void LiftDragForces::Init()
   
   //this->armLength = 0.59; //(((this->boomLink->WorldCoGPose().Pos() + this->sailCP) - this->model->GetJoint("boom_joint")->WorldPose().Pos())*this->sailForward).Length();
   this->boomLink->SetWindEnabled(true);
-  ////////////////////////////////////
-  /*std::ofstream myfile;
-  myfile.open ("/home/eduardo/USVSim/scripts/aerodynamic_forces.csv");
-  myfile << "name;yaw;atkangle;X;Y;Z;length\n";
-  myfile.close();*/
-  ////////////////////////////////////
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -193,8 +187,8 @@ void LiftDragForces::OnUpdate()
 {
   /////////////////////////////////////////////////////////
   // WIND FUNCTION FOR TESTING SAIL
-  float simtime = this->world->SimTime().Float();
-  /*double rotang = (int(simtime) % 12) * M_PI / 6.0;
+  /*float simtime = this->world->SimTime().Float();
+  double rotang = (int(simtime) % 12) * M_PI / 6.0;
   ignition::math::Vector3d wind = ignition::math::Quaternion(0.0,0.0,rotang).RotateVector(ignition::math::Vector3d(-4,0,0));
   this->world->Wind().SetLinearVel(wind);
   //rotang = (int(simtime)-1) * M_PI / 6.0;*/
@@ -214,7 +208,6 @@ void LiftDragForces::OnUpdate()
   //      the negative boat velocity + the ocean/river current
   //      waterVelVec = waterNaturalVel - boatVelVec
   this->waterVelVec = -this->rudderLink->WorldCoGLinearVel();
-  //this->waterVelVec = ignition::math::Vector3d(-1.0,0,0);
   this->waterVelVec.Z(0);
   /////////////////////////////////////////////////////////
 
@@ -277,13 +270,6 @@ void LiftDragForces::OnUpdate()
     ignition::math::Vector3d port = this->baseLink->WorldPose().Rot().RotateVector(this->boatPort);
     ignition::math::Vector3d forwardForce = this->force.Dot(bow) * bow;
     ignition::math::Vector3d lateralForce = this->force.Dot(port) * port;
-    //this->baseLink->AddForceAtRelativePosition(forwardForce, this->dynamic_cp);
-    //this->model->GetLink("mast_link")->AddForceAtRelativePosition(forwardForce, this->sailCP);
-    //this->model->GetLink("mast_link")->AddForceAtRelativePosition(lateralForce, this->sailCP);
-    /*this->keelLink = this->model->GetLink("keel_link");
-    this->dynamic_cp = this->keelLink->WorldCoGPose().Pos() - this->baseLink->WorldCoGPose().Pos(); // = (this->keelLink->WorldCoGPose().Pos() + this->boomLink->WorldCoGPose().Rot().RotateVector(this->sail_cp)) - this->baseLink->WorldCoGPose().Pos();
-    this->dynamic_cp.Z(1.5);
-    */
     this->baseLink->AddForceAtRelativePosition(this->force, this->sailCP);
     // --> EMULA A RESISTENCIA DA BOLINA A FORCA LATERAL
     this->model->GetLink("keel_link")->AddForceAtRelativePosition(-lateralForce, ignition::math::Vector3d(0,0,0.5));
@@ -301,69 +287,6 @@ void LiftDragForces::OnUpdate()
     double torque = (this->alpha < 90) ? (force.Dot(this->normal)*this->normal).Length()*this->armLength*(-1) // Negative
                                  : (force.Dot(this->normal)*this->normal).Length()*this->armLength;     // Positive
     this->joint->SetForce(0, torque);
-    
-    /*physics::ModelPtr cp_marker = this->world->ModelByName("marker");
-    if (cp_marker != NULL)
-    {
-      ignition::math::Pose3d pose;
-      pose.Set(this->baseLink->WorldCoGPose().Pos() + this->sailCP, this->baseLink->WorldCoGPose().Rot());
-      //pose.Set(this->model->GetLink("mast_link")->WorldCoGPose().Pos() + this->model->GetLink("mast_link")->WorldCoGPose().Rot().RotateVector(this->sailCP), this->model->GetLink("mast_link")->WorldCoGPose().Rot());
-      cp_marker->SetWorldPose(pose);
-    }*/
-
-    /*if ((true) & ((simtime - int(simtime)) == 0))
-    {
-      std::cout << "-----------------------------------------------------------------------" << std::endl;
-      std::cout << "sail aerodynamic force      : " << force << " |"<< force.Length() << "|" << std::endl;
-      std::cout << "forward aerodynamic force   : " << forwardForce << " |"<< forwardForce.Length() << "|" << std::endl;
-      std::cout << this->dynamic_cp << std::endl;
-    }*/
-
-    /*if ((true) & ((simtime - int(simtime)) == 0))
-    {
-      double A = this->joint->Position(); //int(simtime/13) * M_PI/6.0;
-      if ((A < 0.52) & (A > -0.52))
-        A = 0;
-      /*std::ofstream myfile;
-      myfile.open ("/home/eduardo/USVSim/scripts/aerodynamic_forces.csv", std::ios::app);
-      myfile << "wind;" << (A*180.0/M_PI) << ";" << this->atkangle << ";" << aparentWindVelVec.X() << ";" << aparentWindVelVec.Y() << ";" << aparentWindVelVec.Z() << ";" << aparentWindVelVec.Length() << "\n";
-      myfile << "lift;" << (A*180.0/M_PI) << ";" << this->atkangle << ";" << lift.X() << ";" << lift.Y() << ";" << lift.Z() << ";" << lift.Length() << "\n";
-      myfile << "drag;" << (A*180.0/M_PI) << ";" << this->atkangle << ";" << drag.X() << ";" << drag.Y() << ";" << drag.Z() << ";" << drag.Length() << "\n";
-      myfile << "force;" << (A*180.0/M_PI) << ";" << this->atkangle << ";" << force.X() << ";" << force.Y() << ";" << force.Z() << ";" << force.Length() << "\n";
-      myfile << "chordLine;" << (A*180.0/M_PI) << ";" << this->atkangle << ";" << this->chordLine.X() << ";" << this->chordLine.Y() << ";" << this->chordLine.Z() << ";" << this->chordLine.Length() << "\n";
-      myfile.close();*/
-      /*std::cout<<"----------------------------\n"<<simtime<<std::endl;
-      //std::cout << "wind;" << (A*180.0/M_PI) << " ; " << this->atkangle << " ; " << aparentWindVelVec.X() << " ; " << aparentWindVelVec.Y() << " ; " << aparentWindVelVec.Z() << " ; " << aparentWindVelVec.Length() << std::endl;
-      std::cout << "lift;" << (A*180.0/M_PI) << " ; " << this->atkangle << " ; " << lift.X() << " ; " << lift.Y() << " ; " << lift.Z() << " ; " << lift.Length() << std::endl;
-      std::cout << "drag;" << (A*180.0/M_PI) << " ; " << this->atkangle << " ; " << drag.X() << " ; " << drag.Y() << " ; "  << drag.Z() << " ; " << drag.Length() << std::endl;
-      std::cout << "force;" << (A*180.0/M_PI) << " ; " << this->atkangle << " ; " << force.X() << " ; " << force.Y() << " ; " << force.Z() << " ; " << force.Length() << std::endl;
-      //std::cout << "chordLine;" << (A*180.0/M_PI) << " ; " << this->atkangle << " ; " << this->chordLine.X() << " ; " << this->chordLine.Y() << " ; " << this->chordLine.Z() << " ; " << this->chordLine.Length() << std::endl;
-      std::cout << "this->sailCL["<<this->coefIndex<<"] = "<<this->sailCL[this->coefIndex]<<std::endl;
-      std::cout << "this->alpha  = "<<this->alpha<<std::endl;
-      std::cout << "this->normal = "<<this->normal<<" ("<<this->chordLine.Cross(this->upwardW)<<")"<<std::endl;
-      
-      int val = int(simtime) % 12;
-      A       = int(simtime/12) * M_PI/6.0;
-
-      if (val == 0)
-      {
-        /*if (A > 1.5708)
-        {
-          this->joint->SetUpperLimit(0, (1.5708 - A));
-          this->joint->SetLowerLimit(0, (1.5708 - A));
-          this->joint->SetPosition(0, (1.5708 - A));
-          std::cout<<"==> "<<(1.5708 - A)<<" <=="<<std::endl;
-        }
-        else
-        {
-          this->joint->SetUpperLimit(0, A);
-          this->joint->SetLowerLimit(0, A);
-          this->joint->SetPosition(0, A);
-          std::cout<<"==> "<<A<<" <=="<<std::endl;
-        }
-        this->world->SetPaused(true);
-      }
-    }*/
   }
 
   if (this->waterVelVec.Length() > 0)
@@ -469,17 +392,5 @@ void LiftDragForces::OnUpdate()
     //->Apply resultant force
     this->keelLink->AddForceAtRelativePosition(this->force, this->keelCP);
     //////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////
-    /*if ((true) & ((simtime - int(simtime)) == 0))
-    {
-      //std::cout << "boat velocity               : " << this->baseLink->WorldCoGLinearVel() << " |"<< this->baseLink->WorldCoGLinearVel().Length() << "|" << std::endl;
-      //std::cout << "rudder velocity             : " << this->rudderLink->WorldCoGLinearVel() << " |"<< this->rudderLink->WorldCoGLinearVel().Length() << "|" << std::endl;
-      std::cout << "water velocity              : " << this->waterVelVec << " |"<< this->waterVelVec.Length() << "|" << std::endl;
-      std::cout << "normal                      : " << this->normal << " |"<< this->normal.Length() << "|" << std::endl;
-      std::cout << "alpha angle                 : " << this->alpha << std::endl;
-      std::cout << "attack angle                : " << this->atkangle << std::endl;
-      std::cout << "rudder hydrorodynamic force : " << force << " |"<< force.Length() << "|" << std::endl;
-    }*/
   }
 }

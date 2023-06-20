@@ -17,3 +17,5 @@ __pycache__/
 #/eboat_gym_gaz/envs/__pycache__/
 
 *.csv
+
+.vscode/

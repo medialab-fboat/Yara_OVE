@@ -8,7 +8,7 @@
         <include>
             <name>wayPointMarker</name>
             <pose>0 100.0 0 0 0 0</pose>
-            <uri>/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker</uri>
+            <uri>$(find eboat_description)/models/wayPointMarker</uri>
         </include>
 
         <!--PHYSICS ENGINE-->

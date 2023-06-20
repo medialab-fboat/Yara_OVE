@@ -54,7 +54,6 @@ include_directories(
 
 # Run xacro to generate world files
 xacro_add_files(
-  worlds/eboat.world.xacro
   worlds/ocean.world.xacro
   worlds/ocean_RL_training.world.xacro
   worlds/ocean_fixed_cam.world.xacro
