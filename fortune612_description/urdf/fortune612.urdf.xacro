@@ -428,9 +428,20 @@
     </gazebo>
 
     <!--CONTROL LOOP INTERFACE-->
-    <gazebo>
+    <!--<gazebo>
         <plugin name="ctrl_loop" filename="libControlLoopPlugin.so">
             <frequency>1</frequency>
+        </plugin>
+    </gazebo>-->
+    <gazebo>
+        <plugin name="rudder_control_interface_boto" filename="libRudderControllerPlugin.so">
+        <rudder_joint_name>rudder_joint</rudder_joint_name>
+        </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="sail_control_interface_boto" filename="libSailControllerPlugin.so">
+            <sail_joint_name>boom_main_joint</sail_joint_name>
         </plugin>
     </gazebo>
 

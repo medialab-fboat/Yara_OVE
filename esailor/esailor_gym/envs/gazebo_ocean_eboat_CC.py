@@ -1,19 +1,17 @@
 import gymnasium as gym
 import rospy
-import roslaunch
 import numpy as np
 import sys, os, signal, subprocess
 import time
-import math
 
 from datetime import datetime
 
-from gym import utils, spaces
+from gymnasium import utils, spaces
 from std_srvs.srv import Empty
 
 from std_msgs.msg import Float32, Int16, Float32MultiArray
 from geometry_msgs.msg import Point
-from gym.utils import seeding
+from gymnasium.utils import seeding
 
 from tf.transformations import quaternion_from_euler
 from gazebo_msgs.srv import SetModelState
@@ -104,7 +102,7 @@ class GazeboEnv(gym.Env):
         # Perform a step in gazebo. E.g. move the robot
         raise NotImplementedError
 
-    def reset(self):
+    def reset(self, seed = None):
 
         # Implemented in subclass
         raise NotImplementedError
@@ -128,26 +126,30 @@ class GazeboEnv(gym.Env):
         else:
             self.gzclient_pid = 0
 
-    def _close(self):
+    def close(self):
 
         # Kill gzclient, gzserver and roscore
-        tmp = os.popen("ps -Af").read()
-        gzclient_count = tmp.count('gzclient')
-        gzserver_count = tmp.count('gzserver')
-        roscore_count = tmp.count('roscore')
-        rosmaster_count = tmp.count('rosmaster')
+        # tmp = os.popen("ps -Af").read()
+        # gzclient_count = tmp.count('gzclient')
+        # gzserver_count = tmp.count('gzserver')
+        # roscore_count = tmp.count('roscore')
+        # rosmaster_count = tmp.count('rosmaster')
+        #
+        # if gzclient_count > 0:
+        #     os.system("killall -9 gzclient")
+        # if gzserver_count > 0:
+        #     os.system("killall -9 gzserver")
+        # if rosmaster_count > 0:
+        #     os.system("killall -9 rosmaster")
+        # if roscore_count > 0:
+        #     os.system("killall -9 roscore")
+        #
+        # if (gzclient_count or gzserver_count or roscore_count or rosmaster_count >0):
+        #     os.wait()
 
-        if gzclient_count > 0:
-            os.system("killall -9 gzclient")
-        if gzserver_count > 0:
-            os.system("killall -9 gzserver")
-        if rosmaster_count > 0:
-            os.system("killall -9 rosmaster")
-        if roscore_count > 0:
-            os.system("killall -9 roscore")
+        self._roslaunch.kill()
 
-        if (gzclient_count or gzserver_count or roscore_count or rosmaster_count >0):
-            os.wait()
+        print("\n\n\nCOSE FUNCTION\n\n")
 
     def _configure(self):
 
@@ -161,7 +163,7 @@ class GazeboEnv(gym.Env):
         # From OpenAI API: Sets the seed for this env's random number generator(s)
         pass
 
-class GazeboOceanEboatEnvCC(GazeboEnv):
+class GazeboOceanEboatEnvCC35v0(GazeboEnv):
     def __init__(self):
         self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
         # GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
@@ -443,9 +445,9 @@ class GazeboOceanEboatEnvCC(GazeboEnv):
 
         self.step_count += 1
 
-        return self.observationRescale(observations[:5]), reward, done, {}
+        return self.observationRescale(observations[:5]), reward, done, {}, {}
 
-    def reset(self):
+    def reset(self, seed = None):
         # -->RESETS THE STATE OF THE ENVIRONMENT.
         rospy.wait_for_service('/gazebo/reset_simulation')
         try:
@@ -484,10 +486,9 @@ class GazeboOceanEboatEnvCC(GazeboEnv):
 
         self.count += 1
 
-        return self.observationRescale(observations[:5])
+        return self.observationRescale(observations[:5]), {}
 
-
-class GazeboOceanEboatEnvCC1(GazeboOceanEboatEnvCC):
+class GazeboOceanEboatEnvCC39v0(GazeboOceanEboatEnvCC35v0):
     def __init__(self):
         self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
         GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
@@ -721,9 +722,9 @@ class GazeboOceanEboatEnvCC1(GazeboOceanEboatEnvCC):
 
         self.step_count += 1
 
-        return self.observationRescale(observations), reward, done, {}
+        return self.observationRescale(observations), reward, done, {}, {}
 
-    def reset(self):
+    def reset(self, seed = None):
         #-->RESETS THE STATE OF THE ENVIRONMENT.
         rospy.wait_for_service('/gazebo/reset_simulation')
         try:
@@ -765,4 +766,206 @@ class GazeboOceanEboatEnvCC1(GazeboOceanEboatEnvCC):
 
         self.count += 1
 
-        return self.observationRescale(observations)
+        return self.observationRescale(observations), {}
+
+class GazeboOceanEboatEnvCC25v0(GazeboOceanEboatEnvCC35v0):
+    def __init__(self):
+        self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+        GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
+
+        self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)
+        self.rudderAng_pub = rospy.Publisher("/eboat/control_interface/rudder", Float32, queue_size=5)
+        self.propVel_pub   = rospy.Publisher("/eboat/control_interface/propulsion", Int16, queue_size=5)
+        self.wind_pub      = rospy.Publisher("/eboat/atmosferic_control/wind", Point, queue_size=5)
+        self.unpause       = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
+        self.pause         = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
+        self.reset_proxy   = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
+        self.set_state     = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+
+        # --> GLOBAL VARIABLES
+        self.DTOL  = 25.0  # --> Threshold for distance. If the boat goes far than INITIAL POSITION + DMAX, a done signal is trigged.
+        self.D0    = None  # --> The intial distance from the waypoint
+        self.DMAX  = None
+        self.DPREV = None
+
+        # --> We will use a rescaled action space
+        self.action_space = spaces.Box(low=-1,
+                                       high=1,
+                                       shape=(2,),
+                                       dtype=np.float32)
+
+        # --> We will use a rescaled action space
+        self.observation_space = spaces.Box(low=-1,
+                                            high=1,
+                                            shape=(5,),
+                                            dtype=np.float32)
+        self.reward_range = (-1, 1)
+
+        self._seed()
+
+        # --> SET WIND SPEED INITIAL VECTOR
+        self.windSpeed = np.array([0.0, 9.0, 0.0], dtype=np.float32)
+
+        # --> UNPAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/unpause_physics")
+        try:
+            self.unpause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/unpause_physics service call failed!"))
+
+        # --> GET INITIAL DISTANCE FROM THE WAYPOINT
+        while self.D0 is None:
+            try:
+                self.D0 = \
+                rospy.wait_for_message("/eboat/mission_control/observations", Float32MultiArray, timeout=20).data[0]
+                self.DMAX = self.D0 + self.DTOL  # --> IT TAKE THE INITIAL DISTANCE IN CONSIDERATION
+                self.DPREV = self.D0
+            except:
+                pass
+
+        # --> AUXILIARY VARS
+        self.d2r = np.pi / 180.0
+        self.count = 0
+        self.step_count = 0
+
+        # --> SUPPORT FOR RANDOM INITIALIZATION OF WIND SPEED AND DIRECTION
+        np.random.seed(30)
+        self.min_wind_speed  = 3
+        self.max_wind_speed  = 12
+
+        # --> LOG FILE TO REGISTER INITIAL CONDITIONS (BOAT ORIENTATION, APPARENT WIND SPEED, APPARENT WIND ANGLE)
+        sufix = "_" + datetime.now().strftime("%d%m%Y_%H_%M_%S")
+        self.state_log_file = os.path.join(os.getcwd(), f"STATES_{sufix}.log")
+        with open(self.state_log_file, "w") as f:
+            f.write("bang,wspeed,wang\n")
+
+    def actionRescale(self, action):
+        raction = np.zeros(2, dtype=np.float32)
+        # --> Boom angle [0, 90]
+        raction[0] = (action[0] + 1) * 45.0
+        # --> Rudder angle [-60, 60]
+        raction[1] = action[1] * 60.0
+        return raction
+
+    def rewardFunction(self, obs):
+        rwd = (self.DPREV - obs[0]) / self.DMAX
+
+        # --> obsData = [distance, trajectory angle, surge velocity, aparent wind speed, aparent wind angle, boom angle, rudder angle, eletric propultion speed, roll angle]
+        #               [   0    ,        1        ,       2        ,         3         ,         4         ,     5     ,      6      ,            7            ,     8     ]
+
+        return rwd
+
+    def sampleInitialState(self, model_name):
+        theta_boat = np.random.randint(low=-179, high=180)
+        wind_speed = np.random.randint(low=self.min_wind_speed, high=self.max_wind_speed)
+        theta_wind = np.random.randint(low=-179, high=180)
+
+        # -->Set the true wind vector
+        self.windSpeed[:2] = self.rot(wind_speed, theta_wind)
+        with open(self.state_log_file, "a") as f:
+            f.write(f"{theta_boat}, {wind_speed}, {theta_wind}\n")
+
+        # --> Set the boat's position and orientation
+        self.setState(model_name, pose=np.zeros(shape=3, dtype=np.float32), theta=theta_boat)
+
+    def step(self, action):
+        # --> UNPAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/unpause_physics")
+        try:
+            self.unpause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/unpause_physics service call failed!"))
+
+        # -->SEND ACTION TO THE BOAT CONTROL INTERFACE
+        ract = self.actionRescale(action)
+        self.boomAng_pub.publish(ract[0])
+        self.rudderAng_pub.publish(ract[1])
+
+        # -->GET OBSERVATIONS (NEXT STATE)
+        observations = self.getObservations()
+
+        # -->PAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/pause_physics")
+        try:
+            self.pause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/pause_physics service call failed!"))
+
+        # -->CALCULATES THE REWARD
+        reward = self.rewardFunction(observations)
+
+        # -->UPDATE PREVIOUS STATE VARIABLES
+        self.DPREV = observations[0]
+
+        # -->CHECK FOR A TERMINAL STATE
+        done = bool((self.DPREV <= 5) |
+                    (self.DPREV > self.DMAX) |
+                    (np.isnan(observations).any())
+                    )
+
+        if np.isnan(observations).any():
+            print("\n\n-------------------------------------")
+            print(f"distance: {observations[0]}")
+            print(f"traj ang: {observations[1]}")
+            print(f"boat vel: {observations[2]}")
+            print(f"wind vel: {observations[3]}")
+            print(f"wind ang: {observations[4]}")
+            print(f"boom ang: {observations[5]}")
+            print(f"rud ang : {observations[6]}")
+            print(f"prop    : {observations[7]}")
+            print(f"roll ang: {observations[8]}")
+            print("-------------------------------------\n")
+            # --> WAIT FOR ACKNOWLEDGEMENT FROM USER
+            # _ = input("Unpause: ")
+
+        # -->PROCESS DONE SIGNAL
+        if done:
+            if (self.DPREV <= 5):
+                reward = 1
+            else:
+                reward = -1
+
+        self.step_count += 1
+
+        return self.observationRescale(observations[:5]), reward, done, {}, {}
+
+    def reset(self, seed = None):
+        # -->RESETS THE STATE OF THE ENVIRONMENT.
+        rospy.wait_for_service('/gazebo/reset_simulation')
+        try:
+            self.reset_proxy()
+        except (rospy.ServiceException) as e:
+            print(("/gazebo/reset_simulation service call failed!"))
+
+        # -->UNPAUSE SIMULATION TO MAKE OBSERVATION
+        rospy.wait_for_service('/gazebo/unpause_physics')
+        try:
+            self.unpause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/unpause_physics service call failed!"))
+
+        # -->SET THE ACTUATORS BACK TO THE DEFAULT SETTING
+        self.propVel_pub.publish(0)
+        self.boomAng_pub.publish(0.0)
+        self.rudderAng_pub.publish(0.0)
+
+        # -->SET RANDOM INITIAL STATE
+        self.sampleInitialState("eboat")
+        self.wind_pub.publish(Point(self.windSpeed[0], self.windSpeed[1], self.windSpeed[2]))
+
+        # -->COLLECT OBSERVATIONS
+        observations = self.getObservations()
+
+        # -->RESET INITIAL STATE VALUES
+        self.DPREV = observations[0]
+
+        # -->PAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/pause_physics")
+        try:
+            self.pause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/pause_physics service call failed!"))
+
+        self.count += 1
+
+        return self.observationRescale(observations[:5]), {}

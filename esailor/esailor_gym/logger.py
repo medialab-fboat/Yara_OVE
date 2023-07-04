@@ -1,4 +1,4 @@
-from gym.utils import colorize
+from gymnasium.utils import colorize
 
 DEBUG = 10
 INFO = 20

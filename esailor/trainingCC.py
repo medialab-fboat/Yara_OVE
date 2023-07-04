@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor/bin/python
+#!/home/eduardo/miniconda3/envs/esailor2/bin/python
 
 #-->PYTHON UTIL
 import os
@@ -8,14 +8,14 @@ import numpy as np
 from datetime import datetime
 
 #-->GYM
-import gym
+import gymnasium as gym
 
 #-->GAZEBO GYM
-import eboat_gym_gaz
+import esailor_gym
 
 #-->STABLE-BASELINES3
-from gym import wrappers
-from stable_baselines3 import A2C, PPO, DQN, SAC
+from gymnasium import wrappers
+from stable_baselines3 import PPO
 
 #-->PYTORCH
 import torch as th
@@ -27,43 +27,6 @@ def truncate(value):
         return ival
     else:
         return (ival + 1)
-
-def runA2C(policy, env,learning_rate=0.0007, n_steps=5, gamma=0.99, gae_lambda=1.0, ent_coef=0.001, vf_coef=0.5,
-           max_grad_norm=0.5, rms_prop_eps=1e-05, use_rms_prop=True, use_sde=False, sde_sample_freq=-1,
-           normalize_advantage=False, tensorboard_log=None, policy_kwargs=None, verbose=0, seed=None, device='auto',
-           init_setup_model=True, sufix = ""):
-
-    sufix      = sufix + "_" + datetime.now().strftime("%d%m%Y_%H_%M_%S")
-    models_dir = f"models/A2C/{sufix}"
-
-    if not os.path.exists(models_dir):
-        os.makedirs(models_dir)
-
-    model = A2C(policy              = policy,
-                env                 = env,
-                learning_rate       = learning_rate,
-                n_steps             = n_steps,
-                gamma               = gamma,
-                gae_lambda          = gae_lambda,
-                ent_coef            = ent_coef,
-                vf_coef             = vf_coef,
-                max_grad_norm       = max_grad_norm,
-                rms_prop_eps        = rms_prop_eps,
-                use_rms_prop        = use_rms_prop,
-                use_sde             = use_sde,
-                sde_sample_freq     = sde_sample_freq,
-                normalize_advantage = normalize_advantage,
-                tensorboard_log     = tensorboard_log,
-                policy_kwargs       = policy_kwargs,
-                verbose             = verbose,
-                seed                = seed,
-                device              = device,
-                _init_setup_model   = init_setup_model
-                )
-
-    tb_log_name = f"A2C_{sufix}"
-
-    return model, models_dir, tb_log_name
 
 def runPPO(policy, env, learning_rate=0.0003, n_steps=2048, batch_size=64, n_epochs=10, gamma=0.99, gae_lambda=0.95,
            clip_range=0.2, clip_range_vf=None, normalize_advantage=True, ent_coef=0.0, vf_coef=0.5, max_grad_norm=0.5,
@@ -129,7 +92,7 @@ def actionRescale(action):
     raction[2] = action[2] * 60.0
     return raction
 
-def runTrainingv0(env, logdir, sufix="model0"):
+def runTraining25(env, logdir, sufix="model25"):
     policy_kwargs = dict(activation_fn=th.nn.ReLU,
                          net_arch=(dict(pi=[32, 32], vf=[32, 32]))
                          )
@@ -166,57 +129,13 @@ def runTrainingv0(env, logdir, sufix="model0"):
         print(f"Elapsed time                : {htime(timeB - start)}")
         print(f"Remaining time              : {htime((SAVESTEPS - 1 - i)*avtime)}")
 
-def runTrainingv1(env, logdir, sufix="model1"):
-    policy_kwargs = dict(activation_fn=th.nn.ReLU,
-                         net_arch=(dict(pi=[32, 32, 32], vf=[32, 32]))
-                         )
-
-    model, models_dir, TB_LOG_NAME = runPPO(policy          = "MlpPolicy",
-                                            env             = env,
-                                            # tensorboard_log = logdir,
-                                            ent_coef        = 0.001,
-                                            verbose         = 0,
-                                            policy_kwargs   = policy_kwargs,
-                                            sufix           = sufix)
-
-    SAVESTEPS = 1+1
-    TIMESTEPS = 2048*5
-    start     = time.time()
-    # model.save(f"{models_dir}/eboat_ocean_0")
-    for i in range(1, SAVESTEPS):
-        print("\n\n---------------------------------------------------------")
-        print(f"iteration                   : {i}")
-        timeA = time.time()
-
-        model.learn(total_timesteps     = TIMESTEPS  ,
-                    log_interval        = 1          ,
-                    tb_log_name         = TB_LOG_NAME,
-                    reset_num_timesteps = False      ,
-                    progress_bar        = False
-                    )
-        # model.save(f"{models_dir}/eboat_ocean_{i}")
-
-        timeB  = time.time()
-        avtime = (timeB - start) / i
-        print(f"Time spent in this iteration: {htime(timeB - timeA)}")
-        print(f"Average time per step       : {avtime / TIMESTEPS}")
-        print(f"Average time per iteration  : {htime(avtime)}")
-        print(f"Elapsed time                : {htime(timeB - start)}")
-        print(f"Remaining time              : {htime((SAVESTEPS - 1 - i)*avtime)}")
-
 def main():
     logdir = "logs"
     if not os.path.exists(logdir):
         os.makedirs(logdir)
 
-    training_version = 1
-
-    if training_version == 0:
-        env = gym.make(f'GazeboOceanEboatEnvCC-v{training_version}')
-        runTrainingv0(env, logdir)
-    elif training_version == 1:
-        env = gym.make(f'GazeboOceanEboatEnvCC-v{training_version}')
-        runTrainingv1(env, logdir)
+    env = gym.make(f'GazeboOceanEboatEnvCC25-v0')
+    runTraining25(env, logdir)
 
     print("---------------------------------------------------------\n")
 
