@@ -140,7 +140,7 @@ def main():
     print("---------------------------------------------------------\n")
 
     env.close()
-    os.system('/home/eduardo/USVSim/eboat_ws/kill_gaz.sh')
+    os.system('./kill_gaz.sh')
 
 if __name__ == '__main__':
     main()

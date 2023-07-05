@@ -2,7 +2,7 @@
 *.npy
 
 # ignore zip
-*.zip
+#*.zip
 
 fboat_data*.py
 
@@ -11,10 +11,9 @@ logs/
 *.log
 
 # ignore models
-/models/
+models/
 
 __pycache__/
-#/eboat_gym_gaz/envs/__pycache__/
 
 *.csv
 
