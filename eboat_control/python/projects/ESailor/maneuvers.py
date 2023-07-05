@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor/bin/python
+#!/home/lmdc/miniconda3/envs/esailor/bin/python
 
 import numpy as np
 import pandas as pd
@@ -226,7 +226,7 @@ def regatta(pause, unpause, boomAng_pub, rudderAng_pub, propVel_pub, wind_pub, s
         ipose.position.y = waypoint[1]
         ipose.position.z = waypoint[2]
         with open(
-                "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
+                "/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
             sdffile = f.read()
             try:
                 result = spawn_model(f"wayPointMarker{i}",
@@ -242,9 +242,9 @@ def regatta(pause, unpause, boomAng_pub, rudderAng_pub, propVel_pub, wind_pub, s
     wind_pub.publish(Point(windSpeed[0], windSpeed[1], windSpeed[2]))
 
     # --> RL agent
-    model = PPO.load("/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/models/PPO/ensign_five/eboat_ocean_50")
-    # model = PPO.load("/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/models/PPO/model1_13042023_10_15_19/eboat_ocean_50")
-    # model = PPO.load("/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/models/PPO/model1_17042023_10_52_09/eboat_ocean_50")
+    model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/ensign_five/eboat_ocean_50")
+    # model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/model1_13042023_10_15_19/eboat_ocean_50")
+    # model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/model1_17042023_10_52_09/eboat_ocean_50")
 
     #--> TO STORE OBSERVATIONSL DATA TO SAVE
     obslist = []
@@ -343,7 +343,7 @@ def autoMission(pause, unpause, boomAng_pub, rudderAng_pub, propVel_pub, wind_pu
     ipose.position.z = 0
     spawn_model      = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
     with open(
-            "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
+            "/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
         sdffile = f.read()
         try:
             result = spawn_model(f"wayPointMarker",
@@ -354,7 +354,7 @@ def autoMission(pause, unpause, boomAng_pub, rudderAng_pub, propVel_pub, wind_pu
             print("/gazebo/SpawnModel service call failed")
 
     # --> RL agent
-    model = PPO.load("/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/models/PPO/ensign_five/eboat_ocean_50")
+    model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/ensign_five/eboat_ocean_50")
 
     #--> STORE OBSERVATIONAL DATA TO SAVE
     ctrlData = []
@@ -483,7 +483,7 @@ def manualMission(pause, unpause, boomAng_pub, rudderAng_pub, propVel_pub, wind_
     ipose.position.z = 0
     spawn_model      = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
     with open(
-            "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
+            "/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
         sdffile = f.read()
         try:
             result = spawn_model(f"wayPointMarker",
@@ -636,7 +636,7 @@ def regattaMulti(pause, unpause, boomAng_pub, rudderAng_pub, propVel_pub, wind_p
         ipose.position.y = waypoint[1]
         ipose.position.z = waypoint[2]
         with open(
-                "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
+                "/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
             sdffile = f.read()
             try:
                 result = spawn_model(f"wayPointMarker{i}",
@@ -1064,7 +1064,7 @@ def main():
 
     print(ros_path)
 
-    EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+    EBOAT_HOME = "/home/lmdc/eboat_ws/src/eboat_gz_1"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch")
     # launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean.launch")
 

@@ -163,7 +163,7 @@ class GazeboEnv(gym.Env):
 
 class GazeboOceanEboatEnvCC(GazeboEnv):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+        self.EBOAT_HOME = "/home/lmdc/eboat_ws/src/eboat_gz_1"
         # GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
         GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch"))
 
@@ -489,7 +489,7 @@ class GazeboOceanEboatEnvCC(GazeboEnv):
 
 class GazeboOceanEboatEnvCC1(GazeboOceanEboatEnvCC):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+        self.EBOAT_HOME = "/home/lmdc/eboat_ws/src/eboat_gz_1"
         GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)

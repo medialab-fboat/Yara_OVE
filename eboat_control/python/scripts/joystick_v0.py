@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor/bin/python
+#!/home/lmdc/miniconda3/envs/esailor/bin/python
 
 import sys
 import subprocess
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     fig = plt.figure(figsize=[6, 8])
     img = plt.imread(
-        "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor/boat2_top_view.png")
+        "/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor/boat2_top_view.png")
     plt.imshow(img)
     plt.axis('off')
     fig.subplots_adjust(left=0.225, bottom=0.125, right=1.0 - 0.225, top=0.83, wspace=0.2, hspace=0.2)

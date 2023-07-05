@@ -111,8 +111,8 @@ def main():
     delete_model  = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
 
     #-->LOAD AGENT USING STABLE-BASELINES3
-    model = PPO.load(f"/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/models/PPO/model1_06022023_16_07_06/eboat_ocean_50")
-    # model = PPO.load(f"/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/models/PPO/model2_06022023_21_06_41/eboat_ocean_50")
+    model = PPO.load(f"/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/model1_06022023_16_07_06/eboat_ocean_50")
+    # model = PPO.load(f"/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/model2_06022023_21_06_41/eboat_ocean_50")
 
     #-->DEFINE NAVIGATION PATH
     navpath = [[0.0     , 100.0, 0.5],
@@ -142,7 +142,7 @@ def main():
         ipose.position.y = waypoint[1]
         ipose.position.z = waypoint[2]
         with open(
-                "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
+                "/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
             sdffile = f.read()
             try:
                 result = spawn_model("wayPointMarker",

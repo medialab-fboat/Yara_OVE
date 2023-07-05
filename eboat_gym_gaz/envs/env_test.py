@@ -22,7 +22,7 @@ from gazebo_msgs.msg import ModelState
 
 class GazeboOceanEboatEnvCC(gazebo_env.GazeboEnv):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+        self.EBOAT_HOME = "/home/lmdc/eboat_ws/src/eboat_gz_1"
         gazebo_env.GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)
@@ -338,7 +338,7 @@ class GazeboOceanEboatEnvCC(gazebo_env.GazeboEnv):
 
 class GazeboOceanEboatEnvCC1(GazeboOceanEboatEnvCC):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+        self.EBOAT_HOME = "/home/lmdc/eboat_ws/src/eboat_gz_1"
         gazebo_env.GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)

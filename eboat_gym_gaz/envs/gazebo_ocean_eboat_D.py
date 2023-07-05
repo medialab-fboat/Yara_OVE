@@ -19,7 +19,7 @@ from gym.utils import seeding
 class GazeboOceanEboatEnvD(gazebo_env.GazeboEnv):
 
 	def __init__(self):
-		self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+		self.EBOAT_HOME = "/home/lmdc/eboat_ws/src/eboat_gz_1"
 		#-->Launch the simulation with the given launchfile name
 		gazebo_env.GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME,"eboat_gazebo/launch/ocean.launch"))
 

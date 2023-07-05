@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor/bin/python
+#!/home/lmdc/miniconda3/envs/esailor/bin/python
 
 #-->PYTHON UTIL
 import os
@@ -221,7 +221,7 @@ def main():
     print("---------------------------------------------------------\n")
 
     env.close()
-    os.system('/home/eduardo/USVSim/eboat_ws/kill_gaz.sh')
+    os.system('/home/lmdc/eboat_ws/kill_gaz.sh')
 
 if __name__ == '__main__':
     main()
