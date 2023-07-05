@@ -41,12 +41,6 @@ MissionControlPlugin::MissionControlPlugin(): freq(1.0)
      * than we can send them, the number here specifies how many messages to
      * buffer up before throwing some away.
      */
-    /*this->distPub      = rosNode.advertise<std_msgs::Float32>("/eboat/mission_control/distance", 500);
-    this->sailPub      = rosNode.advertise<std_msgs::Float32>("/eboat/mission_control/sail_angle", 500);
-    this->rudderPub    = rosNode.advertise<std_msgs::Float32>("/eboat/mission_control/rudder_angle", 500);
-    this->propulsorPub = rosNode.advertise<std_msgs::Float32>("/eboat/mission_control/turbine_speed", 500);
-    this->windSpeedPub = rosNode.advertise<std_msgs::Float32>("/eboat/mission_control/wind_speed", 500);
-    this->windAnglePub = rosNode.advertise<std_msgs::Float32>("/eboat/mission_control/wind_angle", 500);*/
     this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>("/eboat/mission_control/observations", 1000);
     //this->maneuverObs = rosNode.advertise<std_msgs::Float32MultiArray>("/eboat/mission_control/maneuverObs", 500);
 }

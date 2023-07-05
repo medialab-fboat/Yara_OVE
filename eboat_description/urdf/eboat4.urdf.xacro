@@ -8,7 +8,7 @@
             <visual>
                 <origin xyz="${xyz}" rpy="${rpy}" />
                 <geometry>
-                <mesh filename="package://eboat_description/models/eboat/meshes/${name}.stl"/>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/${name}.stl"/>
                 </geometry>
             </visual>
         </link>
@@ -27,7 +27,7 @@
             <visual>
                 <origin xyz="${xyz}" rpy="${rpy}" />
                 <geometry>
-                <mesh filename="package://eboat_description/models/eboat/meshes/support_hack_${name}.stl"/>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/support_hack_${name}.stl"/>
                 </geometry>
                 <material name="support_hack_${name}_material">
                 <color rgba="0 0 0 1.0"/>

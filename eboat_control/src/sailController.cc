@@ -136,4 +136,9 @@ void SailControllerPlugin::OnUpdate()
         this->sailJoint->SetUpperLimit(0, 90.0);
         this->sailJoint->SetLowerLimit(0, -90.0);
     }
+
+    ///////////////////////////////////////////////////////////
+    //physics::JointPtr jibJoint = this->model->GetJoint("boom_jib_joint");
+    //jibJoint->SetUpperLimit(0, this->sailJoint->UpperLimit(0));
+    //jibJoint->SetLowerLimit(0, this->sailJoint->LowerLimit(0));
 }

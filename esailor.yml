@@ -1,4 +1,4 @@
-name: esailor
+name: esailor2
 
 channels:
   - defaults
@@ -9,26 +9,23 @@ channels:
 dependencies:
   - python=3.7
   - pip
-  - gtk3
   - numpy
-  - mesa-libgl-cos6-x86_64
   - pytorch::pytorch=1.13.1
   - pytorch::pytorch-cuda=11.7
   - pytorch::torchvision
   - pytorch::torchaudio
-  - conda-forge::wxpython
-  - conda-forge::pyyaml
   - conda-forge::rospkg
   - conda-forge::defusedxml
   - conda-forge::netifaces
-  - conda-forge::freeglut
-  - conda-forge::tqdm
-  - conda-forge::rich
   - conda-forge::tensorflow-gpu
   - conda-forge::opencv
-  - conda-forge::gymnasium
   - pip:
+<<<<<<< HEAD
     - gym
     - stable-baselines3
   
 prefix: s/home/lmdc/miniconda3/envs/esailor2
+=======
+    - gymnasium
+    - stable-baselines3
+>>>>>>> be8222db32f9712599a85505fdb01a0c016692ac

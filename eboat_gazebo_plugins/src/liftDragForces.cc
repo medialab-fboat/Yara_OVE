@@ -266,13 +266,20 @@ void LiftDragForces::OnUpdate()
     //                will be transmited to the boat by the boom_joint (a revoltute joint). Therefore, the wind force could generate a not realistic torque
     //                on the revolute axis. To avoid this and emulate a more realistic boat behavior, we will apply the force direct to the boat 3D element.
     //                The position where the force will be applied is given by the dynamic_cp variable.
-    ignition::math::Vector3d bow = this->baseLink->WorldPose().Rot().RotateVector(this->boatBow);
-    ignition::math::Vector3d port = this->baseLink->WorldPose().Rot().RotateVector(this->boatPort);
-    ignition::math::Vector3d forwardForce = this->force.Dot(bow) * bow;
+    //ignition::math::Vector3d bow          = this->baseLink->WorldPose().Rot().RotateVector(this->boatBow);
+    ignition::math::Vector3d port         = this->baseLink->WorldPose().Rot().RotateVector(this->boatPort);
+    //ignition::math::Vector3d forwardForce = this->force.Dot(bow) * bow;
     ignition::math::Vector3d lateralForce = this->force.Dot(port) * port;
-    this->baseLink->AddForceAtRelativePosition(this->force, this->sailCP);
-    // --> EMULA A RESISTENCIA DA BOLINA A FORCA LATERAL
-    this->model->GetLink("keel_link")->AddForceAtRelativePosition(-lateralForce, ignition::math::Vector3d(0,0,0.5));
+    if (this->atkangle > 20)
+    {
+      this->baseLink->AddForceAtRelativePosition(this->force, this->sailCP);
+      // --> EMULA A RESISTENCIA DA BOLINA A FORCA LATERAL
+      this->model->GetLink("keel_link")->AddForceAtRelativePosition(-lateralForce, ignition::math::Vector3d(0,0,0.5));
+    }
+    else
+    {
+      this->baseLink->AddForceAtRelativePosition(0.15*this->force, this->sailCP);
+    }
     
 
     //->Force on sail: As we will aplly the wind force direct on the boat element, the sail element will stand still and it will not change position with the
