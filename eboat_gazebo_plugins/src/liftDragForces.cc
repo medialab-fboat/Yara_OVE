@@ -274,11 +274,11 @@ void LiftDragForces::OnUpdate()
     {
       this->baseLink->AddForceAtRelativePosition(this->force, this->sailCP);
       // --> EMULA A RESISTENCIA DA BOLINA A FORCA LATERAL
-      this->model->GetLink("keel_link")->AddForceAtRelativePosition(-lateralForce, ignition::math::Vector3d(0,0,0.5));
+      this->model->GetLink("keel_link")->AddForceAtRelativePosition(-0.9*lateralForce, ignition::math::Vector3d(0,0,0.5));
     }
     else
     {
-      this->baseLink->AddForceAtRelativePosition(0.15*this->force, this->sailCP);
+      this->baseLink->AddForceAtRelativePosition(0.1*this->force, this->sailCP);
     }
     
 

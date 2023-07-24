@@ -30,7 +30,7 @@
             <plugin name="mission_control_${name}" filename="libMissionControlPlugin.so">
                 <link_name>base_link</link_name>
                 <way_point>wayPointMarker</way_point>
-                <frequency>2</frequency>
+                <frequency>3</frequency>
                 <propulsor_joint_name>propeller_joint</propulsor_joint_name>
             </plugin>
         </gazebo>

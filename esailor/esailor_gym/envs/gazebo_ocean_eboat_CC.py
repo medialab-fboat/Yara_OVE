@@ -31,7 +31,7 @@ class GazeboEnv(gym.Env):
         random_number = random.randint(10000, 15000)
         # self.port = "11311"#str(random_number) #os.environ["ROS_PORT_SIM"]
         # self.port_gazebo = "11345"#str(random_number+1) #os.environ["ROS_PORT_SIM"]
-        self.port = str(random_number) #os.environ["ROS_PORT_SIM"]
+        self.port = "14232" #str(random_number) #os.environ["ROS_PORT_SIM"]
         self.port_gazebo = str(random_number+1) #os.environ["ROS_PORT_SIM"]
 
         os.environ["ROS_MASTER_URI"] = "http://localhost:"+self.port
@@ -165,9 +165,8 @@ class GazeboEnv(gym.Env):
 
 class GazeboOceanEboatEnvCC35v0(GazeboEnv):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
-        # GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
-        GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch"))
+        self.EBOAT_HOME = "/home/eduardo/USVSim/yara_ws/src/Yara_OVE"
+        GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)
         self.rudderAng_pub = rospy.Publisher("/eboat/control_interface/rudder", Float32, queue_size=5)
@@ -228,18 +227,8 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
 
         # --> SUPPORT FOR RANDOM INITIALIZATION OF WIND SPEED AND DIRECTION
         np.random.seed(30)
-        self.max_wind_speed  = 13
-        wind_speed           = np.arange(0, self.max_wind_speed, dtype=np.float32)
-        wind_direction       = np.arange(-180, 180, 10, dtype=int) * self.d2r
-        boat_orientation     = np.arange(-180, 180, 20, dtype=int) * self.d2r
-        wind_direction[0]   += 1  # -->it imposes the wind direction to start in -179
-        boat_orientation[0] += 1  # -->it imposes the boat orientation to start in -179
-        self.possible_initial_conditions = []
-        for bo in boat_orientation:
-            for ws in wind_speed:
-                for wd in wind_direction:
-                    self.possible_initial_conditions.append(np.array([bo, ws, wd], dtype=np.float32))
-        self.possible_initial_conditions = np.array(self.possible_initial_conditions)
+        self.min_wind_speed  = 3
+        self.max_wind_speed  = 12
 
         # --> LOG FILE TO REGISTER INITIAL CONDITIONS (BOAT ORIENTATION, APPARENT WIND SPEED, APPARENT WIND ANGLE)
         sufix = "_" + datetime.now().strftime("%d%m%Y_%H_%M_%S")
@@ -296,12 +285,12 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
         theta_wind = np.random.randint(low=-179, high=180)
 
         # -->Set the true wind vector
-        self.windSpeed[:2] = self.rot(wind_speed, theta_wind)
+        self.windSpeed[:2] = self.rot(wind_speed, (theta_wind * self.d2r))
         with open(self.state_log_file, "a") as f:
             f.write(f"{theta_boat}, {wind_speed}, {theta_wind}\n")
 
         # --> Set the boat's position and orientation
-        self.setState(model_name, pose=np.zeros(shape=3, dtype=np.float32), theta=theta_boat)
+        self.setState(model_name, pose=np.zeros(shape=3, dtype=np.float32), theta=(theta_boat * self.d2r))
 
     def getObservations(self):
         obsData = None
@@ -487,7 +476,7 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
 
 class GazeboOceanEboatEnvCC25v0(GazeboOceanEboatEnvCC35v0):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+        self.EBOAT_HOME = "/home/eduardo/USVSim/yara_ws/src/Yara_OVE"
         GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)
@@ -556,6 +545,29 @@ class GazeboOceanEboatEnvCC25v0(GazeboOceanEboatEnvCC35v0):
         with open(self.state_log_file, "w") as f:
             f.write("bang,wspeed,wang\n")
 
+    def sampleInitialState(self, model_name):
+        wind_speed = np.random.randint(low=self.min_wind_speed, high=self.max_wind_speed)
+        val = 180
+        count = 0
+        while (val > 150) & (val < 210) & (count < 500):
+            theta_boat = np.random.randint(low=-179, high=180)
+            theta_wind = np.random.randint(low=-179, high=180)
+            val = abs(theta_boat + theta_wind)
+            if val > 180:
+                val = 360 - val
+            count += 1
+        if count > 499:
+            theta_boat = 0.0
+            theta_wind = 0.0
+
+        # -->Set the true wind vector
+        self.windSpeed[:2] = self.rot(wind_speed, (theta_wind * self.d2r))
+        with open(self.state_log_file, "a") as f:
+            f.write(f"{theta_boat}, {wind_speed}, {theta_wind}\n")
+
+        # --> Set the boat's position and orientation
+        self.setState(model_name, pose=np.zeros(shape=3, dtype=np.float32), theta=(theta_boat * self.d2r))
+
     def actionRescale(self, action):
         raction = np.zeros(2, dtype=np.float32)
         # --> Boom angle [0, 90]
@@ -564,13 +576,161 @@ class GazeboOceanEboatEnvCC25v0(GazeboOceanEboatEnvCC35v0):
         raction[1] = action[1] * 60.0
         return raction
 
-    def rewardFunction(self, obs):
-        rwd = (self.DPREV - obs[0]) / self.DMAX
+    def expo(self, dist):
+        if dist > 0.6 * self.D0:
+            return 3
+        elif dist > 0.3 * self.D0:
+            return 5
+        else:
+            return 7
 
+    def trajectoryAngleReturn(self, ref, traj, vel, rwd):
+        dA = ref - traj
+        if dA < 0:
+            return (1.0 + 0.2 * dA * self.d2r) * rwd
+        else:
+            # --> increase the return earned by a factor proportional to 5% of the standard reward given by the variable rwd.
+            return (0.05 * (vel + (dA * self.d2r))) * rwd
+
+    def retrunFunc0(self, obs):
+        return (self.DPREV - obs[0]) / self.DMAX
+
+    def returnFunc1(self, obs):
+        # -->RETURN FUNCTION VERSION 1 (DID NOT WORK WITH PPO)
+        dS   = (self.DPREV - obs[0]) / self.DMAX
+        tang = obs[1]
+        vel  = obs[2]
+        wspd = obs[3]
+        r1   = dS
+        if vel < 0:
+            r2 = -5.0
+        else:
+            r2 = (vel / wspd) * (np.cos(tang) ** self.expo(obs[1]))
+
+        return (0.07 * r1) + (0.03 * r2)
+
+    def returnFunc2(self, obs):
+        # -->RETURN FUNCTION VERSION 2 (NOT TESTED YET)
+        dS = (self.DPREV - obs[0]) / self.DMAX
+        tang = obs[1]
+        vel  = obs[2]
+        wspd = obs[3]
+
+        r = dS
+        w = 1.0
+        c = 0.0
+        if vel > 0:
+            w += 0.2
+            if (tang < 30):
+                w += 0.4
+                if obs[0] < 0.4 * self.D0:
+                    w += 0.1
+            elif (tang < 60):
+                w += 0.2
+            else:
+                w = 0.0
+                c = -0.3
+        else:
+            w = 0.0
+            c = -0.3
+
+        return w * r + c
+
+    def returnFunc3(self, obs):
+        # -->RETURN FUNCTION VERSION 3 (DID NOT WORK WITH PPO)
+        dist = obs[0]  # -->distance from the goal
+        vel = obs[2]  # -->surge velicuty
+        traj = abs(obs[1])  # -->trajectory angle
+        dS = self.DPREV - dist
+
+        rwd = 0.01
+        R = 0.01
+
+        if dist < 0.3 * self.D0:
+            if vel > 0:
+                R += self.trajectoryAngleReturn(0, traj, vel, rwd)
+            else:
+                R += (vel - 15.0) * rwd
+        elif dist < 0.6 * self.D0:
+            if vel > 0:
+                R += self.trajectoryAngleReturn(90, traj, vel, rwd)
+            else:
+                R += (vel - 10.0) * rwd
+        elif dist < 0.9 * self.D0:
+            if vel > 0:
+                R += self.trajectoryAngleReturn(90, traj, vel, rwd)
+            else:
+                R += (vel - 10.0) * rwd
+        else:
+            if vel > 0:
+                dA = 60 - traj
+                if traj > 60:
+                    R += (1.0 + 0.2 * dA * self.d2r) * rwd
+                else:
+                    R += (0.05 * (vel + (
+                                dA * self.d2r))) * rwd  # --> increase the return earned by a factor proportional to 5% of the standard reward given by the variable rwd.
+            else:
+                if dist < 1.1 * self.D0:
+                    R += (vel - 2.0) * rwd
+                else:
+                    R += (vel - 10.0) * rwd
+        if (dS > 0) & (R > 0):
+            return R + 2 * dS / self.DMAX
+        elif dS < 0:
+            return R + 3 * dS / self.DMAX
+        else:
+            return R
+
+    def rewardFunction(self, obs):
         # --> obsData = [distance, trajectory angle, surge velocity, aparent wind speed, aparent wind angle, boom angle, rudder angle, eletric propultion speed, roll angle]
         #               [   0    ,        1        ,       2        ,         3         ,         4         ,     5     ,      6      ,            7            ,     8     ]
 
-        return rwd
+        # -->RETURN FUNCTION VERSION 4 (NOT TESTED)
+        dist  = obs[0]       # -->distance from the goal
+        vel   = obs[2]       # -->surge velocity
+        traj  = abs(obs[1])  # -->trajectory angle
+        dS    = self.DPREV - dist
+        ratio = dist / self.D0
+        R     = dS / self.DMAX
+
+        if R > 0:
+            if ratio < 0.3:
+                if (traj < 6) & (vel > 0):
+                    R *= 1.0 + 0.5 * ((5 - traj) / 5)
+                elif (vel < 0):
+                    R -= R - 0.2 * vel
+                else:
+                    pass
+            elif ratio < 0.6:
+                if (traj < 61) & (vel > 0):
+                    R *= (1.0 + 0.05 * ((60 - traj) / 6) + 0.1 * vel)
+                elif (vel < 0):
+                    R -= R - 0.1 * vel
+                else:
+                    pass
+            elif ratio < 0.9:
+                if (traj < 91) & (vel > 0):
+                    R *= (1.0 + 0.05 * ((90 - traj) / 9) + 0.1 * vel)
+                elif (vel < 0):
+                    R -= R - 0.1 * vel
+                else:
+                    pass
+            else:
+                if (traj < 61) & (vel > 0):
+                    R *= (1.0 + 0.05 * ((60 - traj) / 6) + 0.1 * vel)
+                elif (vel < 0):
+                    R -= R - 0.1 * vel
+                else:
+                    pass
+        elif R < 0:
+            if (ratio < 0.9):
+                R *= 5
+            else:
+                pass
+        else:
+            pass
+
+        return R
 
     def step(self, action):
         # --> UNPAUSE SIMULATION
@@ -600,10 +760,13 @@ class GazeboOceanEboatEnvCC25v0(GazeboOceanEboatEnvCC35v0):
 
         # -->UPDATE PREVIOUS STATE VARIABLES
         self.DPREV = observations[0]
+        windAng    = abs(observations[4])
 
         # -->CHECK FOR A TERMINAL STATE
+        print(f"Ângulo do vento aparente = {observations[4]}")
         done = bool((self.DPREV <= 5) |
                     (self.DPREV > self.DMAX) |
+                    ((windAng >= 160) & (windAng <= 200) & (observations[2] < 0.5)) |   #-->A done signal is returned if the wind is blowing from the bow and the surge velocity is smaller than 0.5 m/s
                     (np.isnan(observations).any())
                     )
 
@@ -626,12 +789,13 @@ class GazeboOceanEboatEnvCC25v0(GazeboOceanEboatEnvCC35v0):
         if done:
             if (self.DPREV <= 5):
                 reward = 1
-            else:
+            elif((self.DPREV > self.DMAX) |
+                 ((observations[4] >= 160) & (observations[4] <= 200) & (observations[2] < 0.5))):
                 reward = -1
 
         self.step_count += 1
 
-        return self.observationRescale(observations[:5]), reward, done, {}, {}
+        return self.observationRescale(observations[:5]), reward, done, False, {}
 
     def reset(self, seed = None):
         # -->RESETS THE STATE OF THE ENVIRONMENT.

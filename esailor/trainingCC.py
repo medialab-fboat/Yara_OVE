@@ -15,7 +15,7 @@ import esailor_gym
 
 #-->STABLE-BASELINES3
 from gymnasium import wrappers
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, SAC, A2C
 
 #-->PYTORCH
 import torch as th
@@ -68,6 +68,88 @@ def runPPO(policy, env, learning_rate=0.0003, n_steps=2048, batch_size=64, n_epo
 
     return model, models_dir, tb_log_name
 
+def runSAC(policy, env, learning_rate=0.0003, buffer_size=1000000, learning_starts=100, batch_size=256, tau=0.005,
+           gamma=0.99, train_freq=1, gradient_steps=1, action_noise=None, replay_buffer_class=None,
+           replay_buffer_kwargs=None, optimize_memory_usage=False, ent_coef='auto', target_update_interval=1,
+           target_entropy='auto', use_sde=False, sde_sample_freq=-1, use_sde_at_warmup=False, stats_window_size=100,
+           tensorboard_log=None, policy_kwargs=None, verbose=0, seed=None, device='auto', _init_setup_model=True,
+           sufix = ""):
+    sufix = sufix + "_" + datetime.now().strftime("%d%m%Y_%H_%M_%S")
+    models_dir = f"models/A2C/{sufix}"
+
+    if not os.path.exists(models_dir):
+        os.makedirs(models_dir)
+
+    model = SAC(policy                 = policy,
+                env                    = env,
+                learning_rate          = learning_rate,
+                buffer_size            = buffer_size,
+                learning_starts        = learning_starts,
+                batch_size             = batch_size,
+                tau                    = tau,
+                gamma                  = gamma,
+                train_freq             = train_freq,
+                gradient_steps         = gradient_steps,
+                action_noise           = action_noise,
+                replay_buffer_class    = replay_buffer_class,
+                replay_buffer_kwargs   = replay_buffer_kwargs,
+                optimize_memory_usage  = optimize_memory_usage,
+                ent_coef               = ent_coef,
+                target_update_interval = target_update_interval,
+                target_entropy         = target_entropy,
+                use_sde                = use_sde,
+                sde_sample_freq        = sde_sample_freq,
+                use_sde_at_warmup      = use_sde_at_warmup,
+                stats_window_size      = stats_window_size,
+                tensorboard_log        = tensorboard_log,
+                policy_kwargs          = policy_kwargs,
+                verbose                = verbose,
+                seed                   = seed,
+                device                 = device,
+                _init_setup_model      = _init_setup_model
+                )
+
+    tb_log_name = f"A2C_{sufix}"
+
+    return model, models_dir, tb_log_name
+
+def runA2C(policy, env,learning_rate=0.0007, n_steps=5, gamma=0.99, gae_lambda=1.0, ent_coef=0.001, vf_coef=0.5,
+           max_grad_norm=0.5, rms_prop_eps=1e-05, use_rms_prop=True, use_sde=False, sde_sample_freq=-1,
+           normalize_advantage=False, tensorboard_log=None, policy_kwargs=None, verbose=0, seed=None, device='auto',
+           init_setup_model=True, sufix = ""):
+
+    sufix      = sufix + "_" + datetime.now().strftime("%d%m%Y_%H_%M_%S")
+    models_dir = f"models/A2C/{sufix}"
+
+    if not os.path.exists(models_dir):
+        os.makedirs(models_dir)
+
+    model = A2C(policy              = policy,
+                env                 = env,
+                learning_rate       = learning_rate,
+                n_steps             = n_steps,
+                gamma               = gamma,
+                gae_lambda          = gae_lambda,
+                ent_coef            = ent_coef,
+                vf_coef             = vf_coef,
+                max_grad_norm       = max_grad_norm,
+                rms_prop_eps        = rms_prop_eps,
+                use_rms_prop        = use_rms_prop,
+                use_sde             = use_sde,
+                sde_sample_freq     = sde_sample_freq,
+                normalize_advantage = normalize_advantage,
+                tensorboard_log     = tensorboard_log,
+                policy_kwargs       = policy_kwargs,
+                verbose             = verbose,
+                seed                = seed,
+                device              = device,
+                _init_setup_model   = init_setup_model
+                )
+
+    tb_log_name = f"A2C_{sufix}"
+
+    return model, models_dir, tb_log_name
+
 def htime(input):
     if input >= 3600:
         h = int(input // 3600)
@@ -92,7 +174,7 @@ def actionRescale(action):
     raction[2] = action[2] * 60.0
     return raction
 
-def runTraining25(env, logdir, sufix="model25"):
+def runTraining(env, logdir, sufix="model"):
     policy_kwargs = dict(activation_fn=th.nn.ReLU,
                          net_arch=(dict(pi=[32, 32], vf=[32, 32]))
                          )
@@ -135,12 +217,35 @@ def main():
         os.makedirs(logdir)
 
     env = gym.make(f'GazeboOceanEboatEnvCC25-v0')
-    runTraining25(env, logdir)
+    runTraining(env, logdir, sufix="model25v4")
 
     print("---------------------------------------------------------\n")
 
     env.close()
     os.system('./kill_gaz.sh')
 
+def rot(self, modulus, theta):
+    R = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]], dtype=np.float32)
+
+    return np.dot(np.array([1, 0], dtype=np.float32) * modulus, R)
+
 if __name__ == '__main__':
     main()
+    # count = 0
+    # for _ in range(50000):
+    #     theta_boat = np.random.randint(low=-179, high=180)
+    #     wind_speed = np.random.randint(low=3, high=12)
+    #     theta_wind = np.random.randint(low=-179, high=180)
+    #
+    #     val = abs(theta_boat) + abs(theta_wind)
+    #     if (val > 150) & (val < 210):
+    #         print(f"FALHA {count} -- {val} / theta_boat = {theta_boat} / theta_wind = {theta_wind}")
+    #         count += 1
+    #
+    # env = gym.make(f'GazeboOceanEboatEnvCC25-v0')
+    # for _ in range(5):
+    #     env.reset()
+    #     # time.sleep(5)
+    #
+    # env.close()
+    # os.system('./kill_gaz.sh')
