@@ -1,0 +1,25 @@
+name: yara_berry
+
+channels:
+  - defaults
+  - nvidia
+  - pytorch
+  - conda-forge
+  
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - pytorch::pytorch=1.13.1
+  - pytorch::pytorch-cuda=11.7
+  - pytorch::torchvision
+  - pytorch::torchaudio
+  - conda-forge::rospkg
+  - conda-forge::defusedxml
+  - conda-forge::netifaces
+  - conda-forge::tensorflow-gpu
+  - conda-forge::opencv
+  - pip:
+    - gymnasium
+    - rlberry
+    - notebook
