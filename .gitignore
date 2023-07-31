@@ -13,8 +13,12 @@ logs/
 # ignore models
 models/
 
+# others
+
 __pycache__/
 
 *.csv
 
 .vscode/
+
+.ipynb_checkpoints/
