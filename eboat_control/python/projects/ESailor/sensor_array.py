@@ -1,4 +1,4 @@
-#!/home/lmdc/miniconda3/envs/esailor/bin/python
+#!/home/araujo/miniconda3/envs/esailor/bin/python
 
 import numpy as np
 import rospy, rosnode, rosgraph
@@ -18,7 +18,7 @@ class Visualizer():
 
         # self.fig = plt.figure(figsize=[5,6])
         self.fig = plt.figure(figsize=[5, 7])
-        img = plt.imread("/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor/boat_top_view.png")
+        img = plt.imread("/home/araujo/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor/boat_top_view.png")
         plt.imshow(img)
         plt.axis('off')
         # -->AXIS 1

@@ -165,9 +165,9 @@ class GazeboEnv(gym.Env):
 
 class GazeboOceanEboatEnvCC35v0(GazeboEnv):
     def __init__(self):
-        self.EBOAT_HOME = "/home/lmdc/eboat_ws/src/eboat_gz_1"
-        # GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
-        GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch"))
+        self.EBOAT_HOME = "/home/araujo/yara_ws/src/Yara_OVE"
+        GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
+        #GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)
         self.rudderAng_pub = rospy.Publisher("/eboat/control_interface/rudder", Float32, queue_size=5)
@@ -292,8 +292,10 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
 
     def sampleInitialState(self, model_name):
         theta_boat = np.random.randint(low=-179, high=180)
-        wind_speed = np.random.randint(low=self.min_wind_speed, high=self.max_wind_speed)
+        #wind_speed = np.random.randint(low=self.min_wind_speed, high=self.max_wind_speed)
+        # 150 / - 150
         theta_wind = np.random.randint(low=-179, high=180)
+        wind_speed = np.random.randint(low=0, high=self.max_wind_speed)
 
         # -->Set the true wind vector
         self.windSpeed[:2] = self.rot(wind_speed, theta_wind)
@@ -487,7 +489,7 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
 
 class GazeboOceanEboatEnvCC25v0(GazeboOceanEboatEnvCC35v0):
     def __init__(self):
-        self.EBOAT_HOME = "/home/lmdc/eboat_ws/src/eboat_gz_1"
+        self.EBOAT_HOME = "/home/araujo/yara_ws/src/Yara_OVE/eboat_gazebo"
         GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)
@@ -555,6 +557,24 @@ class GazeboOceanEboatEnvCC25v0(GazeboOceanEboatEnvCC35v0):
         self.state_log_file = os.path.join(os.getcwd(), f"STATES_{sufix}.log")
         with open(self.state_log_file, "w") as f:
             f.write("bang,wspeed,wang\n")
+            
+    #Teste de vento       
+    def sampleInitialState(self, model_name):
+        theta_boat = 0 #np.random.randint(low=-179, high=180)
+        #wind_speed = np.random.randint(low=self.min_wind_speed, high=self.max_wind_speed)
+        # 150 / - 150
+        theta_wind = np.random.randint(low=-179, high=180)
+        #Set wind speed and direction to test the boat in different conditions 
+        wind_speed = np.random.randint(low=3, high=12)
+        
+
+        # -->Set the true wind vector
+        self.windSpeed[:2] = self.rot(wind_speed, theta_wind)
+        with open(self.state_log_file, "a") as f:
+            f.write(f"{theta_boat}, {wind_speed}, {theta_wind}\n")
+
+        # --> Set the boat's position and orientation
+        self.setState(model_name, pose=np.zeros(shape=3, dtype=np.float32), theta=theta_boat)
 
     def actionRescale(self, action):
         raction = np.zeros(2, dtype=np.float32)

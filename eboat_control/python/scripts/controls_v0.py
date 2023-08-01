@@ -1,4 +1,4 @@
-#!/home/lmdc/miniconda3/envs/esailor/bin/python
+#!/home/araujo/miniconda3/envs/esailor/bin/python
 
 from time import sleep
 import wx

@@ -1,8 +1,4 @@
-<<<<<<< HEAD:eboat_ocean_CC.py
-#!/home/lmdc/miniconda3/envs/esailor/bin/python
-=======
-#!/home/eduardo/miniconda3/envs/esailor2/bin/python
->>>>>>> be8222db32f9712599a85505fdb01a0c016692ac:esailor/trainingCC.py
+#!/home/araujo/miniconda3/envs/esailor/bin/python
 
 #-->PYTHON UTIL
 import os
@@ -19,7 +15,7 @@ import esailor_gym
 
 #-->STABLE-BASELINES3
 from gymnasium import wrappers
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, SAC
 
 #-->PYTORCH
 import torch as th
@@ -96,7 +92,7 @@ def actionRescale(action):
     raction[2] = action[2] * 60.0
     return raction
 
-def runTraining25(env, logdir, sufix="model25"):
+def runTraining25(env, logdir, sufix="model35"):
     policy_kwargs = dict(activation_fn=th.nn.ReLU,
                          net_arch=(dict(pi=[32, 32], vf=[32, 32]))
                          )
@@ -133,22 +129,31 @@ def runTraining25(env, logdir, sufix="model25"):
         print(f"Elapsed time                : {htime(timeB - start)}")
         print(f"Remaining time              : {htime((SAVESTEPS - 1 - i)*avtime)}")
 
+#avoidence obstacle
+""" def avoidenceObstacle(env, model, obs, action):
+    #--> Eletric propulsion [-5, 5]
+    action[0] = 0.0
+    #--> Boom angle [0, 90]
+    action[1] = 0.0
+    #--> Rudder angle [-60, 60]
+    action[2] = 0.0
+    
+    return action """ 
+    
+
 def main():
     logdir = "logs"
     if not os.path.exists(logdir):
         os.makedirs(logdir)
 
-    env = gym.make(f'GazeboOceanEboatEnvCC25-v0')
+    env = gym.make(f'GazeboOceanEboatEnvCC35-v0')
     runTraining25(env, logdir)
+   
 
     print("---------------------------------------------------------\n")
 
     env.close()
-<<<<<<< HEAD:eboat_ocean_CC.py
-    os.system('/home/lmdc/eboat_ws/kill_gaz.sh')
-=======
-    os.system('./kill_gaz.sh')
->>>>>>> be8222db32f9712599a85505fdb01a0c016692ac:esailor/trainingCC.py
+    os.system('/home/araujo/yara_ws/src/Yara_OVE/esailor/kill_gaz.sh')
 
 if __name__ == '__main__':
     main()

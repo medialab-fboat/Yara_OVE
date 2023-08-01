@@ -54,7 +54,7 @@ def testeDoAgente():
 
     print(ros_path)
 
-    EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+    EBOAT_HOME = "/home/araujo/yara_ws/src/Yara_OVE"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
@@ -77,14 +77,14 @@ def testeDoAgente():
     close()
 
 def agentPPOTraining():
-    env = gym.make(f'GazeboOceanEboatEnvCC-v0')
+    env = gym.make(f'GazeboOceanEboatEnvCC35-v0')
 
     time.sleep(20)
 
     print("\n\n\nPASSANDO ADIANTE\n\n")
 
     env.close()
-    os.system('/home/eduardo/USVSim/eboat_ws/kill_gaz.sh')
+    os.system('/home/araujo/yara_ws/src/Yara_OVE/esailor/kill_gaz.sh')
 
 if __name__ == '__main__':
     # testeDoAgente()

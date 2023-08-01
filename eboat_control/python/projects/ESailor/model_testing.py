@@ -1,4 +1,4 @@
-#!/home/lmdc/miniconda3/envs/esailor/bin/python
+#!/home/araujo/miniconda3/envs/esailor/bin/python
 
 import numpy as np
 import rospy
@@ -113,7 +113,7 @@ def spawnModel(rosserviseproxy, model_name="wayPointMarker", model_id="wayPointM
     ipose.position.y = waypoint[1]
     ipose.position.z = waypoint[2]
     with open(
-            f"/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_description/models/{model_name}/model.sdf") as f:
+            f"/home/araujo/yara_ws/src/Yara_OVE/eboat_description/models/{model_name}/model.sdf") as f:
         sdffile = f.read()
         try:
             result = rosserviseproxy(f"{model_id}",
@@ -208,7 +208,7 @@ def singleWayPoint(model, wind_speed = 10):
 
     print(ros_path)
 
-    EBOAT_HOME       = "/home/lmdc/eboat_ws/src/eboat_gz_1"
+    EBOAT_HOME       = "/home/araujo/yara_ws/src/Yara_OVE"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
@@ -284,7 +284,7 @@ def regattaCourse(model, wind_speed = 10, wind_angle = 0, obs_space_size = 5):
 
     print(ros_path)
 
-    EBOAT_HOME       = "/home/lmdc/eboat_ws/src/eboat_gz_1"
+    EBOAT_HOME       = "/home/araujo/yara_ws/src/Yara_OVE"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
@@ -325,7 +325,7 @@ def regattaCourse(model, wind_speed = 10, wind_angle = 0, obs_space_size = 5):
         ipose.position.y = waypoint[1]
         ipose.position.z = waypoint[2]
         with open(
-                "/home/lmdc/eboat_ws/src/eboat_gz_1/eboat_description/models/wayPointMarker/model.sdf") as f:
+                "/home/araujo/yara_ws/src/Yara_OVE/eboat_description/models/wayPointMarker/model.sdf") as f:
             sdffile = f.read()
             try:
                 result = spawn_model(f"wayPointMarker{i}",
@@ -402,7 +402,7 @@ def pathTest(model, wind_speed = 10, obs_space_size = 5, dist = 100):
 
     print(ros_path)
 
-    EBOAT_HOME       = "/home/lmdc/eboat_ws/src/eboat_gz_1"
+    EBOAT_HOME       = "/home/araujo/yara_ws/src/Yara_OVE/"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
@@ -487,11 +487,12 @@ def pathTest(model, wind_speed = 10, obs_space_size = 5, dist = 100):
 
 def main():
     # --> RL agent
-    model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/ensign_five/eboat_ocean_50") #--> model0_11042023_09_24_34
-    # model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/ensign_nine/eboat_ocean_50") #--> model1_13042023_10_15_19
-    # model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/model1_17042023_10_52_09/eboat_ocean_50")
-    # model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/model1_19042023_22_10_20/eboat_ocean_50")
-    # model = PPO.load("/home/lmdc/eboat_ws/src/eboat_gz_1/models/PPO/model1_20042023_21_36_39/eboat_ocean_50")
+    #model = PPO.load("/home/araujo/eboat_ws/src/eboat_gz_1/models/PPO/ensign_five/eboat_ocean_50") #--> model0_11042023_09_24_34
+    # model = PPO.load("/home/araujo/eboat_ws/src/eboat_gz_1/models/PPO/ensign_nine/eboat_ocean_50") #--> model1_13042023_10_15_19
+    # model = PPO.load("/home/araujo/eboat_ws/src/eboat_gz_1/models/PPO/model1_17042023_10_52_09/eboat_ocean_50")
+    # model = PPO.load("/home/araujo/eboat_ws/src/eboat_gz_1/models/PPO/model1_19042023_22_10_20/eboat_ocean_50")
+    # model = PPO.load("/home/araujo/eboat_ws/src/eboat_gz_1/models/PPO/model1_20042023_21_36_39/eboat_ocean_50")
+    model = PPO.load("/home/araujo/yara_ws/src/Yara_OVE/esailor/models/PPO/model35_31072023_12_29_07/eboat_ocean_50")
 
     # singleWayPoint(model, wind_speed = 10)
     # regattaCourse(model, wind_speed=10, wind_angle=0, obs_space_size = 9)

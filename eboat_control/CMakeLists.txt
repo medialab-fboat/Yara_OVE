@@ -14,6 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+add_executable(lidarController src/lidarController.cc)
+target_link_libraries(lidarController ${catkin_LIBRARIES})
+
+
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 
