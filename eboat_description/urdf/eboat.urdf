@@ -211,14 +211,14 @@
         <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-            <cylinder length="0.5" radius="0.05"/>
+            <cylinder length="0.2" radius="0.05"/>
         </geometry>
         <material name="Blue"/>
         </visual>
         <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-            <cylinder length="0.5" radius="0.05"/>
+            <cylinder length="0.2" radius="0.05"/>
         </geometry>
         </collision>
     </link>
