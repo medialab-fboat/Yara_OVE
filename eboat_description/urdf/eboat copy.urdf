@@ -200,7 +200,7 @@
     <xacro:rope_joints name="rope_b" parent="sail_link" child="rope_b_link" xyz="1.74893 -0.000415051 0" rpy="0 0 0" />
     <xacro:rope_joints name="rope_c" parent="rope_c_link" child="sail_link" xyz="0.0140742 0.0441151 0" rpy="0 0 0" />
 
-    <joint name="sail_joint" type="fixed">        
+    <joint name="sail_joint_2" type="fixed">        
         <origin xyz="-1.7978 0 0.0223" rpy="1.5708 0 0" />
         <parent link="boom_link" />
         <child link="rope_c_link" />
