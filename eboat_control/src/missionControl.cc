@@ -41,7 +41,7 @@ MissionControlPlugin::MissionControlPlugin(): freq(1.0)
      * than we can send them, the number here specifies how many messages to
      * buffer up before throwing some away.
      */
-    this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>("/eboat/mission_control/observations", 1000);
+    //this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>("/eboat/mission_control/observations", 100);
     //this->maneuverObs = rosNode.advertise<std_msgs::Float32MultiArray>("/eboat/mission_control/maneuverObs", 500);
 }
 
@@ -101,6 +101,12 @@ void MissionControlPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
         this->port = _sdf->Get<ignition::math::Vector3d>("ahead");
     else
         this->port = ignition::math::Vector3d(0,1,0);
+    
+    std::string topic_name = "/";
+    topic_name.append(this->model->GetName());
+    topic_name.append("/mission_control/observations");
+
+    this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>(topic_name, 100);
 
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())

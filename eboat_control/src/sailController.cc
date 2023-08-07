@@ -54,17 +54,16 @@ void SailControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
         this->boomEngVel = _sdf->Get<double>("boom_motor_speedy");
     else
         this->boomEngVel = 0.5;
-
-    if (_sdf->HasElement("ros_topic_id"))
-        this->ros_topic_id = sdf->Get<std::string>("ros_topic_id");
-    else
-        this->ros_topic_id = "/eboat/control_interface/sail";
     
     //--> LINKS
     this->sailLink = this->sailJoint->GetChild();
 
     //--> CONSTANTS
     this->d2r = M_PI / 180.0;
+
+    std::string ros_topic_name = "/";
+    ros_topic_name.append(this->model->GetName());
+    ros_topic_name.append("/control_interface/sail");
 
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())
@@ -82,7 +81,7 @@ void SailControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     // Create a named topic, and subscribe to it.
     ros::SubscribeOptions boomAngleSub =
         ros::SubscribeOptions::create<std_msgs::Float32>(
-            this->ros_topic_id,
+            ros_topic_name,
             1,
             boost::bind(&SailControllerPlugin::OnRosMsg, this, _1),
             ros::VoidPtr(), &this->rosQueue);

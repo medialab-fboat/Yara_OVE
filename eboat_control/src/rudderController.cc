@@ -52,17 +52,16 @@ void RudderControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
 
     if (_sdf->HasElement("rudder_motor_speedy"))
         this->rudderEngVelMax = _sdf->Get<double>("rudder_motor_speedy");
-
-    if (_sdf->HasElement("ros_topic_id"))
-        this->ros_topic_id = sdf->Get<std::string>("ros_topic_id");
-    else
-        this->ros_topic_id = "/eboat/control_interface/rudder";
     
     //--> LINKS
     this->rudderLink        = this->rudderJoint->GetChild();
 
     //--> CONSTANTS
     this->d2r = M_PI / 180.0;
+
+    std::string ros_topic_name = "/";
+    ros_topic_name.append(this->model->GetName());
+    ros_topic_name.append("/control_interface/rudder");
 
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())
@@ -80,7 +79,7 @@ void RudderControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
     // Create a named topic, and subscribe to it.
     ros::SubscribeOptions rudderPosSub =
         ros::SubscribeOptions::create<std_msgs::Float32>(
-            this->ros_topic_id,
+            ros_topic_name,
             1,
             boost::bind(&RudderControllerPlugin::OnRosMsg, this, _1),
             ros::VoidPtr(), &this->rosQueue);
