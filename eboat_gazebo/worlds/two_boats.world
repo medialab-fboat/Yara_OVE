@@ -1,0 +1,37 @@
+<sdf version="1.6">
+  <world name="default">
+    <!-- Include the ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- Include the first boat -->
+    <include>
+      <uri>model://eboat</uri>
+      <name>eboat1</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    <!-- Include the second boat -->
+    <include>
+      <uri>model://eboat</uri>
+      <name>eboat2</name>
+      <pose>10 0 0 0 0 0</pose>
+    </include>
+
+    <!-- Include the ocean waves -->
+    <include>
+      <uri>model://ocean_waves</uri>
+    </include>
+    
+    <!-- Plugin to control atmosferic physics -->
+    <plugin name="atmosferic_control" filename="libAtmosfericControlPlugin.so"/>
+    
+    <!--WAVES-->
+    <include>
+      <uri>model://ocean_waves</uri>
+    </include>
+    <wave_parameters name="ocean_waves" scale="1.1" gain="0.05"/>
+
+  </world>
+</sdf>

@@ -14,8 +14,8 @@ register(
     max_episode_steps=1000000,
 )
 
-register(
-    id='GazeboOceanEboatEnvCC25-v0',
-    entry_point='esailor_gym.envs:GazeboOceanEboatEnvCC25v0',
-    max_episode_steps=1000000,
-)
+#register(
+#    id='GazeboOceanEboatEnvCC25-v0',
+#    entry_point='esailor_gym.envs:GazeboOceanEboatEnvCC25v0',
+#    max_episode_steps=1000000,
+#)

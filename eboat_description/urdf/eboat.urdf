@@ -709,6 +709,10 @@
     <gazebo reference="zed_len_l_link">
         <material>Gazebo/BlueTransparent</material>
     </gazebo>
+    <gazebo reference="rudder_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
 
     <!-- camera -->
     <gazebo reference="camera_link">

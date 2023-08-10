@@ -1,0 +1,49 @@
+join_state_controller:
+  type: "eboat"
+  publish_topic: "eboat/join_state"
+  subscribe_topic: "eboat/join_state"
+  publish_rate: 1.0
+  publish_delay: 0.0
+  joint: "joint1"
+  pid: [0.0, 0.0, 0.0]
+
+rudder_controller:
+  type: "eboat"
+  publish_topic: "eboat/rudder"
+  subscribe_topic: "eboat/rudder"
+  publish_rate: 1.0
+  publish_delay: 0.0
+  joint: "joint2"
+  pid: [0.0, 0.0, 0.0]
+
+
+sail_controller:
+  type: "eboat"
+  publish_topic: "eboat/sail"
+  subscribe_topic: "eboat/sail"
+  publish_rate: 1.0
+  publish_delay: 0.0
+  joint: "joint3"
+  pid: [0.0, 0.0, 0.0]
+
+
+wind_controller:
+  type: "eboat"
+  publish_topic: "eboat/wind"
+  subscribe_topic: "eboat/wind"
+  publish_rate: 1.0
+  publish_delay: 0.0
+  joint: "joint4"
+  pid: [0.0, 0.0, 0.0]
+
+
+propulsion_controller:
+  type: "eboat"
+  publish_topic: "eboat/propulsion"
+  subscribe_topic: "eboat/propulsion"
+  publish_rate: 1.0
+  publish_delay: 0.0
+
+  
+# Path: src/Yara_OVE/config/eboat.yaml
+

@@ -26,4 +26,12 @@
 	<!-- Spawn a robot into Gazebo -->
 	<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model eboat" />
 
+    <!-- Iniciar o nó do estado do robô para publicar a informação do estado do robô -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+    <!-- Iniciar o nó do controlador de velocidade para publicar a informação do estado do robô -->
+
+    <!-- Start RViz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find eboat_description)/rviz/eboat.rviz"/>
+
 </launch>
