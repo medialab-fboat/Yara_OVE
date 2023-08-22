@@ -15,9 +15,9 @@
                 <rudder_link_name>rudder_link</rudder_link_name>
                 <rudder_forward>1 0 0</rudder_forward>
                 <rudder_upward>0 0 1</rudder_upward>
-                <rudder_area>0.2</rudder_area>
+                <rudder_area>0.1989</rudder_area>    <!--(m^2)-->
                 <rudder_cp>0 0 0</rudder_cp>
-                <water_density>997.0</water_density>
+                <water_density>997.0</water_density> <!--(kg/m^3)-->
             </plugin>
         </gazebo>
     </xacro:macro>

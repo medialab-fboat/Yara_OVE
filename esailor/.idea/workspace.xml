@@ -1,70 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="8be4a9dd-a09e-4c83-ba59-ebc95a3c6fc1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../esailor2/.idea/esailor.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_control_plugins.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_control_plugins.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_control/src/missionControl.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_control/src/missionControl.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_description/models/destinationMarker/model.sdf" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/models/destinationMarker/model.sdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_description/models/wayPointMarker/model.sdf" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/models/wayPointMarker/model.sdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4.urdf.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4.urdf.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_physics_plugins.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_physics_plugins.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.world.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.world.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean_RL_training.world.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean_RL_training.world.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_gazebo_plugins/include/liftDragForces.hh" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo_plugins/include/liftDragForces.hh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../eboat_gazebo_plugins/src/liftDragForces.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo_plugins/src/liftDragForces.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/esailor.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/esailor_gym/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor_gym/envs/gazebo_ocean_eboat_CC.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/gazebo_ocean_eboat_CC.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_0.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_1.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_10.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_11.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_12.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_13.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_14.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_15.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_16.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_17.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_18.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_19.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_2.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_20.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_21.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_22.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_23.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_24.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_25.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_26.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_27.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_28.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_29.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_3.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_30.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_31.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_32.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_33.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_34.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_35.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_36.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_37.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_38.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_39.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_4.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_40.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_41.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_42.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_43.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_44.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_45.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_46.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_47.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_48.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_49.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_5.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_50.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_6.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_7.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_8.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/policy/p35_042023/eboat_ocean_9.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/trainingCC.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainingCC.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -74,14 +41,64 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/home/eduardo/miniconda3/envs/fluxoep",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor/maneuvers.py&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
+  <component name="RunManager" selected="Python.tmp">
+    <configuration name="tmp" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="esailor" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tmp.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="trainingCC" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="esailor" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/trainingCC.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.tmp" />
+        <item itemvalue="Python.trainingCC" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -92,5 +109,16 @@
       <updated>1690186032637</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

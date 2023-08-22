@@ -75,7 +75,7 @@ def runSAC(policy, env, learning_rate=0.0003, buffer_size=1000000, learning_star
            tensorboard_log=None, policy_kwargs=None, verbose=0, seed=None, device='auto', _init_setup_model=True,
            sufix = ""):
     sufix = sufix + "_" + datetime.now().strftime("%d%m%Y_%H_%M_%S")
-    models_dir = f"models/A2C/{sufix}"
+    models_dir = f"models/SAC/{sufix}"
 
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
@@ -109,7 +109,7 @@ def runSAC(policy, env, learning_rate=0.0003, buffer_size=1000000, learning_star
                 _init_setup_model      = _init_setup_model
                 )
 
-    tb_log_name = f"A2C_{sufix}"
+    tb_log_name = f"SAC_{sufix}"
 
     return model, models_dir, tb_log_name
 
@@ -174,22 +174,41 @@ def actionRescale(action):
     raction[2] = action[2] * 60.0
     return raction
 
-def runTraining(env, logdir, sufix="model"):
-    policy_kwargs = dict(activation_fn=th.nn.ReLU,
-                         net_arch=(dict(pi=[32, 32], vf=[32, 32]))
-                         )
+def runTraining(env, logdir, agent = "PPO", sufix="model", refmodel=None):
+    actor  = [11, 11]
+    critic = [9, 9]
+    if agent == "SAC":
+        policy_kwargs = dict(activation_fn=th.nn.ReLU,
+                             net_arch=(dict(pi=actor, qf=critic))
+                             )
+        model, models_dir, TB_LOG_NAME = runSAC(policy="MlpPolicy",
+                                                env=env,
+                                                tensorboard_log=logdir,
+                                                batch_size=64,
+                                                ent_coef=0.001,
+                                                verbose=0,
+                                                policy_kwargs=policy_kwargs,
+                                                sufix=sufix)
+    else:
+        policy_kwargs = dict(activation_fn=th.nn.ReLU,
+                             net_arch=(dict(pi=actor, vf=critic))
+                             )
+        model, models_dir, TB_LOG_NAME = runPPO(policy="MlpPolicy",
+                                                env=env,
+                                                tensorboard_log=logdir,
+                                                ent_coef=0.001,
+                                                verbose=0,
+                                                policy_kwargs=policy_kwargs,
+                                                sufix=sufix)
 
-    model, models_dir, TB_LOG_NAME = runPPO(policy          = "MlpPolicy",
-                                            env             = env,
-                                            tensorboard_log = logdir,
-                                            ent_coef        = 0.001,
-                                            verbose         = 0,
-                                            policy_kwargs   = policy_kwargs,
-                                            sufix           = sufix)
+    if refmodel != None:
+        # -->SET THE NEURAL NETWORK PARAMETERS EQUAL TO A LOADED PREVIOUS TRAINED NEURAL NETWORK
+        model.set_parameters(refmodel.get_parameters)
 
-    SAVESTEPS = 50+1
+    SAVESTEPS = 100+1
     TIMESTEPS = 2048*5
     start     = time.time()
+    reftime   = start
     model.save(f"{models_dir}/eboat_ocean_0")
     for i in range(1, SAVESTEPS):
         print("\n\n---------------------------------------------------------")
@@ -205,7 +224,11 @@ def runTraining(env, logdir, sufix="model"):
         model.save(f"{models_dir}/eboat_ocean_{i}")
 
         timeB  = time.time()
-        avtime = (timeB - start) / i
+        if (i % 10) > 0:
+            avtime = (timeB - reftime) / (i % 10)
+        else:
+            avtime  = (timeB - reftime) / 10
+            reftime = timeB
         print(f"Time spent in this iteration: {htime(timeB - timeA)}")
         print(f"Average time per iteration  : {htime(avtime)}")
         print(f"Elapsed time                : {htime(timeB - start)}")
@@ -216,8 +239,12 @@ def main():
     if not os.path.exists(logdir):
         os.makedirs(logdir)
 
-    env = gym.make(f'GazeboOceanEboatEnvCC25-v0')
-    runTraining(env, logdir, sufix="model25v4")
+    env = gym.make('EboatStraightLineEnvCC29-v0')
+    # runTraining(env, logdir, "PPO", sufix="ensign29_7_winds_10m_straight")
+    runTraining(env, logdir, "SAC", sufix="ensign29_7_winds_5m_straight")
+
+    # refmodel = PPO.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_10m_straight_09082023_10_34_00/eboat_ocean_50.zip")
+    # runTraining(env, "PPO", sufix="sailor29_7_winds_5m_straight", refmodel=refmodel)
 
     print("---------------------------------------------------------\n")
 

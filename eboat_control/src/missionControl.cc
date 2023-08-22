@@ -155,8 +155,8 @@ void MissionControlPlugin::OnUpdate()
         else
         {
             this->wayPoint = this->world->ModelByName(this->wayPointModelName);
-            distance = this->model->WorldPose().Pos().Distance(this->wayPoint->WorldPose().Pos());
-            trajectoryVec = (this->wayPoint->WorldPose().Pos() - this->model->WorldPose().Pos()) / distance;
+            distance       = this->model->WorldPose().Pos().Distance(this->wayPoint->WorldPose().Pos());
+            trajectoryVec  = (this->wayPoint->WorldPose().Pos() - this->model->WorldPose().Pos()) / distance;
         }
 
         // INSERT DISTANCE INTO ROS MESAGE
@@ -173,12 +173,17 @@ void MissionControlPlugin::OnUpdate()
             trajectoryAng *= -1;
         obsMsg.data.push_back(trajectoryAng);
 
-        // COMPUTE THE LINEAR VELOCITY OF THE BOAT
-        float linearVel = aheadD.Dot(this->model->WorldLinearVel());
-        obsMsg.data.push_back(linearVel);
+        // COMPUTE THE SURGE VELOCITY OF THE BOAT
+        float surgeVel = aheadD.Dot(this->model->WorldLinearVel());
+        obsMsg.data.push_back(surgeVel);
 
         // COMPUTE WIND ANGLE AND SPEED
         float windSpeed = apWind.Length();
+        if (isnan(windSpeed))
+        {
+            windSpeed = 0;
+            apWind    = ignition::math::Vector3d(0,0,0);
+        }
         /* The wind Angle is measured between the forward direction (ahead) and the aparent wind direction.
          * It is positive when the aparent wind direction points to port and negative otherwise.
         */
@@ -200,6 +205,10 @@ void MissionControlPlugin::OnUpdate()
 
         //GET ROLL ANGLE
         obsMsg.data.push_back(this->model->WorldPose().Rot().Roll()*this->r2d);
+
+        //GET BOAT CURRENT POSITION IN METRES (CARTESIAN COORDINATES)
+        obsMsg.data.push_back((float) this->link->WorldPose().Pos().X());
+        obsMsg.data.push_back((float) this->link->WorldPose().Pos().Y());
 
         //SIMULATION TIME STAMP
         //obsMsg.data.push_back(simtime);

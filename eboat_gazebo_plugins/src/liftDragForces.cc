@@ -251,9 +251,9 @@ void LiftDragForces::OnUpdate()
       this->lift  = q * this->sailCL[100] * this->liftDirection;
     else
       this->lift  = q * this->sailCL[this->coefIndex] * this->liftDirection;
-    //this->lift  = q * this->sailCL[this->coefIndex] * this->liftDirection;  //-> the lift force is normal to the lift-drag plan
+
     this->drag  = q * this->sailCD[this->coefIndex] * this->dragDirection; //-> the drag
-    this->force = this->lift + this->drag;
+    this->force_on_sail = this->lift + this->drag;
     //////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////
@@ -269,16 +269,16 @@ void LiftDragForces::OnUpdate()
     //ignition::math::Vector3d bow          = this->baseLink->WorldPose().Rot().RotateVector(this->boatBow);
     ignition::math::Vector3d port         = this->baseLink->WorldPose().Rot().RotateVector(this->boatPort);
     //ignition::math::Vector3d forwardForce = this->force.Dot(bow) * bow;
-    ignition::math::Vector3d lateralForce = this->force.Dot(port) * port;
+    ignition::math::Vector3d lateralForce = this->force_on_sail.Dot(port) * port;
     if (this->atkangle > 20)
     {
-      this->baseLink->AddForceAtRelativePosition(this->force, this->sailCP);
+      this->baseLink->AddForceAtRelativePosition(this->force_on_sail, this->sailCP);
       // --> EMULA A RESISTENCIA DA BOLINA A FORCA LATERAL
       this->model->GetLink("keel_link")->AddForceAtRelativePosition(-0.9*lateralForce, ignition::math::Vector3d(0,0,0.5));
     }
     else
     {
-      this->baseLink->AddForceAtRelativePosition(0.1*this->force, this->sailCP);
+      this->baseLink->AddForceAtRelativePosition(0.1*this->force_on_sail, this->sailCP);
     }
     
 
@@ -291,8 +291,8 @@ void LiftDragForces::OnUpdate()
     //                 torque = (force.Dot(ldNormal)*ldNormal).Length()*armLength; // modulus of projected force times the arm length.
     //
     // this->joint->SetForce(0, ((force.Dot(normal)*normal).Length()*armLength));
-    double torque = (this->alpha < 90) ? (force.Dot(this->normal)*this->normal).Length()*this->armLength*(-1) // Negative
-                                 : (force.Dot(this->normal)*this->normal).Length()*this->armLength;     // Positive
+    double torque = (this->alpha < 90) ? (this->force_on_sail.Dot(this->normal)*this->normal).Length()*this->armLength*(-1) // Negative
+                                       : (this->force_on_sail.Dot(this->normal)*this->normal).Length()*this->armLength;     // Positive
     this->joint->SetForce(0, torque);
   }
 
@@ -333,9 +333,9 @@ void LiftDragForces::OnUpdate()
     if (iatk > 90)
       this->lift = 0.0;
     else
-      this->lift  = this->q * rudderCL[this->coefIndex] * this->liftDirection;  //-> the lift force is normal to the lift-drag plan
+      this->lift = this->q * rudderCL[this->coefIndex] * this->liftDirection;  //-> the lift force is normal to the lift-drag plan
     this->drag  = this->q * rudderCD[this->coefIndex] * this->dragDirection; //-> the drag
-    this->force = this->lift + this->drag;
+    this->force_on_rudder = this->lift + this->drag;
     //////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////
@@ -344,7 +344,7 @@ void LiftDragForces::OnUpdate()
     //                   It's psition are relative to the base_link's center of mass (CoG).
     //                   The applied force vector is expressed in World frame and the centor of pressure are expressed in the link own frame.
     //->Apply resultant force
-    this->rudderLink->AddForceAtRelativePosition(this->force, this->rudderCP);
+    this->rudderLink->AddForceAtRelativePosition(this->force_on_rudder, this->rudderCP);
     //////////////////////////////////////////////////////////
 
 
@@ -388,7 +388,7 @@ void LiftDragForces::OnUpdate()
     else
       this->lift  = this->q * rudderCL[this->coefIndex] * this->liftDirection;  //-> the lift force is normal to the lift-drag plan
     this->drag  = this->q * rudderCD[this->coefIndex] * this->dragDirection; //-> the drag
-    this->force = this->lift + this->drag;
+    this->force_on_keel = this->lift + this->drag;
     //////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////
@@ -397,7 +397,7 @@ void LiftDragForces::OnUpdate()
     //                   It's psition are relative to the base_link's center of mass (CoG).
     //                   The applied force vector is expressed in World frame and the centor of pressure are expressed in the link own frame.
     //->Apply resultant force
-    this->keelLink->AddForceAtRelativePosition(this->force, this->keelCP);
+    this->keelLink->AddForceAtRelativePosition(this->force_on_keel, this->keelCP);
     //////////////////////////////////////////////////////////
   }
 }

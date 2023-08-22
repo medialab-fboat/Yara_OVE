@@ -1,10 +1,29 @@
 <?xml version="1.0" ?>
 <sdf version="1.6" xmlns:xacro="http://ros.org/wiki/xacro">
     <world name="ocean">
+      <gui fullscreen='0'>
+          <camera name='user_camera'>
+            <pose>-85.03 -3.517 26.21 0 0.212 -0.0332</pose>
+          </camera>
+      </gui>
+
       <xacro:include filename="$(find eboat_gazebo)/worlds/ocean.xacro" />
       <xacro:ocean />
 
-      <physics type="ode">
+      <!--WAYPOINT OBJECT-->
+        <!--<include>
+            <name>wayPointMarker</name>
+            <pose>200.0 0.0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/wayPointMarker</uri>
+        </include>-->
+        <!--<include>
+            <name>redBuoy</name>
+            <pose>110.0 5.0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_red</uri>
+        </include>-->
+
+        <!--PHYSICS ENGINE-->
+        <physics type="ode">
           <ode>
               <solver>
                   <type>world</type>

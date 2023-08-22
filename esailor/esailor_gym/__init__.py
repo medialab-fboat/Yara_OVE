@@ -9,13 +9,19 @@ logger = logging.getLogger(__name__)
 
 #-> Eboat gymnasium_envs
 register(
-    id='GazeboOceanEboatEnvCC35-v0',
-    entry_point='esailor_gym.envs:GazeboOceanEboatEnvCC35v0',
+    id='EboatSingleWayPointEnvCC35-v0',
+    entry_point='esailor_gym.envs:EboatSingleWayPointEnvCC35v0',
     max_episode_steps=1000000,
 )
 
 register(
-    id='GazeboOceanEboatEnvCC25-v0',
-    entry_point='esailor_gym.envs:GazeboOceanEboatEnvCC25v0',
+    id='EboatSingleWayPointEnvCC25-v0',
+    entry_point='esailor_gym.envs:EboatSingleWayPointEnvCC25v0',
+    max_episode_steps=1000000,
+)
+
+register(
+    id='EboatStraightLineEnvCC29-v0',
+    entry_point='esailor_gym.envs:EboatStraightLineEnvCC29v0',
     max_episode_steps=1000000,
 )

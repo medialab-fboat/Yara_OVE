@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<sdf version="1.6" xmlns:xacro="http://ros.org/wiki/xacro">
+    <world name="ocean">
+      <gui fullscreen='0'>
+          <camera name='user_camera'>
+            <pose>-85.03 -3.517 26.21 0 0.212 -0.0332</pose>
+          </camera>
+      </gui>
+
+      <xacro:include filename="$(find eboat_gazebo)/worlds/ocean.xacro" />
+      <xacro:ocean />
+
+      <!--PHYSICS ENGINE-->
+        <physics type="ode">
+          <ode>
+              <solver>
+                  <type>world</type>
+              </solver>
+          </ode>
+          <max_step_size>0.01</max_step_size>
+          <real_time_update_rate>100.0</real_time_update_rate>
+      </physics>
+    </world>
+</sdf>
