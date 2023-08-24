@@ -6,7 +6,6 @@ import time
 import rospy
 from sensor_msgs.msg import LaserScan
 from datetime import datetime
-
 from gymnasium import utils, spaces
 from std_srvs.srv import Empty
 
@@ -15,7 +14,7 @@ from geometry_msgs.msg import Point
 from gymnasium.utils import seeding
 
 from tf.transformations import quaternion_from_euler
-from gazebo_msgs.srv import SetModelState
+from gazebo_msgs.srv import SetModelState, GetModelState
 from gazebo_msgs.msg import ModelState
 
 import random
@@ -287,9 +286,23 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
         try:
             set_state = self.set_state
             result = set_state(state)
+            print(f"SetState Result: {result}")
             assert result.success is True
+            print(f"Model {model_name} set to position {pose} with orientation theta={theta}.")
         except rospy.ServiceException:
             print("/gazebo/get_model_state service call failed")
+            
+    def getState(self, model_name):
+        #print("Chamando o método getState")
+        try:
+            # Chame o serviço ROS para obter o estado do modelo
+            model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+            resp = model_state(model_name, "")
+            return resp   
+
+        except rospy.ServiceException as e:
+            print(f"Service call failed: {e}")
+            return None
 
     def sampleInitialState(self, model_name):
         theta_boat = np.random.randint(low=-179, high=180)
@@ -476,6 +489,95 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
 
         # -->RESET INITIAL STATE VALUES
         self.DPREV = observations[0]
+        
+        # -->RESET BOUY POSITION
+        """ new_x = np.random.uniform(0, 20)
+        new_y = np.random.uniform(-10, 10)
+        print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        self.setState("buoy_red", [new_x, new_y, 0], 0) """
+        
+        # Obtenha as posições iniciais da boia e do waypoint
+        print("Preparando para chamar getState para buoy_red")
+
+        buoy_position = self.getState("buoy_red").pose.position
+        waypoint_position = self.getState("wayPointMarker").pose.position
+
+        # Calcule a direção entre a boia e o waypoint
+        direction_x = waypoint_position.x - buoy_position.x
+        direction_y = waypoint_position.y - buoy_position.y
+
+        # Gere um valor aleatório entre 0 e 1
+        alpha = np.random.random()
+        
+        # Adicione uma variação aleatória à direção
+        variation = 15.0  # por exemplo, 5 metros. Ajuste conforme necessário
+        direction_x += np.random.uniform(-variation, variation)
+        direction_y += np.random.uniform(-variation, variation)
+
+        # Calcule a nova posição para a boia
+        new_x = buoy_position.x + alpha * direction_x
+        new_y = buoy_position.y + alpha * direction_y
+        
+        # Mova a boia para a nova posição
+        print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        self.setState("buoy_red", [new_x, new_y, 0], 0)
+        
+        #Mudar para buoy_yellow   
+        
+        # Obtenha as posições iniciais da boia e do waypoint
+        print("Preparando para chamar getState para buoy_yellow")
+        
+        buoy_position = self.getState("buoy_yellow").pose.position
+        waypoint_position = self.getState("wayPointMarker").pose.position
+        
+        # Calcule a direção entre a boia e o waypoint
+        direction_x = waypoint_position.x - buoy_position.x
+        direction_y = waypoint_position.y - buoy_position.y
+        
+        # Gere um valor aleatório entre 0 e 1
+        alpha = np.random.random()
+        
+        # Adicione uma variação aleatória à direção
+        variation = 15.0  # por exemplo, 5 metros. Ajuste conforme necessário
+        direction_x += np.random.uniform(-variation, variation)
+        direction_y += np.random.uniform(-variation, variation)
+        
+        # Calcule a nova posição para a boia
+        new_x = buoy_position.x + alpha * direction_x
+        new_y = buoy_position.y + alpha * direction_y
+        
+        # Mova a boia para a nova posição
+        print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        self.setState("buoy_yellow", [new_x, new_y, 0], 0)
+        
+        #Mudar para buoy_green
+        
+        # Obtenha as posições iniciais da boia e do waypoint
+        print("Preparando para chamar getState para buoy_green")
+        
+        buoy_position = self.getState("buoy_green").pose.position
+        waypoint_position = self.getState("wayPointMarker").pose.position
+        
+        # Calcule a direção entre a boia e o waypoint
+        direction_x = waypoint_position.x - buoy_position.x
+        direction_y = waypoint_position.y - buoy_position.y
+        
+        # Gere um valor aleatório entre 0 e 1
+        alpha = np.random.random()
+        
+        # Adicione uma variação aleatória à direção
+        variation = 15.0  # por exemplo, 5 metros. Ajuste conforme necessário
+        direction_x += np.random.uniform(-variation, variation)
+        direction_y += np.random.uniform(-variation, variation)
+        
+        # Calcule a nova posição para a boia
+        new_x = buoy_position.x + alpha * direction_x
+        new_y = buoy_position.y + alpha * direction_y
+        
+        # Mova a boia para a nova posição
+        print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        self.setState("buoy_green", [new_x, new_y, 0], 0)
+                 
 
         # -->PAUSE SIMULATION
         rospy.wait_for_service("/gazebo/pause_physics")
@@ -487,8 +589,8 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
         self.count += 1
 
         return self.observationRescale(observations[:5]), {}
-
-
+    
+   
 class EboatEnv(GazeboOceanEboatEnvCC35v0):
     def __init__(self):
         super(EboatEnv, self).__init__()
@@ -516,9 +618,41 @@ class EboatEnv(GazeboOceanEboatEnvCC35v0):
         # obs['boat_speed'] = self.get_boat_speed()
         # obs['sail_orientation'] = self.get_sail_orientation()
 
-        return obs
+        return obs    
+   
+    def setState(self, model_name, pose, theta):
+        state = ModelState()
+        state.model_name = model_name
+        state.reference_frame = "world"
+        # Definindo a pose
+        state.pose.position.x = pose[0]
+        state.pose.position.y = pose[1]
+        state.pose.position.z = pose[2]
+        quaternion = quaternion_from_euler(0, 0, theta)
+        state.pose.orientation.x = quaternion[0]
+        state.pose.orientation.y = quaternion[1]
+        state.pose.orientation.z = quaternion[2]
+        state.pose.orientation.w = quaternion[3]
+        # Definindo a velocidade (twist) como zero
+        state.twist.linear.x = 0
+        state.twist.linear.y = 0
+        state.twist.linear.z = 0
+        state.twist.angular.x = 0
+        state.twist.angular.y = 0
+        state.twist.angular.z = 0
+
+        rospy.wait_for_service('/gazebo/set_model_state')
+        try:
+            set_state = self.set_state
+            result = set_state(state)
+            print(f"SetStae Result: {result}")
+            assert result.success is True
+            print(f"Model {model_name} set to position {pose} with orientation theta={theta}.")
+        except rospy.ServiceException:
+            print("/gazebo/set_model_state service call failed")    
 
     def step(self, action):
+        pass
         reward = 0
         done = False
         info = {}
@@ -546,3 +680,4 @@ class EboatEnv(GazeboOceanEboatEnvCC35v0):
         next_obs = self._get_observation()
 
         return next_obs, reward, done, info
+    
