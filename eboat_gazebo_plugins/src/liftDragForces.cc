@@ -344,7 +344,7 @@ void LiftDragForces::OnUpdate()
     //                   It's psition are relative to the base_link's center of mass (CoG).
     //                   The applied force vector is expressed in World frame and the centor of pressure are expressed in the link own frame.
     //->Apply resultant force
-    this->rudderLink->AddForceAtRelativePosition(this->force_on_rudder, this->rudderCP);
+    this->rudderLink->AddForceAtRelativePosition(0.2*this->force_on_rudder, this->rudderCP);
     //////////////////////////////////////////////////////////
 
 
