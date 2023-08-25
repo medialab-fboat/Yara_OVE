@@ -361,15 +361,15 @@ def multiWayPoints(model, wind_speed = [7, 0, 0]):
 
 def main():
     # --> RL agent
-    model = PPO.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_10m_straight_09082023_10_34_00/eboat_ocean_50")
-    # model = SAC.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/SAC/ensign29_7_winds_10m_straight_10082023_10_05_47/eboat_ocean_50")
+    # model = PPO.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_10m_straight_09082023_10_34_00/eboat_ocean_50")
+    model = SAC.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/SAC/ensign29_7_winds_10m_straight_10082023_10_05_47/eboat_ocean_50")
 
     # model = PPO.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_5m_straight_17082023_10_23_35/eboat_ocean_50")
     # model = SAC.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/SAC/ensign29_7_winds_5m_straight_18082023_00_22_05/eboat_ocean_50")
 
-    singleWayPoint(model, wind_speed = 7)
+    # singleWayPoint(model, wind_speed = 7)
     # os.system('./kill_gaz.sh')
-    # multiWayPoints(model, wind_speed=[7, 0, 0])
+    multiWayPoints(model, wind_speed=[7, 0, 0])
 
 if __name__ == "__main__":
     main()

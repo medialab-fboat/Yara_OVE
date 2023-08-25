@@ -59,9 +59,9 @@ void RudderControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
     //--> CONSTANTS
     this->d2r = M_PI / 180.0;
 
-    std::string ros_topic_name = "/";
-    ros_topic_name.append(this->model->GetName());
-    ros_topic_name.append("/control_interface/rudder");
+    std::string rostopic_name = "/";
+    rostopic_name.append(this->model->GetName());
+    rostopic_name.append("/control_interface/rudder");
 
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())
@@ -79,7 +79,7 @@ void RudderControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
     // Create a named topic, and subscribe to it.
     ros::SubscribeOptions rudderPosSub =
         ros::SubscribeOptions::create<std_msgs::Float32>(
-            ros_topic_name,
+            rostopic_name,
             1,
             boost::bind(&RudderControllerPlugin::OnRosMsg, this, _1),
             ros::VoidPtr(), &this->rosQueue);

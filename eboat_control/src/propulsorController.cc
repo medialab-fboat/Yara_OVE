@@ -53,9 +53,9 @@ void PropulsorControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _
     //--> LINKS
     this->eletricEngineLink = this->propulsorJoint->GetParent();
 
-    std::string ros_topic_name = "/";
-    ros_topic_name.append(this->model->GetName());
-    ros_topic_name.append("/control_interface/propulsion");
+    std::string rostopic_name = "/";
+    rostopic_name.append(this->model->GetName());
+    rostopic_name.append("/control_interface/propulsion");
 
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())
@@ -73,7 +73,7 @@ void PropulsorControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _
     // Create a named topic, and subscribe to it.
     ros::SubscribeOptions propspeed =
         ros::SubscribeOptions::create<std_msgs::Int16>(
-            ros_topic_name,
+            rostopic_name,
             1,
             boost::bind(&PropulsorControllerPlugin::OnRosMsg, this, _1),
             ros::VoidPtr(), &this->rosQueue);

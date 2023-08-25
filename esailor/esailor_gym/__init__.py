@@ -25,3 +25,9 @@ register(
     entry_point='esailor_gym.envs:EboatStraightLineEnvCC29v0',
     max_episode_steps=1000000,
 )
+
+register(
+    id='Eboat92_5_SternWind-v0',
+    entry_point='esailor_gym.envs:Eboat925SternWindv0',
+    max_episode_steps=1000000,
+)

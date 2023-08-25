@@ -20,5 +20,8 @@ dependencies:
   - conda-forge::tensorflow-gpu
   - conda-forge::opencv
   - pip:
+    - rich
+    - tqdm
     - gymnasium
     - stable-baselines3
+    - stable-baselines3[extra]
