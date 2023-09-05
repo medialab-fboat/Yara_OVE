@@ -28,7 +28,7 @@ import torch as th
 
 class esailor():
     def __init__(self, path2launchfile = None):
-        # random_number    = random.randint(10000, 15000)
+        random_number    = random.randint(10000, 15000)
         # self.port_ros    = str(random_number)
         # self.port_gazebo = str(random_number + 1)
         self.port_ros = "11311"
@@ -68,8 +68,8 @@ class esailor():
 
         env    = gym.make("Eboat92_5_SternWind-v0")
 
-        sufix  = "esailor_" + datetime.now().strftime("%d%m%Y_%H_%M_%S")
-        logdir = "trashlogs"
+        sufix  = "trash_esailor_6_winds_" + datetime.now().strftime("%d%m%Y_%H_%M_%S")
+        logdir = "logs"
 
         if not os.path.exists(logdir):
             os.makedirs(logdir)
@@ -156,7 +156,7 @@ class esailor():
             # -->SET THE NEURAL NETWORK PARAMETERS EQUAL TO A LOADED PREVIOUS TRAINED NEURAL NETWORK
             model.set_parameters(refmodel.get_parameters)
 
-        checkpoint_callback = CheckpointCallback(save_freq          = 10000,
+        checkpoint_callback = CheckpointCallback(save_freq          = 5*2048,
                                                  save_path          = models_dir,
                                                  name_prefix        = "esailor_model",
                                                  save_replay_buffer = True,
@@ -176,9 +176,10 @@ class esailor():
         env = gym.make("Eboat92_5_SternWind-v0")
 
         env.reset()
-        env.wind_pub.publish(Point(0, 0, 0))
-        # env.wind_pub.publish(Point(0, 0, 0))
+        print(f"\n\n=======================\nPublicando valor vetor de vento\n=======================\n")
+        env.wind_pub.publish(Point(6.17, 0, 0))
         # env.propVel_pub.publish(2)
+        cumurwd = 0
         for i in range(numofsteps):
             input_action = input("Enter an action in the format (boom angle , rudder angle):").split(" ")
             # if i < numofsteps - 3:
@@ -190,8 +191,27 @@ class esailor():
                 action[0] = (action[0] / 45.0) - 1
                 action[1] = action[1] / 60.0
 
-            robs, _, _, _, _ = env.step(action)
-            print(f"surge: {robs[2]*10} m/s ({robs[2]*10*1.94384} knots")
+            robs, rwd, _, _, _ = env.step(action)
+            cumurwd += rwd
+            print(f"surge  : {robs[2]*10} m/s ({robs[2]*10*1.94384} knots")
+            print(f"reward : {rwd}")
+            print(f"cumurwd: {cumurwd}")
+            print("--------------------------------------------------")
+
+    def testLoadParams(self):
+        policy_kwargs = dict(activation_fn=th.nn.ReLU,
+                                 net_arch=(dict(pi=actor, vf=critic))
+                                 )
+
+        model = PPO(policy            = policy,
+                    env               = env,
+                    ent_coef          = 0.001, #0.0
+                    # tensorboard_log   = logdir,
+                    policy_kwargs     = policy_kwargs,
+                    )
+
+        modelref = PPO.load("./models/PPO/esailor_01092023_12_52_49/esailor_model_1000000_steps.zip")
+        params   = modelref.get_parameters()
 
     def close(self):
         ppid = self._roslaunch.pid
@@ -205,8 +225,9 @@ if __name__ == "__main__":
     # refmodel = PPO.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_10m_straight_09082023_10_34_00/eboat_ocean_50.zip")
     # params = refmodel.get_parameters()
     agent = esailor()
-    agent.training(numofsteps = 2048,
+    # agent.training(numofsteps = 489 * 2048,
                    # refmodel   = refmodel
-                  )
+                  # )
     # agent.envTest(numofsteps=40)
+    agent.testLoadParams()
     agent.close()

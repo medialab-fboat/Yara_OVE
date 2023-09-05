@@ -43,7 +43,7 @@ class Eboat925SternWindv0(gym.Env):
 
         #-->INITIALIZE A ROS NODE FOR THE TRAINING PROCESS
         try:
-            rospy.init_node(f"gym", anonymous=False)
+            rospy.init_node(f"gym", anonymous=True)
         except:
             print("ROSMASTER is not running!")
             print(time.time())
@@ -142,9 +142,10 @@ class Eboat925SternWindv0(gym.Env):
 
         #-->SET WIND INITIAL CONDITIONS AND DEFINE ITS HOW IT WILL VARIATE
         self.windVec = np.array([0, 0, 0], dtype=np.float32)
-        self.min_windspeed = 3
-        self.max_windspeed = 11
-        self.wind_directions = np.array([0])
+        self.min_windspeed   = 3
+        self.max_windspeed   = 11
+        self.wind_directions = np.array([-90, -45, -5, 5, 45, 90])
+        self.wind_speed      = 0.0
 
         #--> UNPAUSE SIMULATION
         rospy.wait_for_service("/gazebo/unpause_physics")
@@ -154,6 +155,7 @@ class Eboat925SternWindv0(gym.Env):
             print(("/gazebo/unpause_physics service call failed!"))
 
         #-->GET OBSERVATIONS AT TIME STAMP 0 (INITIAL STATE)
+        print("\n\n===========================\nGetting observations on the initial state (t=0)\n===========================\n")
         self.PREVOBS = None
         while (self.PREVOBS is None):
             try:
@@ -170,17 +172,20 @@ class Eboat925SternWindv0(gym.Env):
             print(("/gazebo/pause_physics service call failed!"))
 
         #-->AUXILIARY VARIABLES
-        self.DTOL = 25
-        self.D0   = self.PREVOBS[0]
-        self.DMAX = self.PREVOBS[0] + self.DTOL
-        self.d2r  = np.pi / 180.0
-        self.step_count = 0
-        self.lateral_limit = 5 #-->DEFINE THE HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT LINE BEFORE A DONE SIGNAL
+        self.DTOL          = 25
+        self.D0            = self.PREVOBS[0]
+        self.DMAX          = self.PREVOBS[0] + self.DTOL
+        self.PREdS         = 0.0                           #--> DISTANCE TRAVELED BY THE BOAT TOWARDS THE GOAL (D(t = n) - D(t = n-1))
+        self.d2r           = np.pi / 180.0
+        self.step_count    = 0
+        self.lateral_limit = 5                             #-->DEFINE THE HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT LINE BEFORE A DONE SIGNAL
+
+        time.sleep(5)
 
     def rot(self, modulus, theta):
-        R = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]], dtype=np.float32)
+        rot = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]], dtype=np.float32)
 
-        return np.dot(np.array([1, 0], dtype=np.float32) * modulus, R)
+        return np.dot(np.array([1, 0], dtype=np.float32) * modulus, rot)
 
     def getObservations(self):
         obsData = None
@@ -213,7 +218,7 @@ class Eboat925SternWindv0(gym.Env):
         robs[0] = 2 * (observations[0] / self.DMAX) - 1
         # --> Trajectory angle               [-180, 180]
         robs[1] = observations[1] / 180.0
-        # --> Boat linear velocity (m/s)     [-10   , 10 ]
+        # --> Boat surge velocity (m/s)     [-10   , 10 ]
         robs[2] = observations[2] / 10
         # --> Aparent wind speed (m/s)       [0   , 30]
         robs[3] = observations[3] / 15 - 1
@@ -231,13 +236,68 @@ class Eboat925SternWindv0(gym.Env):
         return robs
 
     def rewardFunction(self, obs, actions):
-        D = (self.PREVOBS[0] - obs[0]) / self.D0
+        #-->COMPUTE THE DISTANCE TRAVELED BY THE BOAT TOWARDS THE OBJECTIVE. IF D > 0 THE BOAT WENT NEAR THE OBJECTIVE.
+        dS  = self.PREVOBS[0] - obs[0]
+        ta  = abs(obs[1])
+        pta = abs(self.PREVOBS[1])
+        C0  = dS / self.D0;
 
-        return D
+        if dS > 0:
+            if dS > self.PREdS:
+                C1 = 0.5 * C0
+            elif dS < self.PREdS:
+                C1 = -0.3 * C0
+            else:
+                C1 = 0.0
+
+            if ta <= 45.0:
+                if ta < pta:
+                # if pta - ta > 1:
+                    C2 = 0.5 * C0
+                # elif ta > pta:
+                elif ta - pta > 1:
+                    C2 = -0.5 * C0
+                else:
+                    if ta < 5:
+                        C2 = 0.5 * C0
+                    else:
+                        C2 = 0.0
+            else:
+                if ta < pta:
+                # if pta - ta > 1:
+                    C2 = 0.7 * C0
+                # elif ta > pta:
+                elif ta - pta > 1:
+                    C2 = -1.5 * C0
+                else:
+                    C2 = -0.5 * C0
+
+            # alpha = 180 - obs[5] - abs(obs[4])
+            # print(f"alpha = {alpha}")
+            if ((dS > self.PREdS) & (ta <= 45) & (obs[2] > 0.25 * self.wind_speed)):
+                C3 = 0.6 * C0
+            else:
+                C3 = 0.0
+
+            R = C0 + C1 + C2 + C3
+            # print(f"dS(t)   = {dS} = {self.PREVOBS[0]} - {obs[0]}")
+            # print(f"dS(t-1) = {self.PREdS}")
+            # print(f"ta      = {ta}")
+            # print(f"pta     = {pta}")
+            # print(f"return  = {C0} + {C1} + {C2}  = {R}")
+            # print(obs[5])
+            # print(obs[6])
+            # print("-----------------------------------")
+        else:
+            R = C0
+            # print(f"return  = {C0}  = {R}")
+
+        self.PREdS = dS
+        return R
 
     def step(self, action):
         ract = np.array([(action[0]+1)*45, action[1]*60])
-        print(self.step_count, ract)
+        # print(self.step_count, ract)
         #--> UNPAUSE SIMULATION
         rospy.wait_for_service("/gazebo/unpause_physics")
         try:
@@ -272,7 +332,7 @@ class Eboat925SternWindv0(gym.Env):
                        (obs[0] > self.PREVOBS[0]) |
                        (abs(posY) > self.lateral_limit) |
                        ((windAng >= 160) & (windAng <= 200) & (obs[2] < 0.5)) |  # -->A done signal is returned if the wind is blowing from the bow and the surge velocity is smaller than 0.5 m/s
-                       (self.step_count > 59) |
+                       # (self.step_count > 59) |
                        (np.isnan(obs).any())
                       )
 
@@ -306,12 +366,12 @@ class Eboat925SternWindv0(gym.Env):
         self.rudderAng_pub.publish(0.0)
 
         #-->SET A RANDOM INITIAL STATE FOR THE WIND
-        wind_speed = np.random.randint(low=self.min_windspeed, high=self.max_windspeed)
+        self.wind_speed = np.random.randint(low=self.min_windspeed, high=self.max_windspeed)
         if len(self.wind_directions) > 1:
             theta_wind = np.random.choice(self.wind_directions)
         else:
             theta_wind = self.wind_directions[0]
-        self.windVec[:2] = self.rot(wind_speed, (theta_wind * self.d2r))
+        self.windVec[:2] = self.rot(self.wind_speed, (theta_wind * self.d2r))
         self.wind_pub.publish(Point(self.windVec[0], self.windVec[1], self.windVec[2]))
 
         #-->UNPAUSE SIMULATION TO MAKE OBSERVATION
@@ -336,6 +396,7 @@ class Eboat925SternWindv0(gym.Env):
 
         #-->RESET INITIAL STATE VALUES
         self.PREVOBS    = obs
+        self.PREdS      = 0.0
         self.step_count = 0
 
         return robs, {}

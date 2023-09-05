@@ -1,6 +1,8 @@
 #!/home/eduardo/miniconda3/envs/esailor2/bin/python
 
 import numpy as np
+import pandas
+import pandas as pd
 import matplotlib.pyplot as plt
 
 from scipy import interpolate
@@ -64,7 +66,51 @@ def sailingDirection():
     plt.grid()
     plt.show()
 
+def liftDragCoefficientsForRudderAndKeel():
+    df = pandas.read_csv("/home/eduardo/USVSim/scripts/naca001234_400k.csv")
+    A = df.atkang.values
+    cl = df.cl.values
+    cd = df.cd.values
+
+    fcl = interpolate.interp1d(A, cl, kind="cubic")
+    fcd = interpolate.interp1d(A, cd, kind="cubic")
+
+    atkang = np.arange(91)
+    newcl = fcl(atkang)
+    newcd = fcd(atkang)
+
+    print(newcl)
+
+    # plt.plot(newcl)
+    # plt.plot(newcd)
+    # plt.show()
+
+
 if __name__ == '__main__':
     # waypoints()
     # surgeAccordingWind()
-    sailingDirection()
+    # sailingDirection()
+    # liftDragCoefficientsForRudderAndKeel()
+
+    import rospy
+    import time
+    from geometry_msgs.msg import Point
+    from std_msgs.msg import Float32, Float32MultiArray
+    try:
+        status = rospy.init_node(f"teste", anonymous=True)
+        print(status)
+    except:
+        print("ROSMASTER is not running!")
+        print(time.time())
+        exit(1)
+    pub = rospy.Publisher("/eboat/atmosferic_control/wind", Point, queue_size=50)
+    pub2 = rospy.Publisher("/eboat/control_interface/rudder", Float32, queue_size=5)
+
+    try:
+        obsData = rospy.wait_for_message('/eboat/mission_control/observations', Float32MultiArray, timeout=20).data
+    except:
+        print("Exception!")
+    print(obsData)
+    pub.publish(Point(5.0, 0.0, 0.0))
+    print(pub2.publish(np.float32(30.0)))
+    _ = input()
