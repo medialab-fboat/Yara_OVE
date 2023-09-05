@@ -70,3 +70,9 @@ add_library(SailLiftDragForces src/sailLiftDragForces.cc)
 target_link_libraries(SailLiftDragForces ${GAZEBO_LIBRARIES}
                       ${Boost_LIBRARIES}
                     )
+
+## Under water Lift and drag forces
+add_library(UnderWaterLiftDrag src/underWaterLiftDrag.cc)
+target_link_libraries(UnderWaterLiftDrag ${GAZEBO_LIBRARIES}
+                      ${Boost_LIBRARIES}
+                      )
