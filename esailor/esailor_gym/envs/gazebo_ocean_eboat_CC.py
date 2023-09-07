@@ -98,9 +98,40 @@ class GazeboEnv(gym.Env):
 
     def step(self, action):
 
-        # Implement this method in every subclass
-        # Perform a step in gazebo. E.g. move the robot
-        raise NotImplementedError
+        # Aplicar ação ao ambiente
+        self._take_action(action)
+
+        # Atualizar o estado do ambiente após a ação
+        self.state = self._get_state()
+
+        # Calcular a recompensa com base no novo estado
+        reward = 0
+
+        if self.min_dist < self._min_obstacle_dist:
+            # Se o barco estiver muito próximo de um obstáculo
+            reward = -100.0
+
+        if self.pushed_buoy:
+            # Se o barco empurrou a boia
+            reward = -50.0
+
+        if not self.moving_toward_wp:
+            # Se o barco não está se movendo em direção ao waypoint
+            reward = -10.0
+
+        # Adicione quaisquer outros critérios de recompensa aqui
+
+        # Determinar se o episódio terminou
+        done = False
+        if self._episode_steps >= self._max_episode_steps:
+            done = True
+
+        # Pode haver outras condições que terminam o episódio, adicione-as aqui se necessário
+
+        # Coletar qualquer informação adicional
+        info = {}
+
+        return self.state, reward, done, info
 
     def reset(self, seed = None):
 
@@ -128,28 +159,27 @@ class GazeboEnv(gym.Env):
 
     def close(self):
 
-        # Kill gzclient, gzserver and roscore
-        # tmp = os.popen("ps -Af").read()
-        # gzclient_count = tmp.count('gzclient')
-        # gzserver_count = tmp.count('gzserver')
-        # roscore_count = tmp.count('roscore')
-        # rosmaster_count = tmp.count('rosmaster')
-        #
-        # if gzclient_count > 0:
-        #     os.system("killall -9 gzclient")
-        # if gzserver_count > 0:
-        #     os.system("killall -9 gzserver")
-        # if rosmaster_count > 0:
-        #     os.system("killall -9 rosmaster")
-        # if roscore_count > 0:
-        #     os.system("killall -9 roscore")
-        #
-        # if (gzclient_count or gzserver_count or roscore_count or rosmaster_count >0):
-        #     os.wait()
-
-        self._roslaunch.kill()
-
-        print("\n\n\nCOSE FUNCTION\n\n")
+         #Kill gzclient, gzserver and roscore
+         tmp = os.popen("ps -Af").read()
+         gzclient_count = tmp.count('gzclient')
+         gzserver_count = tmp.count('gzserver')
+         roscore_count = tmp.count('roscore')
+         rosmaster_count = tmp.count('rosmaster')
+        
+         if gzclient_count > 0:
+             os.system("killall -9 gzclient")
+         if gzserver_count > 0:
+             os.system("killall -9 gzserver")
+         if rosmaster_count > 0:
+             os.system("killall -9 rosmaster")
+         if roscore_count > 0:
+             os.system("killall -9 roscore")
+        
+         if (gzclient_count or gzserver_count or roscore_count or rosmaster_count >0):
+             os.wait()
+             
+             self._roslaunch.kill()
+             print("\n\n\nCOSE FUNCTION\n\n")
 
     def _configure(self):
 
@@ -286,9 +316,9 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
         try:
             set_state = self.set_state
             result = set_state(state)
-            print(f"SetState Result: {result}")
+            #print(f"SetState Result: {result}")
             assert result.success is True
-            print(f"Model {model_name} set to position {pose} with orientation theta={theta}.")
+            #print(f"Model {model_name} set to position {pose} with orientation theta={theta}.")
         except rospy.ServiceException:
             print("/gazebo/get_model_state service call failed")
             
@@ -497,7 +527,7 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
         self.setState("buoy_red", [new_x, new_y, 0], 0) """
         
         # Obtenha as posições iniciais da boia e do waypoint
-        print("Preparando para chamar getState para buoy_red")
+        #print("Preparando para chamar getState para buoy_red")
 
         buoy_position = self.getState("buoy_red").pose.position
         waypoint_position = self.getState("wayPointMarker").pose.position
@@ -519,13 +549,13 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
         new_y = buoy_position.y + alpha * direction_y
         
         # Mova a boia para a nova posição
-        print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        #print(f"Setting buoy to new position: x={new_x}, y={new_y}")
         self.setState("buoy_red", [new_x, new_y, 0], 0)
         
         #Mudar para buoy_yellow   
         
         # Obtenha as posições iniciais da boia e do waypoint
-        print("Preparando para chamar getState para buoy_yellow")
+        #print("Preparando para chamar getState para buoy_yellow")
         
         buoy_position = self.getState("buoy_yellow").pose.position
         waypoint_position = self.getState("wayPointMarker").pose.position
@@ -547,13 +577,13 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
         new_y = buoy_position.y + alpha * direction_y
         
         # Mova a boia para a nova posição
-        print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        #print(f"Setting buoy to new position: x={new_x}, y={new_y}")
         self.setState("buoy_yellow", [new_x, new_y, 0], 0)
         
         #Mudar para buoy_green
         
         # Obtenha as posições iniciais da boia e do waypoint
-        print("Preparando para chamar getState para buoy_green")
+        #print("Preparando para chamar getState para buoy_green")
         
         buoy_position = self.getState("buoy_green").pose.position
         waypoint_position = self.getState("wayPointMarker").pose.position
@@ -575,7 +605,7 @@ class GazeboOceanEboatEnvCC35v0(GazeboEnv):
         new_y = buoy_position.y + alpha * direction_y
         
         # Mova a boia para a nova posição
-        print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        #print(f"Setting buoy to new position: x={new_x}, y={new_y}")
         self.setState("buoy_green", [new_x, new_y, 0], 0)
                  
 
@@ -600,7 +630,7 @@ class EboatEnv(GazeboOceanEboatEnvCC35v0):
         rospy.Subscriber('/eboat/lidar/scan', LaserScan, self.lidar_callback)
         
         # Definindo a distância limite abaixo da qual consideramos o barco muito perto de um obstáculo
-        self.SOME_THRESHOLD = 1.0  # por exemplo, 1 metro
+        self.SOME_THRESHOLD = 5.0  # por exemplo, 1 metro
 
     def lidar_callback(self, data):
         self.lidar_data = data
@@ -615,8 +645,9 @@ class EboatEnv(GazeboOceanEboatEnvCC35v0):
 
         # Adicionar aqui outros sensores que você possa ter no barco, como velocidade, direção, orientação da vela, etc.
         # Por exemplo:
-        # obs['boat_speed'] = self.get_boat_speed()
-        # obs['sail_orientation'] = self.get_sail_orientation()
+        obs['boat_speed'] = self.get_boat_speed()
+        obs['sail_orientation'] = self.get_sail_orientation()
+        
 
         return obs    
    
@@ -645,9 +676,9 @@ class EboatEnv(GazeboOceanEboatEnvCC35v0):
         try:
             set_state = self.set_state
             result = set_state(state)
-            print(f"SetStae Result: {result}")
+            #print(f"SetStae Result: {result}")
             assert result.success is True
-            print(f"Model {model_name} set to position {pose} with orientation theta={theta}.")
+            #print(f"Model {model_name} set to position {pose} with orientation theta={theta}.")
         except rospy.ServiceException:
             print("/gazebo/set_model_state service call failed")    
 
@@ -659,13 +690,16 @@ class EboatEnv(GazeboOceanEboatEnvCC35v0):
 
         # Aplicando ações com base na entrada
         if action == 0:  # turn left
-            # ... (código para virar à esquerda)
+            self.boomAng_pub.publish(45.0)
+            self.rudderAng_pub.publish(-60.0)
             pass
         elif action == 1:  # turn right
-            # ... (código para virar à direita)
+            self.boomAng_pub.publish(45.0)
+            self.rudderAng_pub.publish(60.0)
             pass
         else:  # move forward
-            # ... (código para seguir em frente)
+            self.boomAng_pub.publish(45.0)
+            self.rudderAng_pub.publish(0.0)
             pass
 
         # Definindo recompensa com base nos dados do LIDAR
@@ -676,6 +710,40 @@ class EboatEnv(GazeboOceanEboatEnvCC35v0):
             else:
                 reward = 1
 
+        # Penalidade por não estar indo na direção do waypoint
+        # Penalidade por ficar empurrando a boia para longe
+        # Penalidade por ficar muito perto de obstáculos
+        # Recompensa por chegar no waypoint
+           # Calculating distance to each buoy
+            distance_to_buoy_red = np.linalg.norm(boat_position - buoy_red_position)
+            distance_to_buoy_yellow = np.linalg.norm(boat_position - buoy_yellow_position)
+            distance_to_buoy_green = np.linalg.norm(boat_position - buoy_green_position)
+
+            # Applying penalty if boat is pushing buoys away
+            if distance_to_buoy_red > previous_distance_to_buoy_red:
+                reward -= 10
+            if distance_to_buoy_yellow > previous_distance_to_buoy_yellow:
+                reward -= 10
+            if distance_to_buoy_green > previous_distance_to_buoy_green:
+                reward -= 10
+
+            # Applying penalty if boat is not moving towards the waypoint
+            if distance_to_waypoint > previous_distance_to_waypoint:
+                reward -= 5
+
+            # Applying penalty if boat is too close to obstacles using LIDAR data
+            if min_lidar_distance < SOME_THRESHOLD:
+                reward -= 15
+                done = True  # Ending the episode if boat is too close to an obstacle
+
+            # Reward for reaching the waypoint
+            if distance_to_waypoint < SOME_TOLERANCE:
+                reward += 100
+                done = True
+    
+      
+        
+        
         # Obtenha a próxima observação após tomar a ação
         next_obs = self._get_observation()
 

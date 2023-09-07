@@ -1,0 +1,407 @@
+<?xml version="1.0" ?>
+
+<robot name="eboat4" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!--MACROS-->
+    <xacro:macro name="support_hack" params="name xyz rpy">
+        <visual>
+            <origin xyz="${xyz}" rpy="${rpy}" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/support_hack_${name}.stl"/>
+            </geometry>
+        </visual>
+    </xacro:macro>
+
+    <xacro:property name="mlength" value="${0.45+2.9+0.2}"/> <!--set the length of the main sail mast-->
+
+    <xacro:include filename="$(find eboat_description)/urdf/eboat4_control_plugins.xacro"/>
+
+    <xacro:include filename="$(find eboat_description)/urdf/eboat4_physics_plugins.xacro"/>
+
+    <!-- Attach hydrodynamics plugin -->
+    <xacro:usv_dynamics_gazebo name="eboat4_dynamics_plugin"/>
+
+    <!-- Attach lift&drag plugin for sail -->
+    <xacro:eboat_foil_gazebo name="eboat4_sail"/>
+
+    <!--control interfaces-->
+    <xacro:mission_control name="eboat4" />
+    <xacro:sail_control_interface name="eboat4" />
+    <xacro:rudder_control_interface name="eboat4" />
+    <xacro:propulsor_control_interface name="eboat4" />
+
+    <!--ROBOT DESCRIPTION-->
+    <link name="base_link">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </link>
+
+    <joint name="dummy_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="hull_link" />
+        <!-- Adjust the visual/collision to match water height -->
+        <origin xyz="0 0 0.210586" rpy="0 0 0"/>
+    </joint>
+
+    <link name="hull_link">
+        <visual>
+            <origin xyz="-1.23971 5.55112e-16 0.214059" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/hull_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-1.23971 5.55112e-16 0.214059" rpy="0 -0 0" />
+            <geometry>
+                <box size="2.7 1.0 0.63"/>
+            </geometry>
+        </collision>
+        <!--ESPUMA -->
+        <visual>
+            <origin xyz="-1.23971 6.66134e-16 0.214073" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/espuma.stl"/>
+            </geometry>
+        </visual>
+        <!--BOW-->
+        <visual>
+            <origin xyz="-1.23971 5.55112e-16 0.214059" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/bow_link.stl"/>
+            </geometry>
+        </visual>
+        <!--ELECTRIC ENGINE BASE-->
+        <visual>
+            <origin xyz="-1.23971 5.55112e-16 0.214059" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/eletric_engine_base.stl"/>
+            </geometry>
+        </visual>
+        <!--INERTIA MATRIX-->
+        <inertial>
+            <origin xyz="-0.186398 3.25865e-05 -0.0426582" rpy="0 0 0"/>
+            <mass value="87.6741" />
+            <inertia ixx="8.07275" ixy="-0.000700071"  ixz="1.41913" iyy="47.1122" iyz="-0.000393928" izz="51.3333" />
+        </inertial>
+    </link>
+
+    <link name="mast_link">
+        <visual>
+            <origin xyz="0 -2.14313e-18 0.933" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/mast_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 ${0.45+mlength*0.5}" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.05" length="${mlength}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0.000187579 2.65619e-06 1.95789" rpy="0 0 0"/>
+            <mass value="12.5051" />
+            <inertia ixx="15.8929" ixy="-1.88499e-06"  ixz="-0.0063914" iyy="15.8933" iyz="-5.77577e-05" izz="0.0187623" />
+        </inertial>
+    </link>
+
+    <link name="boom_link">
+        <visual>
+            <origin xyz="-0.0248 0 0" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/boom_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="${-0.9-0.0248} 0 0" rpy="0 -1.5708 0" />
+            <geometry>
+                <cylinder radius="0.02" length="1.8"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="-0.919334 1.93244e-09 -2.13818e-05" rpy="0 0 0"/>
+            <mass value="2.41221" />
+            <inertia ixx="0.000428164" ixy="-8.9867e-10"  ixz="7.73411e-05" iyy="0.664587" iyz="-1.08464e-11" izz="0.664584" />
+        </inertial>
+    </link>
+
+    <link name="sail_link">
+        <visual>
+            <origin xyz="1.75893 -0.0664151 0" rpy="-1.5708 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/sail.stl"/>
+            </geometry>
+        </visual>
+        <inertial>
+            <origin xyz="1.10322 1.09346 -1.24505e-20" rpy="0 0 0"/>
+            <mass value="2.216" />
+            <inertia ixx="1.15797" ixy="0.243689"  ixz="0" iyy="0.386027" iyz="0" izz="1.544" />
+        </inertial>
+    </link>
+
+    <joint name="sail_joint" type="fixed">
+        <origin xyz="-1.78373 0 0.0664151" rpy="1.5708 -0 0" />
+        <parent link="boom_link" />
+        <child link="sail_link" />
+    </joint>
+
+    <joint name="boom_joint" type="revolute">
+        <origin xyz="-0.049 -2.14313e-18 0.933" rpy="0 -0 0" />
+        <parent link="mast_link" />
+        <child link="boom_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1000" velocity="5" lower="-1.5708" upper="1.5708"/>
+        <dynamics damping="2.0" friction="0.0"/>
+    </joint>
+
+    <joint name="mast_joint" type="fixed">
+        <origin xyz="0.59529 6.68277e-16 -0.153011" rpy="0 -0 0" />
+        <parent link="hull_link" />
+        <child link="mast_link" />
+    </joint>
+
+    <link name="keel_link">
+        <visual>
+            <origin xyz="0 -4.51028e-17 -0.98067" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/keel_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 -0.5635" rpy="0 -0 0" />
+            <geometry>
+                <box size="0.459 0.124 1.127"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0.00547163 2.63588e-07 -0.725086" rpy="0 0 0"/>
+            <mass value="40.0429" />
+            <inertia ixx="5.03511" ixy="7.80906e-07"  ixz="-0.0285151" iyy="5.27158" iyz="-2.96682e-06" izz="0.268882" />
+        </inertial>
+    </link>
+
+    <joint name="keel_joint" type="revolute">
+        <origin xyz="-0.13971 0 0.00405924" rpy="0 0 0" />
+        <parent link="hull_link" />
+        <child link="keel_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" lower="0" upper="0"/>
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <link name="rudder_link">
+        <visual>
+            <origin xyz="-0.02365 -2.14313e-19 -0.84302" rpy="0 -0 0" />
+            <geometry>
+            <mesh filename="package://eboat_description/models/eboat4/meshes/rudder_link.stl"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 ${-0.310-0.304}" rpy="0 0 0" />
+            <geometry>
+                <box size="0.189 0.015 0.608"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="-0.00643978 -6.54895e-06 -0.519314" rpy="0 0 0"/>
+            <mass value="1.60411" />
+            <inertia ixx="0.0520097" ixy="-3.11339e-06"  ixz="-0.00205504" iyy="0.0547543" iyz="-6.35686e-07" izz="0.00276576" />
+        </inertial>
+    </link>
+
+    <joint name="rudder_joint" type="revolute">
+        <origin xyz="-1.08641 0 0.0764342" rpy="0 0 0" />
+        <parent link="hull_link" />
+        <child link="rudder_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="50" velocity="${24.0*(3.1415/180.0)}" lower="-1.0472" upper="1.0472"/>
+        <dynamics damping="0.0" friction="2.0"/>
+    </joint>
+
+    <link name="eletric_engine_link">
+        <visual>
+            <origin xyz="0.08999 -7.65404e-19 -0.175" rpy="-1.26162e-16 -0 0" />
+            <geometry>
+            <mesh filename="package://eboat_description/models/eboat4/meshes/eletric_engine.stl"/>
+            </geometry>
+            <material name="eletric_engine_material">
+            <color rgba="0.701961 0.682353 0.623529 1.0"/>
+            </material>
+        </visual>
+        <inertial>
+            <origin xyz="-0.00825704 -3.56246e-09 -0.761657" rpy="0 0 0"/>
+            <mass value="3.62539" />
+            <inertia ixx="0.396803" ixy="-7.66434e-09"  ixz="-0.00560877" iyy="0.401013" iyz="-5.77582e-09" izz="0.00711339" />
+        </inertial>
+    </link>
+
+    <joint name="electric_engine_joint" type="fixed">
+        <origin xyz="-1.3297 5.55877e-16 0.389059" rpy="0 -0 0" />
+        <parent link="hull_link" />
+        <child link="eletric_engine_link" />
+    </joint>
+
+    <link name="propeller_link">
+        <visual>
+            <origin xyz="0.179673 -9.07103e-17 0.774" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/turbine.stl"/>
+            </geometry>
+        </visual>
+        <inertial>
+            <origin xyz="-0.0280716 2.41471e-06 2.58598e-06" rpy="0 0 0"/>
+            <mass value="0.0667546" />
+            <inertia ixx="0.000104539" ixy="2.96574e-10"  ixz="-1.53341e-09" iyy="6.3824e-05" iyz="-2.26066e-09" izz="6.38236e-05" />
+        </inertial>
+    </link>
+
+    <joint name="propeller_joint" type="continuous">
+        <origin xyz="-0.089683 -7.7043e-18 -0.949" rpy="-1.26162e-16 -0 0" />
+        <parent link="eletric_engine_link" />
+        <child link="propeller_link" />
+        <axis xyz="0 0 1"/>
+        <limit effort="1" velocity="20" />
+        <joint_properties friction="0.0"/>
+    </joint>
+
+    <link name="deck_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+            <mesh filename="package://eboat_description/models/eboat4/meshes/deck.stl"/>
+            </geometry>
+        </visual>
+
+        <xacro:support_hack name="port_1" xyz="0 0 0" rpy="0 0 0" />
+
+        <xacro:support_hack name="port_2" xyz="0 0 0" rpy="0 0 0" />
+
+        <xacro:support_hack name="port_3" xyz="0 0 0" rpy="0 0 0" />
+
+        <xacro:support_hack name="port_4" xyz="0 0 0" rpy="0 0 0" />
+
+        <xacro:support_hack name="starboard_1" xyz="0 0 0" rpy="0 0 0" />
+
+        <xacro:support_hack name="starboard_2" xyz="0 0 0" rpy="0 0 0" />
+
+        <xacro:support_hack name="starboard_3" xyz="0 0 0" rpy="0 0 0" />
+
+        <xacro:support_hack name="starboard_4" xyz="0 0 0" rpy="0 0 0" />
+
+        <visual>
+            <origin xyz="-4.44089e-16 1.11022e-16 5.55112e-17" rpy="0 -0 0" />
+            <geometry>
+            <mesh filename="package://eboat_description/models/eboat4/meshes/hack_starboard.stl"/>
+            </geometry>
+        </visual>
+        
+        <visual>
+            <origin xyz="0 0 5.55112e-17" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/hack_port.stl"/>
+            </geometry>
+        </visual>
+
+        <inertial>
+            <origin xyz="1.17098 0.0029352 0.08114" rpy="0 0 0"/>
+            <mass value="8.12081" />
+            <inertia ixx="0.940446" ixy="0.0228946"  ixz="-0.0360182" iyy="3.85004" iyz="0.00158452" izz="4.72607" />
+        </inertial>
+    </link>
+
+    <joint name="deck_joint" type="fixed">
+        <origin xyz="-1.23971 5.55112e-16 0.214059" rpy="0 -0 0" />
+        <parent link="hull_link" />
+        <child link="deck_link" />
+    </joint>
+
+    <link name="camera_bow_link">
+        <visual>
+            <origin xyz="-2.03098 6.90927e-15 -0.125" rpy="0 -0 0" />
+            <geometry>
+                <mesh filename="package://eboat_description/models/eboat4/meshes/camera_bow.stl"/>
+            </geometry>
+        </visual>
+        <inertial>
+            <origin xyz="0.0526688 -2.92253e-05 0.2517" rpy="0 0 0"/>
+            <mass value="2.06829" />
+            <inertia ixx="0.199288" ixy="-1.12989e-05"  ixz="-0.0471625" iyy="0.19841" iyz="-1.44209e-05" izz="0.0538996" />
+        </inertial>
+    </link>
+
+    <joint name="camera_bow_joint" type="fixed">
+        <origin xyz="0.791272 5.41378e-16 0.339059" rpy="-5.66659e-17 9.06655e-16 -5.13764e-32" />
+        <parent link="hull_link" />
+        <child link="camera_bow_link" />
+    </joint>
+
+
+         <!-- LIDAR Sensor -->
+        <link name="lidar_link">
+            <visual>
+            <geometry>
+                <cylinder length="0.5" radius="0.05"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <material name="blue"/>
+            </visual>
+           <inertial>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <mass value="0.1"/>
+                <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+            </inertial>
+        </link>
+    
+        
+        <!-- Attach the LIDAR sensor to the boat -->
+        <joint name="lidar_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="lidar_link"/>
+            <origin xyz="1 0 0.75" rpy="0 0 0"/>
+        </joint>
+
+    <!-- LIDAR Gazebo plugin -->
+    <gazebo reference="lidar_link">
+           <material>Gazebo/Grey</material>
+            <contact>
+                <collide_without_contact>true</collide_without_contact>
+                <collide_bitmask>0x02</collide_bitmask>
+                <collide_without_contact_bitmask>0x01</collide_without_contact_bitmask>
+            </contact>
+        <sensor type="ray" name="lidar">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>true</visualize>
+            <update_rate>10</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-1.5708</min_angle> <!-- -pi/2 radian -->
+                        <max_angle>1.5708</max_angle> <!-- pi/2 radian -->
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>10</max>
+                    <resolution>0.01</resolution>
+                </range>
+            </ray>
+            <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+                <topicName>/lidar_scan</topicName>
+                <frameName>lidar_link</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+    <!--COLORS-->
+    <gazebo reference="boom_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="mast_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="camera_bow_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+</robot>

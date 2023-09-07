@@ -14,6 +14,50 @@
                 </track_visual>
             </camera>
         </gui>
+
+        <include>
+            <name>wayPointMarker</name>
+            <pose>100 0.0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/wayPointMarker</uri>
+        </include>
+
+        <include>
+            <name>buoy_red</name>
+            <pose>50 5 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_red</uri>
+        </include>
+
+        <include>
+            <name>buoy_red1</name>
+            <pose>50 3 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_red</uri>
+        </include>
+
+         <include>
+            <name>buoy_red2</name>
+            <pose>50 1 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_red</uri>
+        </include>
+
+         <include>
+            <name>buoy_red3</name>
+            <pose>50 -1 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_red</uri>
+        </include>
+
+
+         <include>
+            <name>buoy_re4</name>
+            <pose>50 -3 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_red</uri>
+        </include>
+
+
+         <include>
+            <name>buoy_red5</name>
+            <pose>50 -5 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_red</uri>
+        </include>
         
         <xacro:include filename="$(find eboat_gazebo)/worlds/ocean.xacro" />
         <xacro:ocean />

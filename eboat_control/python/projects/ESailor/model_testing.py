@@ -403,7 +403,7 @@ def pathTest(model, wind_speed = 10, obs_space_size = 5, dist = 100):
     print(ros_path)
 
     EBOAT_HOME       = "/home/araujo/yara_ws/src/Yara_OVE/"
-    launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch")
+    launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
     print ("Gazebo launched!")
@@ -480,7 +480,8 @@ def pathTest(model, wind_speed = 10, obs_space_size = 5, dist = 100):
             if count > 150:
                 break
             else:
-                count += 1
+                count += 1                
+        
 
     sensor_array.kill()
     closeGazEnv(port, roslaunch)
@@ -492,7 +493,7 @@ def main():
     # model = PPO.load("/home/araujo/eboat_ws/src/eboat_gz_1/models/PPO/model1_17042023_10_52_09/eboat_ocean_50")
     # model = PPO.load("/home/araujo/eboat_ws/src/eboat_gz_1/models/PPO/model1_19042023_22_10_20/eboat_ocean_50")
     # model = PPO.load("/home/araujo/eboat_ws/src/eboat_gz_1/models/PPO/model1_20042023_21_36_39/eboat_ocean_50")
-    model = PPO.load("/home/araujo/yara_ws/src/Yara_OVE/esailor/models/PPO/model35_31072023_12_29_07/eboat_ocean_50")
+    model = PPO.load("/home/araujo/yara_ws/src/Yara_OVE/esailor/models/PPO/model35_25082023_23_29_13/eboat_ocean_50.zip")
 
     # singleWayPoint(model, wind_speed = 10)
     # regattaCourse(model, wind_speed=10, wind_angle=0, obs_space_size = 9)
