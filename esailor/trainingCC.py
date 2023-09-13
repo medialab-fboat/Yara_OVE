@@ -129,18 +129,6 @@ def runTraining25(env, logdir, sufix="model35"):
         print(f"Elapsed time                : {htime(timeB - start)}")
         print(f"Remaining time              : {htime((SAVESTEPS - 1 - i)*avtime)}")
 
-#avoidence obstacle
-""" def avoidenceObstacle(env, model, obs, action):
-    #--> Eletric propulsion [-5, 5]
-    action[0] = 0.0
-    #--> Boom angle [0, 90]
-    action[1] = 0.0
-    #--> Rudder angle [-60, 60]
-    action[2] = 0.0
-    
-    return action """ 
-    
-
 def main():
     logdir = "logs"
     if not os.path.exists(logdir):
