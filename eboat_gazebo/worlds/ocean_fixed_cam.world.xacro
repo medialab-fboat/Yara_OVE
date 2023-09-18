@@ -8,7 +8,8 @@
                     <name>eboat</name>
                     <static>true</static>
                     <use_model_frame>true</use_model_frame>
-                    <xyz>-30 0 8</xyz>
+                    <!--<xyz>-18 0 5</xyz>-->
+                    <xyz>-10.8 -6.44 2.5</xyz>
                     <!--<xyz>-15 0 4</xyz>-->
                     <inherit_yaw>true</inherit_yaw>
                 </track_visual>

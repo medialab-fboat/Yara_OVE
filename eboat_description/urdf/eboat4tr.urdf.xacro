@@ -24,6 +24,10 @@
     <!-- Attach lift&drag plugin for sail -->
     <xacro:eboat_foil_gazebo name="eboat4_sail"/>
 
+    <!-- Attach lift & drag plugin for uderwater elements -->
+    <!--<xacro:rudder_lift_drag name="rudder"/>-->
+    <!--<xacro:keel_lift_drag name="keel"/>-->
+
     <!--control interfaces-->
     <xacro:mission_control name="eboat4" />
     <xacro:sail_control_interface name="eboat4" />

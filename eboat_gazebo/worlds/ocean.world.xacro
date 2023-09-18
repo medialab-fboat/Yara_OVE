@@ -4,6 +4,8 @@
       <gui fullscreen='0'>
           <camera name='user_camera'>
             <pose>-85.03 -3.517 26.21 0 0.212 -0.0332</pose>
+            <!--<pose>61.17 -7.023 4.735 0 0.208 3.0301</pose>-->
+            <!--<pose>61.96 -2.356 3.43 0 0.16 3.03</pose>-->
           </camera>
       </gui>
 
@@ -16,11 +18,11 @@
             <pose>200.0 0.0 0 0 0 0</pose>
             <uri>$(find eboat_description)/models/wayPointMarker</uri>
         </include>-->
-        <!--<include>
+        <include>
             <name>redBuoy</name>
-            <pose>110.0 5.0 0 0 0 0</pose>
+            <pose>10.0 0 0 0 0 0</pose>
             <uri>$(find eboat_description)/models/buoy_red</uri>
-        </include>-->
+        </include>
 
         <!--PHYSICS ENGINE-->
         <physics type="ode">

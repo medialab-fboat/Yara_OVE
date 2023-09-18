@@ -18,7 +18,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <sphere>
-            <radius>2.0</radius>
+            <radius>0.1</radius>
           </sphere>
         </geometry>
         <material>

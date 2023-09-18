@@ -115,9 +115,9 @@ void SailControllerPlugin::OnUpdate()
     // the wind force.
     double sov = this->boomEngVel * this->world->Physics()->GetMaxStepSize();
     if (this->sailPosition > 90.0)
-         this->sailPosition == 90.0;
+         this->sailPosition = 90.0;
     else if (this->sailPosition < -90.0)
-         this->sailPosition == -90.0;
+         this->sailPosition = -90.0;
 
     if (this->sailPosition > this->sailJoint->UpperLimit(0) + sov) //--> in this condition the cable should be released
     {
@@ -140,4 +140,9 @@ void SailControllerPlugin::OnUpdate()
     //physics::JointPtr jibJoint = this->model->GetJoint("boom_jib_joint");
     //jibJoint->SetUpperLimit(0, this->sailJoint->UpperLimit(0));
     //jibJoint->SetLowerLimit(0, this->sailJoint->LowerLimit(0));
+
+    ///////////////////////////////////////
+    //std::cout << "Command  : " << this->sailPosition << std::endl;
+    //std::cout << "Execution: " << this->sailJoint->UpperLimit(0) << "|" << this->sailJoint->LowerLimit(0) << std::endl;
+    ///////////////////////////////////////
 }

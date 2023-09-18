@@ -10,6 +10,7 @@
 #include "gazebo/common/Assert.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/physics/ode/ODEPhysics.hh"
+#include "gazebo/sensors/RaySensor.hh"
 
 #include "ros/ros.h"
 #include "std_msgs/Float32.h"
@@ -106,7 +107,7 @@ void MissionControlPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     topic_name.append(this->model->GetName());
     topic_name.append("/mission_control/observations");
 
-    this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>(topic_name, 100);
+    this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>(topic_name, 1);
 
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())
@@ -212,6 +213,32 @@ void MissionControlPlugin::OnUpdate()
 
         //SIMULATION TIME STAMP
         //obsMsg.data.push_back(simtime);
+
+        ///////////////////////////////////////////////////
+        //--> Working to get laser sensor data from another plugin
+        /*sensors::RaySensor mysensor;
+        //
+        mysensor.SetParent("base_link", this->model->GetLink("base_link")->GetId());
+        mysensor.Load(this->world->Name());
+        mysensor.SetPose(ignition::math::Pose3d(0, 0, 0.6, 0, 0, 0));
+        mysensor.SetActive(true);
+        //mysensor.LaserShape()->AddRay(ignition::math::Vector3d(1.0, 0.0, 0.0), ignition::math::Vector3d(41.0, 0.0, 0.0));
+        
+        std::cout << "RayCount()      : " << mysensor.LaserShape()->RayCount() << std::endl;
+        std::cout << "GetSampleCount(): " << mysensor.LaserShape()->GetSampleCount() << std::endl;
+        std::cout << "Alcance         : [" << mysensor.LaserShape()->GetMinRange() << ", " << mysensor.LaserShape()->GetMaxRange() << "]" << std::endl;
+        std::cout << mysensor.RangeMax() << " " << mysensor.LaserShape()->Ray(0)->GetLength() << std::endl;
+        std::cout << "MinAngle        : " << mysensor.LaserShape()->MinAngle() << std::endl;
+        std::cout << "MaxAngle        : " << mysensor.LaserShape()->MaxAngle() << std::endl;
+
+        
+        double dist;
+        std::string entity;
+        mysensor.LaserShape()->Ray(320)->GetIntersection(dist, entity);
+        std::cout << "My ray intersect entity [" << entity << "] at distance of [" << dist << "]" <<std::endl;
+        std::cout <<  mysensor.IsActive() << std::endl;
+        std::cout << "----------------------------------------------" << std::endl;*/
+        ///////////////////////////////////////////////////
 
         // PUBLISH OBSERVATIONS
         this->obsPub.publish(obsMsg);

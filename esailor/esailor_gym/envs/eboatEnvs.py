@@ -119,10 +119,10 @@ class Eboat925SternWindv0(gym.Env):
             print(f"\n\n===========================\n{result}\n===========================\n")
 
         #-->DEFINE THE NECESSARY ROS TOPICS AND SERVICES
-        self.boomAng_pub   = rospy.Publisher(f"/{self.model_namespace}/control_interface/sail", Float32, queue_size=5)
-        self.rudderAng_pub = rospy.Publisher(f"/{self.model_namespace}/control_interface/rudder", Float32, queue_size=5)
-        self.propVel_pub   = rospy.Publisher(f"/{self.model_namespace}/control_interface/propulsion", Int16, queue_size=5)
-        self.wind_pub      = rospy.Publisher(f"/eboat/atmosferic_control/wind", Point, queue_size=5)
+        self.boomAng_pub   = rospy.Publisher(f"/{self.model_namespace}/control_interface/sail", Float32, queue_size=1)
+        self.rudderAng_pub = rospy.Publisher(f"/{self.model_namespace}/control_interface/rudder", Float32, queue_size=1)
+        self.propVel_pub   = rospy.Publisher(f"/{self.model_namespace}/control_interface/propulsion", Int16, queue_size=1)
+        self.wind_pub      = rospy.Publisher(f"/eboat/atmosferic_control/wind", Point, queue_size=1)
         self.unpause       = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause         = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
         self.reset_proxy   = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
@@ -144,8 +144,11 @@ class Eboat925SternWindv0(gym.Env):
         self.windVec = np.array([0, 0, 0], dtype=np.float32)
         self.min_windspeed   = 3
         self.max_windspeed   = 11
-        self.wind_directions = np.array([-90, -45, -5, 5, 45, 90])
+        # self.wind_directions = np.array([-135, -90, -45, -5, 5, 45, 90, 135])
+        self.wind_directions = np.array([-135, 135])
         self.wind_speed      = 0.0
+
+        time.sleep(5)
 
         #--> UNPAUSE SIMULATION
         rospy.wait_for_service("/gazebo/unpause_physics")
@@ -179,8 +182,7 @@ class Eboat925SternWindv0(gym.Env):
         self.d2r           = np.pi / 180.0
         self.step_count    = 0
         self.lateral_limit = 5                             #-->DEFINE THE HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT LINE BEFORE A DONE SIGNAL
-
-        time.sleep(5)
+        self.PREVACT       = np.array([-1, -1])
 
     def rot(self, modulus, theta):
         rot = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]], dtype=np.float32)
@@ -196,13 +198,13 @@ class Eboat925SternWindv0(gym.Env):
             except:
                 pass
             # --> obsData: 0 distance from the goal,
-            #              1 angle between the foward direction and the direction towards the goal
+            #              1 angle between the foward direction and the direction toward the goal
             #              2 surge velocity
             #              3 apparent wind speed,
             #              4 apparent wind angle,
             #              5 boom angle,
             #              6 rudder angle,
-            #              7 eletric propultion power,
+            #              7 eletric propulsion power,
             #              8 roll angle
             #             10 boat's current X position
             #             11 boat's current Y position
@@ -235,7 +237,7 @@ class Eboat925SternWindv0(gym.Env):
 
         return robs
 
-    def rewardFunction(self, obs, actions):
+    def rewardFunction0(self, obs, actions):
         #-->COMPUTE THE DISTANCE TRAVELED BY THE BOAT TOWARDS THE OBJECTIVE. IF D > 0 THE BOAT WENT NEAR THE OBJECTIVE.
         dS  = self.PREVOBS[0] - obs[0]
         ta  = abs(obs[1])
@@ -246,7 +248,7 @@ class Eboat925SternWindv0(gym.Env):
             if dS > self.PREdS:
                 C1 = 0.5 * C0
             elif dS < self.PREdS:
-                C1 = -0.3 * C0
+                C1 = -0.6 * C0
             else:
                 C1 = 0.0
 
@@ -256,7 +258,7 @@ class Eboat925SternWindv0(gym.Env):
                     C2 = 0.5 * C0
                 # elif ta > pta:
                 elif ta - pta > 1:
-                    C2 = -0.5 * C0
+                    C2 = -0.6 * C0
                 else:
                     if ta < 5:
                         C2 = 0.5 * C0
@@ -274,12 +276,12 @@ class Eboat925SternWindv0(gym.Env):
 
             # alpha = 180 - obs[5] - abs(obs[4])
             # print(f"alpha = {alpha}")
-            if ((dS > self.PREdS) & (ta <= 45) & (obs[2] > 0.25 * self.wind_speed)):
-                C3 = 0.6 * C0
-            else:
-                C3 = 0.0
+            # if ((dS > self.PREdS) & (ta <= 45) & (obs[2] > 0.25 * self.wind_speed)):
+            #     C3 = 0.6 * C0
+            # else:
+            #     C3 = 0.0
 
-            R = C0 + C1 + C2 + C3
+            R = C0 + C1 + C2 #+ C3
             # print(f"dS(t)   = {dS} = {self.PREVOBS[0]} - {obs[0]}")
             # print(f"dS(t-1) = {self.PREdS}")
             # print(f"ta      = {ta}")
@@ -295,8 +297,230 @@ class Eboat925SternWindv0(gym.Env):
         self.PREdS = dS
         return R
 
+    def rewardFunction1(self, obs):
+        #-->COMPUTE THE DISTANCE TRAVELED BY THE BOAT TOWARDS THE OBJECTIVE. IF D > 0 THE BOAT WENT NEAR THE OBJECTIVE.
+        dS  = self.PREVOBS[0] - obs[0]
+        ta  = abs(obs[1])
+        pta = abs(self.PREVOBS[1])
+        C0  = dS / self.D0;
+
+        if dS > 0:
+            if dS > self.PREdS:
+                C1 = 0.5 * C0
+                self.PREdS = dS
+            elif dS < self.PREdS:
+                C1 = -0.6 * C0
+            else:
+                C1 = 0.0
+
+            if ta <= 45.0:
+                if ta < pta:
+                    C2 = 0.5 * C0
+                elif ta - pta > 1:
+                    C2 = -0.6 * C0
+                else:
+                    if ta < 5:
+                        C2 = 0.5 * C0
+                    else:
+                        C2 = 0.0
+            else:
+                if ta < pta:
+                    C2 = 0.7 * C0
+                elif ta > pta:
+                    C2 = -1.5 * C0
+                else:
+                    C2 = -0.7 * C0
+
+            alpha = 180 - obs[5] - abs(obs[4])
+            if (alpha > 150) & (abs(obs[5] - self.PREVOBS[5]) < 30):
+                C3 = (-1) * (((C0 > 0) * C0) + ((C1 > 0) * C1) + ((C2 > 0) * C2) + 0.06)
+            else:
+                C3 = 0.0
+
+            # if ((dS > self.PREdS) & (ta <= 45) & (obs[2] > 0.25 * self.wind_speed)):
+            #     C4 = 0.6 * C0
+            # else:
+            #     C4 = 0.0
+
+            R = C0 + C1 + C2 + C3
+        else:
+            R = C0
+            # print(f"return  = {C0}  = {R}")
+
+        return R
+
+    def rewardFunctionA(self, obs, action):
+        #-->COMPUTE THE DISTANCE TRAVELED BY THE BOAT TOWARDS THE OBJECTIVE. IF D > 0 THE BOAT WENT NEAR THE OBJECTIVE.
+        dS    = self.PREVOBS[0] - obs[0]
+        ta    = abs(obs[1])
+        pta   = abs(self.PREVOBS[1])
+        db    = abs((self.PREVACT[0] - action[0]) * 45.0) #abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
+        dr    = abs((self.PREVACT[1] - action[1]) * 60.0) #abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
+        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
+        C0  = dS / self.D0;
+
+        if dS > 0:
+            C1 = ((dS > self.PREdS) * 0.5 - (dS < self.PREdS) * 0.6) * C0
+
+            if ta <= 45.0:
+                if ta < pta:
+                    C2 = 0.5 * C0
+                elif ta - pta > 1:
+                    C2 = -0.6 * C0
+                else:
+                    if ta < 5:
+                        C2 = 0.5 * C0
+                    else:
+                        C2 = 0.0
+            else:
+                if ta < pta:
+                    C2 = 0.7 * C0
+                elif ta > pta:
+                    C2 = -1.5 * C0
+                else:
+                    C2 = -0.7 * C0
+
+            C3 = (alpha > 150) * (((150 - alpha) / 30.0) - 0.5) * C0
+
+            if ((ta <= 45) & (obs[2] > 0.25 * self.wind_speed)):
+                C4 = 0.6 * C0
+            elif obs[2] < 0.5:
+                # C4 = (-1.0) * C0 * ((self.step_count / 60.0) + 0.5)
+                C4 = (-0.15) * (self.step_count / 60.0)
+                self.step_count += 1
+            else:
+                C4 = 0.0
+
+            ad = C0 + C1 + C2 + C3 + C4
+            if ad > 0:
+                C5 = ((((db > 1.0) + (dr > 1.0)) * (-0.15)) + (((db > 28.0) + (dr > 23.0)) * (-0.45))) * ad
+            else:
+                # C5 = ((db > 28.0) + (dr > 23.0)) * 0.15 * ad
+                C5 = (1.0 + (((db > 1.0) + (dr > 1.0)) * 0.1) + (((db > 28.0) + (dr > 23.0)) * 0.2)) * ad
+
+            R = C0 + C1 + C2 + C3 + C4 + C5
+            # print(f"db = {self.PREVACT[0]} - {action[0]} = {db}")
+            # print(f"dr = {dr}")
+            # print("R   = {:7.5f} + {:7.5f} + {:7.5f} + {:7.5f} + {:7.5f} + {:7.5f} = {:7.5f}".format(C0, C1, C2, C3, C4, C5, R))
+        else:
+            R = C0
+
+        return np.max([R, -1])
+
+    def rewardFunctionB(self, obs, action): #-->rewardFunctionB (INATIVA)
+        dS    = self.PREVOBS[0] - obs[0]
+        ta    = abs(obs[1])
+        pta   = abs(self.PREVOBS[1])
+        db    = abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
+        dr    = abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
+        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
+
+        #--> POSITIVE/NEGATIVE RETURN EARNED BY GO NEAR/AWAY THE WAYPOINT
+        C0    = dS / self.D0;
+
+        if dS > 0:
+            if ta <= 90.0:
+                C1 = (np.cos(ta * self.d2r)**3) * C0
+                if (obs[2] > 0.4 * self.wind_speed):
+                    C2 = 1.5 * C0
+                elif (obs[2] > 0.333333333 * self.wind_speed):
+                    C2 = 1.2 * C0
+                elif (obs[2] > 0.25 * self.wind_speed):
+                    C2 = 0.8 * C0
+                elif obs[2] < 0.6:
+                    C2 = (-0.15) * (self.step_count / 60.0)
+                    self.step_count += 1
+                else:
+                    C2 = 0.0
+            elif (ta < pta):
+                C1 = 0.7 * C0
+                C2 = 0.0
+            else:
+                C1 = -2.0 * C0
+                C2 = 0.0
+            #########################################
+            if alpha > 150:
+                C3 = (((150 - alpha) / 30.0) - 1.0) * C0
+            elif alpha < 5:
+                C3 = (-1.0) * C0
+            else:
+                C3 = 0.0
+            #########################################
+            C4 = ((C0 + C1 + C2 + C3) *
+                  ((((db > 0) * np.min([1, db/28.0]) * 0.1) + ((dr > 0) * np.min([1, dr/23.0]) * 0.1)) +
+                   (((db > 28) * (db / 90.0) * 0.3) + ((dr > 0) * np.min([1, dr/90.0]) * 0.3))))
+            #########################################
+            R = C0 + C1 + C2 + C3 + C4
+        elif dS == 0:
+            R = (-0.15) * (self.step_count / 60.0)
+            self.step_count += 1
+        else:
+            R = np.min([-5.0, ((-0.15) * (self.step_count / 60.0))]) * C0
+
+        return np.max([R, -1])
+
+    def rewardFunction(self, obs, action): #-->rewardFunctionC (ATIVA)
+        dS    = self.PREVOBS[0] - obs[0]
+        ta    = abs(obs[1])
+        pta   = abs(self.PREVOBS[1])
+        db    = abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
+        dr    = abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
+        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
+
+        #--> POSITIVE/NEGATIVE RETURN EARNED BY GO NEAR/AWAY THE WAYPOINT
+        C0    = dS / self.D0;
+
+        if dS > 0:
+            if ta <= 90.0:
+                C1 = (np.cos(ta * self.d2r)**3) * C0
+                if (obs[2] > 0.4 * self.wind_speed):
+                    C2 = 1.0 * C0
+                elif (obs[2] > 0.333333333 * self.wind_speed):
+                    C2 = 0.7 * C0
+                elif (obs[2] > 0.25 * self.wind_speed):
+                    C2 = 0.4 * C0
+                elif obs[2] < 0.6:
+                    C2 = (-0.15) * (self.step_count / 60.0)
+                    self.step_count += 1
+                else:
+                    C2 = 0.0
+
+                if dS > self.PREdS:
+                    C2 *= 1.5
+                    self.PREdS = dS  # --> UPDATE THE PREdS GLOBAL VARIABLE (PREdS stores the maximum dS actived by the boat during an episode)
+            elif (ta < pta):
+                C1 = 0.7 * C0
+                C2 = 0.0
+            else:
+                C1 = -2.0 * C0
+                C2 = 0.0
+            #########################################
+            if alpha > 150:
+                C3 = (((150 - alpha) / 30.0) - 1.0) * C0
+            elif alpha < 5:
+                C3 = (-1.0) * C0
+            else:
+                C3 = 0.0
+            #########################################
+            C4                   = C0 + C1 + C2 + C3
+            boom_energy_factor   = ((db > 0) * np.min([1.0, db / 28.0]) * 0.1) + ((db > 28) * (db / 90.0) * 0.3)
+            rudder_energy_factor = ((dr > 0) * np.min([1.0, dr / 23.0]) * 0.1) + ((dr > 23) * np.min([1, dr / 90.0]) * 0.3)
+            if C4 > 0:
+                C4 *= (-1.0)*(boom_energy_factor + rudder_energy_factor)
+            else:
+                C4 *= boom_energy_factor + rudder_energy_factor
+            #########################################
+            R = C0 + C1 + C2 + C3 + C4
+        elif dS == 0:
+            R = (-0.15) * (self.step_count / 60.0)
+            self.step_count += 1
+        else:
+            R = np.min([-5.0, ((-0.15) * (self.step_count / 60.0))]) * C0
+
+        return np.max([R, -1])
+
     def step(self, action):
-        ract = np.array([(action[0]+1)*45, action[1]*60])
+        # ract = np.array([(action[0]+1)*45, action[1]*60])
         # print(self.step_count, ract)
         #--> UNPAUSE SIMULATION
         rospy.wait_for_service("/gazebo/unpause_physics")
@@ -347,8 +571,9 @@ class Eboat925SternWindv0(gym.Env):
         else:
             # -->UPDATE PREVIOUS STATE VARIABLES
             self.PREVOBS = obs
+            self.PREVACT = action[0], action[1]
 
-        self.step_count += 1
+        # self.step_count += 1
 
         return robs, reward, done, False, {}
 
@@ -397,6 +622,7 @@ class Eboat925SternWindv0(gym.Env):
         #-->RESET INITIAL STATE VALUES
         self.PREVOBS    = obs
         self.PREdS      = 0.0
+        self.PREVACT    = 0.0, 0.0
         self.step_count = 0
 
         return robs, {}
