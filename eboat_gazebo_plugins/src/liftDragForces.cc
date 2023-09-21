@@ -270,7 +270,6 @@ void LiftDragForces::OnUpdate()
     //ignition::math::Vector3d bow          = this->baseLink->WorldPose().Rot().RotateVector(this->boatBow);
     ignition::math::Vector3d port         = this->baseLink->WorldPose().Rot().RotateVector(this->boatPort);
     //ignition::math::Vector3d forwardForce = this->force_on_sail.Dot(bow) * bow;
-    sail_lateral_force = (this->force_on_sail.Dot(port) / (port.Length() * port.Length())) * port;
     
     double sign = 1.0;
     if (this->atkangle > 165)
@@ -279,13 +278,17 @@ void LiftDragForces::OnUpdate()
       if (val < 2)
         sign = -1.0;
     }
-    if ((this->atkangle >= 20) & (this->atkangle <= 160))
+    if ((this->atkangle >= 5) & (this->atkangle <= 160))
     {
       this->baseLink->AddForceAtRelativePosition(sign * this->force_on_sail, this->sailCP);
+      //--> COMPUTE LATERAL COMPONENT OF THE FORCE TO BE RESISTED BY THE KEEL
+      sail_lateral_force = (this->force_on_sail.Dot(port) / (port.Length() * port.Length())) * port; 
     }
     else
     {
       this->baseLink->AddForceAtRelativePosition(sign * 0.1 * this->force_on_sail, this->sailCP);
+      //--> COMPUTE LATERAL COMPONENT OF THE FORCE TO BE RESISTED BY THE KEEL
+      sail_lateral_force = 0.0;
     }
 
     //->Force on sail: As we will aplly the wind force direct on the boat element, the sail element will stand still and it will not change position with the
