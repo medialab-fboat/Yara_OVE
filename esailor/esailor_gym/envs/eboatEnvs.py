@@ -32,7 +32,7 @@ from tf.transformations import quaternion_from_euler
 from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel
 from gazebo_msgs.msg import ModelState
 
-class Eboat925SternWindv0(gym.Env):
+class Eboat925_v0(gym.Env):
     def __init__(self):
         # print(f"\n----------------------\n{ros_port}\n----------------------\n")
 
@@ -42,12 +42,12 @@ class Eboat925SternWindv0(gym.Env):
         #     os.environ["ROS_MASTER_URI"] = f"http://localhost:{ros_port}"
 
         #-->INITIALIZE A ROS NODE FOR THE TRAINING PROCESS
-        try:
-            rospy.init_node(f"gym", anonymous=True)
-        except:
-            print("ROSMASTER is not running!")
-            print(time.time())
-            exit(1)
+        # try:
+        #     rospy.init_node(f"gym", anonymous=True)
+        # except:
+        #     print("ROSMASTER is not running!")
+        #     print(time.time())
+        #     exit(1)
 
         #-->DEFINE A UNIQUE MODEL NAME FOR OUR BOAT
         modelname = f"eboat4tr"
@@ -144,8 +144,9 @@ class Eboat925SternWindv0(gym.Env):
         self.windVec = np.array([0, 0, 0], dtype=np.float32)
         self.min_windspeed   = 3
         self.max_windspeed   = 11
-        # self.wind_directions = np.array([-135, -90, -45, -5, 5, 45, 90, 135])
-        self.wind_directions = np.array([-135, 135])
+        self.wind_directions = np.array([-135, -90, -45, -5, 5, 45, 90, 135])
+        # self.wind_directions = np.array([-135, 135])
+        # self.wind_directions = np.array([-179, 180])
         self.wind_speed      = 0.0
 
         time.sleep(5)
@@ -157,7 +158,7 @@ class Eboat925SternWindv0(gym.Env):
         except(rospy.ServiceException) as e:
             print(("/gazebo/unpause_physics service call failed!"))
 
-        #-->GET OBSERVATIONS AT TIME STAMP 0 (INITIAL STATE)
+        #-->GET OBSERVATIONS AT TIME 0 (INITIAL STATE)
         print("\n\n===========================\nGetting observations on the initial state (t=0)\n===========================\n")
         self.PREVOBS = None
         while (self.PREVOBS is None):
@@ -183,6 +184,9 @@ class Eboat925SternWindv0(gym.Env):
         self.step_count    = 0
         self.lateral_limit = 5                             #-->DEFINE THE HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT LINE BEFORE A DONE SIGNAL
         self.PREVACT       = np.array([-1, -1])
+        self.maxcharge     = 10
+        self.battery       = np.full(2, fill_value=self.maxcharge, dtype=int)
+
 
     def rot(self, modulus, theta):
         rot = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]], dtype=np.float32)
@@ -197,15 +201,7 @@ class Eboat925SternWindv0(gym.Env):
                                                  timeout=20).data
             except:
                 pass
-            # --> obsData: 0 distance from the goal,
-            #              1 angle between the foward direction and the direction toward the goal
-            #              2 surge velocity
-            #              3 apparent wind speed,
-            #              4 apparent wind angle,
-            #              5 boom angle,
-            #              6 rudder angle,
-            #              7 eletric propulsion power,
-            #              8 roll angle
+
             #             10 boat's current X position
             #             11 boat's current Y position
 
@@ -236,6 +232,35 @@ class Eboat925SternWindv0(gym.Env):
         robs[8] = observations[8] / 180.0
 
         return robs
+
+    def setState(self, model_name, pose, theta):
+        state = ModelState()
+        state.model_name = model_name
+        state.reference_frame = "world"
+        # pose
+        state.pose.position.x = pose[0]
+        state.pose.position.y = pose[1]
+        state.pose.position.z = pose[2]
+        quaternion = quaternion_from_euler(0, 0, theta)
+        state.pose.orientation.x = quaternion[0]
+        state.pose.orientation.y = quaternion[1]
+        state.pose.orientation.z = quaternion[2]
+        state.pose.orientation.w = quaternion[3]
+        # twist
+        state.twist.linear.x = 0
+        state.twist.linear.y = 0
+        state.twist.linear.z = 0
+        state.twist.angular.x = 0
+        state.twist.angular.y = 0
+        state.twist.angular.z = 0
+
+        rospy.wait_for_service('/gazebo/set_model_state')
+        try:
+            set_state = self.set_state
+            result = set_state(state)
+            assert result.success is True
+        except rospy.ServiceException:
+            print("/gazebo/get_model_state service call failed")
 
     def rewardFunction0(self, obs, actions):
         #-->COMPUTE THE DISTANCE TRAVELED BY THE BOAT TOWARDS THE OBJECTIVE. IF D > 0 THE BOAT WENT NEAR THE OBJECTIVE.
@@ -459,7 +484,7 @@ class Eboat925SternWindv0(gym.Env):
 
         return np.max([R, -1])
 
-    def rewardFunction(self, obs, action): #-->rewardFunctionC (ATIVA)
+    def rewardFunctionC(self, obs, action): #-->rewardFunctionC (INATIVA)
         dS    = self.PREVOBS[0] - obs[0]
         ta    = abs(obs[1])
         pta   = abs(self.PREVOBS[1])
@@ -512,6 +537,69 @@ class Eboat925SternWindv0(gym.Env):
             #########################################
             R = C0 + C1 + C2 + C3 + C4
         elif dS == 0:
+            R = (-0.15) * (self.step_count / 60.0)
+            self.step_count += 1
+        else:
+            R = np.min([-5.0, ((-0.15) * (self.step_count / 60.0))]) * C0
+
+        return np.max([R, -1])
+
+    def rewardFunction(self, obs, action): #-->rewardFunctionD (ATIVA)
+        dS    = self.PREVOBS[0] - obs[0]
+        ta    = abs(obs[1])
+        pta   = abs(self.PREVOBS[1])
+        db    = abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
+        dr    = abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
+        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
+
+        #--> POSITIVE/NEGATIVE RETURN EARNED BY GO NEAR/AWAY THE WAYPOINT
+        C0 = dS / self.D0;
+
+        if dS > 0.5:
+            if ta <= 90.0:
+                C1 = (np.cos(ta * self.d2r)**3) * C0
+                if (obs[2] > 0.4 * self.wind_speed):
+                    C2 = 1.0 * C0
+                elif (obs[2] > 0.333333333 * self.wind_speed):
+                    C2 = 0.7 * C0
+                elif (obs[2] > 0.25 * self.wind_speed):
+                    C2 = 0.4 * C0
+                elif obs[2] < 0.6:
+                    C2 = (-0.15) * (self.step_count / 60.0)
+                    self.step_count += 1
+                else:
+                    C2 = 0.0
+
+                if dS > self.PREdS:
+                    C2 *= 1.5
+                    self.PREdS = dS  # --> UPDATE THE PREdS GLOBAL VARIABLE (PREdS stores the maximum dS actived by the boat during an episode)
+            elif (ta < pta):
+                C1 = 0.7 * C0
+                C2 = 0.0
+            else:
+                C1 = -2.0 * C0
+                C2 = 0.0
+            #########################################
+            if alpha > 150:
+                C3 = (((150 - alpha) / 30.0) - 1.0) * C0
+            elif alpha < 5:
+                C3 = (-1.0) * C0
+            else:
+                C3 = 0.0
+            #########################################
+            C4                   = C0 + C1 + C2 + C3
+            # self.battery[0]     -= (db > 0.0) * 1.0 + (db > 28.0) * 1.0
+            # self.battery[1]     -= (dr > 0.0) * 1.0 + (dr > 23.0) * 1.0
+            boom_position_factor = 0.6 * (((action[0] + 1.0) * 45.0) < 5.0)
+            boom_energy_factor   = ((db > 0) * np.min([1.0, db / 28.0]) * 0.1) + ((db > 28) * (db / 90.0) * 0.3)
+            rudder_energy_factor = ((dr > 0) * np.min([1.0, dr / 23.0]) * 0.1) + ((dr > 23) * np.min([1, dr / 90.0]) * 0.3)
+            if C4 > 0:
+                C4 *= (-1.0)*(boom_position_factor + boom_energy_factor + rudder_energy_factor)
+            else:
+                C4 *= boom_position_factor + boom_energy_factor + rudder_energy_factor
+            #########################################
+            R = C0 + C1 + C2 + C3 + C4
+        elif dS >= 0:
             R = (-0.15) * (self.step_count / 60.0)
             self.step_count += 1
         else:
@@ -599,6 +687,12 @@ class Eboat925SternWindv0(gym.Env):
         self.windVec[:2] = self.rot(self.wind_speed, (theta_wind * self.d2r))
         self.wind_pub.publish(Point(self.windVec[0], self.windVec[1], self.windVec[2]))
 
+        #-->TURN BOTA 45o WHEN THE SAILING POINT IS IN "NO GO" ZONE.
+        # if theta_wind > 150:
+        #     self.setState(self.model_namespace, [0.0, 0.0, 0.0], 0.7854)
+        # elif theta_wind < -150:
+        #     self.setState(self.model_namespace, [0.0, 0.0, 0.0], -0.7854)
+
         #-->UNPAUSE SIMULATION TO MAKE OBSERVATION
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
@@ -624,6 +718,7 @@ class Eboat925SternWindv0(gym.Env):
         self.PREdS      = 0.0
         self.PREVACT    = 0.0, 0.0
         self.step_count = 0
+        self.battery    = self.maxcharge, self.maxcharge
 
         return robs, {}
 

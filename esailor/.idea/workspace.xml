@@ -5,21 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8be4a9dd-a09e-4c83-ba59-ebc95a3c6fc1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_control/src/missionControl.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_control/src/missionControl.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_control/src/sailController.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_control/src/sailController.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/models/marker/model.sdf" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/models/marker/model.sdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4.urdf.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4.urdf.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_control_plugins.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_control_plugins.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_physics_plugins.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_physics_plugins.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4tr.urdf.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4tr.urdf.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.world.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.world.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean_fixed_cam.world.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean_fixed_cam.world.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_gazebo_plugins/src/liftDragForces.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo_plugins/src/liftDragForces.cc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/esailor_gym/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor_gym/envs/eboatEnvs.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/eboatEnvs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tmp.py" beforeDir="false" afterPath="$PROJECT_DIR$/tmp.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
