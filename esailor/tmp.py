@@ -74,6 +74,14 @@ def sailingDirection():
     plt.grid()
     plt.show()
 
+
+def lateralReturnVal():
+    y = np.arange(-50, 51)
+    x = np.cos(y * np.pi / 100)**9
+    plt.plot(y, x)
+    plt.grid()
+    plt.show()
+
 def liftDragCoefficientsForRudderAndKeel():
     df = pandas.read_csv("/home/eduardo/USVSim/scripts/naca001234_400k.csv")
     A = df.atkang.values
@@ -163,7 +171,8 @@ if __name__ == '__main__':
     # surgeAccordingWind()
     # sailingDirection()
     # liftDragCoefficientsForRudderAndKeel()
-    testGetPhysicsProperties()
+    # testGetPhysicsProperties()
+    lateralReturnVal()
 
     # import rospy
     # import time
