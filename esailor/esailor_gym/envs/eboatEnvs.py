@@ -48,6 +48,7 @@ class EboatBase(gym.Env):
 
         # -->TRANSFORM THE XACRO FILE TO URDF
         # subprocess.run(["xacro", urdffilepath, f"{modelname}.urdf"], capture_output=True)
+        print(urdffilepath)
         os.system(f"xacro {urdffilepath} > {modelname}.urdf")
 
         # -->SPAWN THE MODEL IN THE GAZEBO SIMULATION
@@ -114,6 +115,7 @@ class EboatBase(gym.Env):
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
         self.set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         self.get_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+        # self.lidar = rospy.Publisher(f"/{self.model_namespace}/lidar/scan", Float32MultiArray, queue_size=1)
 
     def rot(self, modulus, theta):
         rot = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]], dtype=np.float32)
@@ -197,6 +199,18 @@ class EboatBase(gym.Env):
             assert result.success is True
         except rospy.ServiceException:
             print("/gazebo/get_model_state service call failed")
+            
+    def getState(self, model_name):
+        #print("Chamando o método getState")
+        try:
+            # Chame o serviço ROS para obter o estado do modelo
+            model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+            resp = model_state(model_name, "")
+            return resp   
+
+        except rospy.ServiceException as e:
+            print(f"Service call failed: {e}")
+            return None
 
 class Eboat925_v0(EboatBase):
     def __init__(self):
@@ -220,7 +234,7 @@ class Eboat925_v0(EboatBase):
         #-->DEFINE OBSERVATION AND ACTION SPACES
         self.action_space = spaces.Box(low=-1,
                                        high=1,
-                                       shape=(2,),
+                                       shape=(3,),
                                        dtype=np.float32)
 
         self.observation_space = spaces.Box(low=-1,
@@ -713,7 +727,8 @@ class Eboat925_v0(EboatBase):
 
         #-->GET OBSERVATIONS
         obs = self.getObservations()
-
+        
+       
         #-->PAUSE SIMULATION
         rospy.wait_for_service("/gazebo/pause_physics")
         try:

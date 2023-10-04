@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor/bin/python
+#!/home/araujo/miniconda3/envs/esailor/bin/python
 
 #-->PYTHON UTIL
 import time
@@ -50,7 +50,7 @@ class esailor():
     def _autoSarch4EmptyOceanLaunchFile(self):
         # -->SEARCH FOR A LAUNCH FILE
         print("As the user did not provide a viable launch file, I will search for one.\nThis may take a while, pelase wait!")
-        files           = glob.glob(os.path.join(self.HOME, "**/*empty_ocean.launch"), recursive=True)
+        files           = glob.glob(os.path.join(self.HOME, "**/*ocean_RL_training.launch"), recursive=True)
         path2launchfile = None
         if len(files) > 0:
             path2launchfile = files[0]
@@ -168,7 +168,7 @@ class esailor():
         #--> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
         if self._roslaunch == None:
             print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
-            self.launchGazeboSimulation("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/eboat_gazebo/launch/empty_ocean.launch")
+            self.launchGazeboSimulation("/home/araujo/yara_ws/src/Yara_OVE/eboat_gazebo/launch/ocean_RL_training.launch")
 
         #--> ADJUST PHYSICS PROPERTIES
         if not(self._holdPhysiscsProperties):
@@ -550,11 +550,11 @@ if __name__ == "__main__":
     agent    = esailor()
     agent.training(rlagent    = "PPO",
                    policy     = "MlpPolicy",
-                   envid      = "Eboat62-v0",
+                   envid      = "Eboat92_5",
                    numofsteps = 489 * 2048,
                    refmodel   = refmodel,
-                   actor      = [6, 6, 3],
-                   critic     = [6, 6, 3],
+                   actor      = [11, 11],
+                   critic     = [11, 11],
                    sufix      = "esailor_a_cr",
                    logdir     = "logs")
     # agent.testModel(refmodel)

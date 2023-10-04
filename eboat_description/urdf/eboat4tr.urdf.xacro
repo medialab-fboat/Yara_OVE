@@ -338,6 +338,65 @@
         <child link="camera_bow_link" />
     </joint>
 
+    
+        <!-- LIDAR Sensor -->
+        <link name="lidar_link">
+            <visual>
+            <geometry>
+                <cylinder length="0.5" radius="0.05"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <material name="blue"/>
+            </visual>
+        <inertial>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <mass value="0.1"/>
+                <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+            </inertial>
+        </link>
+
+
+        <!-- Attach the LIDAR sensor to the boat -->
+        <joint name="lidar_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="lidar_link"/>
+            <origin xyz="1 0 0.75" rpy="0 0 0"/>
+        </joint>
+
+        <!-- LIDAR Gazebo plugin -->
+        <gazebo reference="lidar_link">
+        <material>Gazebo/Grey</material>
+            <contact>
+                <collide_without_contact>true</collide_without_contact>
+                <collide_bitmask>0x02</collide_bitmask>
+                <collide_without_contact_bitmask>0x01</collide_without_contact_bitmask>
+            </contact>
+        <sensor type="ray" name="lidar">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>true</visualize>
+            <update_rate>10</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-1.5708</min_angle> <!-- -pi/2 radian -->
+                        <max_angle>1.5708</max_angle> <!-- pi/2 radian -->
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>10</max>
+                    <resolution>0.01</resolution>
+                </range>
+            </ray>
+            <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+                <topicName>/lidar_scan</topicName>
+                <frameName>lidar_link</frameName>
+            </plugin>
+        </sensor>
+        </gazebo>
+
     <!--COLORS-->
     <gazebo reference="boom_link">
         <material>Gazebo/Black</material>
@@ -347,6 +406,6 @@
     </gazebo>
     <gazebo reference="camera_bow_link">
         <material>Gazebo/Grey</material>
-    </gazebo>
+    </gazebo>       
 
 </robot>
