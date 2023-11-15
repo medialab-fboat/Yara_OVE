@@ -355,9 +355,6 @@ class esailor():
         robs[7] = observations[7] / 5.0
         # --> Roll angle                     [-180, 180]
         robs[8] = observations[8] / 180.0
-        # --> Raycast                        [0, 1]
-        robs[9] = observations[9]
-        
 
         return robs
 
@@ -412,10 +409,9 @@ class esailor():
         # -->DEFINE THE NECESSARY ROS TOPICS AND SERVICES
         boomAng_pub = rospy.Publisher(f"/{model_namespace}/control_interface/sail", Float32, queue_size=1)
         rudderAng_pub = rospy.Publisher(f"/{model_namespace}/control_interface/rudder", Float32, queue_size=1)
-        propVel_pub = rospy.Publisher(f"/{model_namespace}/control_interface/propulsion", Int16, queue_size=1)
+        # propVel_pub = rospy.Publisher(f"/{model_namespace}/control_interface/propulsion", Int16, queue_size=1)
         wind_pub = rospy.Publisher(f"/eboat/atmosferic_control/wind", Point, queue_size=1)
-        #add the topic for raycast
-        #raycast = rospy.Publisher(f"/{model_namespace}/mission_control/raycast", Float32MultiArray, queue_size=1)
+        #add the topic for lidar
 
         # -->SERACH FOR THE SDF FILE DESCRIBING THE WAYPOINT
         files = glob.glob(os.path.join(self.HOME, f"**/*Yara_OVE/**/*wayPointMarker/model.sdf"), recursive=True)
@@ -503,10 +499,10 @@ class esailor():
                 boomAng_pub.publish(actionVec[-1][0])
                 rudderAng_pub.publish(actionVec[-1][1])
                 #ADD THE PROPULSION
-                propVel_pub.publish(actionVec[-1][2])
+                # propVel_pub.publish(actionVec[-1][2])
                 # print(f"Observation: {obs}")
-                #ADD THE RAYCAST
-                raycast.publish(obsData)               
+                #ADD THE LIDAR 
+                # print(f"Observation: {obs} | {obs[9:]}")
 
                 print(f"Action: {actionVec[-1][0]} | {actionVec[-1][1]}")
 

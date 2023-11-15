@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor2/bin/python
+#!/home/araujo/miniconda3/envs/esailor2/bin/python
 
 #-->PYTHON UTIL
 import os
@@ -65,7 +65,7 @@ def manualControlUsingGymEnv():
     time.sleep(5)
 
     sensors = subprocess.Popen([sys.executable, os.path.join(
-        "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
+        "/home/araujo/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
 
     obs, _ = env.reset()
 
@@ -112,7 +112,7 @@ def manualControlExperiment(wind_speed = 7):
     obsvarname = ["distance", "trajectory angle", "surge velocity", "aparent wind speed", "aparent wind angle",
                   "boom angle", "rudder angle", "eletric propultion speed", "roll angle", "Pos.X", "Pos.Y"]
 
-    EBOAT_HOME = "/home/eduardo/USVSim/yara_ws/src/Yara_OVE"
+    EBOAT_HOME = "/home/araujo/yara_ws/src/Yara_OVE"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
@@ -144,7 +144,7 @@ def manualControlExperiment(wind_speed = 7):
 
     spawnModel(spawn_model, model_name="wayPointMarker", model_id="wayPointMarker", waypoint=[100, 0, 0])
 
-    sensors = subprocess.Popen([sys.executable, os.path.join("/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
+    sensors = subprocess.Popen([sys.executable, os.path.join("/home/araujo/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
 
     time.sleep(10)
 
@@ -200,7 +200,7 @@ def manualControlExperiment(wind_speed = 7):
     sensors.kill()
     ppid = roslaunch.pid
     print(f"\n\n===================\nProcess id: {ppid}\n===================\n")
-    os.system(f'ps -au eduardo | grep {roslaunch.pid}')
+    os.system(f'ps -au araujo | grep {roslaunch.pid}')
     os.killpg(os.getpgid(roslaunch.pid), signal.SIGTERM)
 
     print("\n\n\nCLOSE FUNCTION\n\n")

@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor2/bin/python
+#!/home/araujo/miniconda3/envs/esailor2/bin/python
 
 #-->PYTHON UTIL
 import os
@@ -243,7 +243,7 @@ def main():
     # runTraining(env, logdir, "PPO", sufix="ensign29_7_winds_10m_straight")
     runTraining(env, logdir, "SAC", sufix="ensign29_7_winds_5m_straight")
 
-    # refmodel = PPO.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_10m_straight_09082023_10_34_00/eboat_ocean_50.zip")
+    # refmodel = PPO.load("/home/araujo/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_10m_straight_09082023_10_34_00/eboat_ocean_50.zip")
     # runTraining(env, "PPO", sufix="sailor29_7_winds_5m_straight", refmodel=refmodel)
 
     print("---------------------------------------------------------\n")

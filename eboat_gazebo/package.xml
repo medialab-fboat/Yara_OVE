@@ -4,7 +4,7 @@
     <version>0.0.0</version>
     <description>The eboat_gazebo package</description>
 
-    <maintainer email="evasconcellos@id.uff.br">eduardo</maintainer>
+    <maintainer email="evasconcellos@id.uff.br">araujo</maintainer>
 
 
     <!-- One license tag required, multiple allowed, one license per tag -->
@@ -19,7 +19,7 @@
     <!-- <url type="website">http://wiki.ros.org/eboat_gazebo</url> -->
 
 
-    <author email="evasconcellos@id.uff.br">Eduardo Charles Vasconcellos</author>
+    <author email="evasconcellos@id.uff.br">araujo Charles Vasconcellos</author>
 
 
     <buildtool_depend>catkin</buildtool_depend>

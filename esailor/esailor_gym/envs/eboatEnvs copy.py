@@ -1,6 +1,4 @@
-from .raycast_updated_with_groups import rays
-
-from sensor_msgs.msg import LaserScan
+from raycast_updated import rays
 import gymnasium as gym
 import rospy
 import numpy as np
@@ -119,10 +117,7 @@ class EboatBase(gym.Env):
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
         self.set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         self.get_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-        self.raycast_pub = rospy.Publisher(f"/{self.model_namespace}/mission_control/raycast", Float32MultiArray, queue_size=1)
-        
-    
-    
+
     def rot(self, modulus, theta):
         rot = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]], dtype=np.float32)
 
@@ -148,18 +143,14 @@ class EboatBase(gym.Env):
             #              8 roll angle
             #              9 boat's current X position
             #             10 boat's current Y position
-            #             11 raycast data
 
         return np.array(obsData, dtype=float)
 
     def rescaleObs(self, observations):
-        #lobs = len(observations)
-        
-        robs = np.zeros(len(observations), dtype=np.float32)
-        
-        for i in range(len(observations)):
-            robs[i] = observations[i]
-        
+        lobs = len(observations)
+        if lobs > 9:
+            lobs -= 2
+        robs = np.zeros(lobs, dtype=np.float32)
         # --> Distance from the waypoint (m) [0   , DMAX];
         robs[0] = 2 * (observations[0] / self.DMAX) - 1
         # --> Trajectory angle               [-180, 180]
@@ -178,9 +169,6 @@ class EboatBase(gym.Env):
         robs[7] = observations[7] / 5.0
         # --> Roll angle                     [-180, 180]
         robs[8] = observations[8] / 180.0
-        # --> Raycast                     [0, 1]
-        robs[9] = observations[9] / 1.0    
-        
 
         return robs
 
@@ -204,9 +192,6 @@ class EboatBase(gym.Env):
         state.twist.angular.x = 0
         state.twist.angular.y = 0
         state.twist.angular.z = 0
-        
-        #Raycast
-        state.raycast = 0
 
         rospy.wait_for_service('/gazebo/set_model_state')
         try:
@@ -238,10 +223,13 @@ class Eboat925_v0(EboatBase):
         #-->DEFINE OBSERVATION AND ACTION SPACES
         self.action_space = spaces.Box(low=-1,
                                        high=1,
-                                       shape=(4,),
+                                       shape=(2,),
                                        dtype=np.float32)
 
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(11,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=-1,
+                                            high=1,
+                                            shape=(9,),
+                                            dtype=np.float32)
 
         #-->SET WIND INITIAL CONDITIONS AND DEFINE ITS HOW IT WILL VARIATE
         self.windVec = np.array([0, 0, 0], dtype=np.float32)
@@ -249,13 +237,7 @@ class Eboat925_v0(EboatBase):
         self.max_windspeed   = 11
         self.wind_directions = np.array([-135, -90, -45, -5, 5, 45, 90, 135])
         self.wind_speed      = 0.0
-        #Raycast
-        self.laser_scan = None
-        #rospy.Subscriber(f"/{self.model_namespace}/laser/scan", LaserScan, self._laser_scan_callback)
-        #self.processed_lidar_data = np.zeros(120)
-        #self.raycast = rays()
-        self.raycast_data = None 
-        
+
         time.sleep(5)
 
         #--> UNPAUSE SIMULATION
@@ -289,44 +271,292 @@ class Eboat925_v0(EboatBase):
         self.PREdS         = 0.0                           #--> DISTANCE TRAVELED BY THE BOAT TOWARDS THE GOAL (D(t = n) - D(t = n-1))
         self.d2r           = np.pi / 180.0
         self.step_count    = 0
-        self.lateral_limit = 25                             #-->DEFINE THE HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT LINE BEFORE A DONE SIGNAL
+        self.lateral_limit = 5                             #-->DEFINE THE HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT LINE BEFORE A DONE SIGNAL
         self.PREVACT       = np.array([-1, -1])
         self.maxcharge     = 10
         self.battery       = np.full(2, fill_value=self.maxcharge, dtype=int)
-        #Raycast
-        self.raycast_data = 0
-        
-    def _laser_scan_callback(self, data):
-        # Process the incoming LIDAR data here
-        self.laser_scan = data
-        ranges = np.array(data.ranges)
-        # Normalize ranges by 5.0 (max range) to get values between 0 and 1
-        normalized_ranges = ranges / 5.0
-        # Any range equal to 1 means no obstacle detected within 5 meters in that direction
-        obstacles = normalized_ranges < 1.0
-        # Prepare the data for PPO
-        self.processed_lidar_data = normalized_ranges if obstacles.any() else np.zeros(120)
-        #Raycast
-        self.raycast_data = np.mean(self.processed_lidar_data)
-        
-    def process_scan_in_groups(self, group_size=20):
-        if self.laser_scan is not None:
-            # Converting the ranges data to a numpy array for easier manipulation
-            ranges_array = np.array(self.laser_scan.ranges)
-            # Ensuring the array can be divided into groups of the specified size
-            if ranges_array.size % group_size == 0:
-                # Splitting the array into sub-arrays of the specified group size
-                groups = np.split(ranges_array, ranges_array.size // group_size)
-                # Here you would process each group and input into the neural network
-                for group in groups:
-                    # Process each group - placeholder for neural network input code
-                    # For example: neural_network_input(group)
-                    pass
+
+    def rewardFunction0(self, obs, actions):
+        #-->COMPUTE THE DISTANCE TRAVELED BY THE BOAT TOWARDS THE OBJECTIVE. IF D > 0 THE BOAT WENT NEAR THE OBJECTIVE.
+        dS  = self.PREVOBS[0] - obs[0]
+        ta  = abs(obs[1])
+        pta = abs(self.PREVOBS[1])
+        C0  = dS / self.D0;
+
+        if dS > 0:
+            if dS > self.PREdS:
+                C1 = 0.5 * C0
+            elif dS < self.PREdS:
+                C1 = -0.6 * C0
             else:
-                rospy.logerr("The number of rays in the scan does not evenly divide into groups of size %d", group_size)
+                C1 = 0.0
+
+            if ta <= 45.0:
+                if ta < pta:
+                # if pta - ta > 1:
+                    C2 = 0.5 * C0
+                # elif ta > pta:
+                elif ta - pta > 1:
+                    C2 = -0.6 * C0
+                else:
+                    if ta < 5:
+                        C2 = 0.5 * C0
+                    else:
+                        C2 = 0.0
+            else:
+                if ta < pta:
+                # if pta - ta > 1:
+                    C2 = 0.7 * C0
+                # elif ta > pta:
+                elif ta - pta > 1:
+                    C2 = -1.5 * C0
+                else:
+                    C2 = -0.5 * C0
+
+            # alpha = 180 - obs[5] - abs(obs[4])
+            # print(f"alpha = {alpha}")
+            # if ((dS > self.PREdS) & (ta <= 45) & (obs[2] > 0.25 * self.wind_speed)):
+            #     C3 = 0.6 * C0
+            # else:
+            #     C3 = 0.0
+
+            R = C0 + C1 + C2 #+ C3
+            # print(f"dS(t)   = {dS} = {self.PREVOBS[0]} - {obs[0]}")
+            # print(f"dS(t-1) = {self.PREdS}")
+            # print(f"ta      = {ta}")
+            # print(f"pta     = {pta}")
+            # print(f"return  = {C0} + {C1} + {C2}  = {R}")
+            # print(obs[5])
+            # print(obs[6])
+            # print("-----------------------------------")
         else:
-            rospy.logerr("No laser scan data available!")
-            
+            R = C0
+            # print(f"return  = {C0}  = {R}")
+
+        self.PREdS = dS
+        return R
+
+    def rewardFunction1(self, obs):
+        #-->COMPUTE THE DISTANCE TRAVELED BY THE BOAT TOWARDS THE OBJECTIVE. IF D > 0 THE BOAT WENT NEAR THE OBJECTIVE.
+        dS  = self.PREVOBS[0] - obs[0]
+        ta  = abs(obs[1])
+        pta = abs(self.PREVOBS[1])
+        C0  = dS / self.D0;
+
+        if dS > 0:
+            if dS > self.PREdS:
+                C1 = 0.5 * C0
+                self.PREdS = dS
+            elif dS < self.PREdS:
+                C1 = -0.6 * C0
+            else:
+                C1 = 0.0
+
+            if ta <= 45.0:
+                if ta < pta:
+                    C2 = 0.5 * C0
+                elif ta - pta > 1:
+                    C2 = -0.6 * C0
+                else:
+                    if ta < 5:
+                        C2 = 0.5 * C0
+                    else:
+                        C2 = 0.0
+            else:
+                if ta < pta:
+                    C2 = 0.7 * C0
+                elif ta > pta:
+                    C2 = -1.5 * C0
+                else:
+                    C2 = -0.7 * C0
+
+            alpha = 180 - obs[5] - abs(obs[4])
+            if (alpha > 150) & (abs(obs[5] - self.PREVOBS[5]) < 30):
+                C3 = (-1) * (((C0 > 0) * C0) + ((C1 > 0) * C1) + ((C2 > 0) * C2) + 0.06)
+            else:
+                C3 = 0.0
+
+            # if ((dS > self.PREdS) & (ta <= 45) & (obs[2] > 0.25 * self.wind_speed)):
+            #     C4 = 0.6 * C0
+            # else:
+            #     C4 = 0.0
+
+            R = C0 + C1 + C2 + C3
+        else:
+            R = C0
+            # print(f"return  = {C0}  = {R}")
+
+        return R
+
+    def rewardFunctionA(self, obs, action):
+        #-->COMPUTE THE DISTANCE TRAVELED BY THE BOAT TOWARDS THE OBJECTIVE. IF D > 0 THE BOAT WENT NEAR THE OBJECTIVE.
+        dS    = self.PREVOBS[0] - obs[0]
+        ta    = abs(obs[1])
+        pta   = abs(self.PREVOBS[1])
+        db    = abs((self.PREVACT[0] - action[0]) * 45.0) #abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
+        dr    = abs((self.PREVACT[1] - action[1]) * 60.0) #abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
+        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
+        C0  = dS / self.D0;
+
+        if dS > 0:
+            C1 = ((dS > self.PREdS) * 0.5 - (dS < self.PREdS) * 0.6) * C0
+
+            if ta <= 45.0:
+                if ta < pta:
+                    C2 = 0.5 * C0
+                elif ta - pta > 1:
+                    C2 = -0.6 * C0
+                else:
+                    if ta < 5:
+                        C2 = 0.5 * C0
+                    else:
+                        C2 = 0.0
+            else:
+                if ta < pta:
+                    C2 = 0.7 * C0
+                elif ta > pta:
+                    C2 = -1.5 * C0
+                else:
+                    C2 = -0.7 * C0
+
+            C3 = (alpha > 150) * (((150 - alpha) / 30.0) - 0.5) * C0
+
+            if ((ta <= 45) & (obs[2] > 0.25 * self.wind_speed)):
+                C4 = 0.6 * C0
+            elif obs[2] < 0.5:
+                # C4 = (-1.0) * C0 * ((self.step_count / 60.0) + 0.5)
+                C4 = (-0.15) * (self.step_count / 60.0)
+                self.step_count += 1
+            else:
+                C4 = 0.0
+
+            ad = C0 + C1 + C2 + C3 + C4
+            if ad > 0:
+                C5 = ((((db > 1.0) + (dr > 1.0)) * (-0.15)) + (((db > 28.0) + (dr > 23.0)) * (-0.45))) * ad
+            else:
+                # C5 = ((db > 28.0) + (dr > 23.0)) * 0.15 * ad
+                C5 = (1.0 + (((db > 1.0) + (dr > 1.0)) * 0.1) + (((db > 28.0) + (dr > 23.0)) * 0.2)) * ad
+
+            R = C0 + C1 + C2 + C3 + C4 + C5
+            # print(f"db = {self.PREVACT[0]} - {action[0]} = {db}")
+            # print(f"dr = {dr}")
+            # print("R   = {:7.5f} + {:7.5f} + {:7.5f} + {:7.5f} + {:7.5f} + {:7.5f} = {:7.5f}".format(C0, C1, C2, C3, C4, C5, R))
+        else:
+            R = C0
+
+        return np.max([R, -1])
+
+    def rewardFunctionB(self, obs, action): #-->rewardFunctionB (INATIVA)
+        dS    = self.PREVOBS[0] - obs[0]
+        ta    = abs(obs[1])
+        pta   = abs(self.PREVOBS[1])
+        db    = abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
+        dr    = abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
+        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
+
+        #--> POSITIVE/NEGATIVE RETURN EARNED BY GO NEAR/AWAY THE WAYPOINT
+        C0    = dS / self.D0;
+
+        if dS > 0:
+            if ta <= 90.0:
+                C1 = (np.cos(ta * self.d2r)**3) * C0
+                if (obs[2] > 0.4 * self.wind_speed):
+                    C2 = 1.5 * C0
+                elif (obs[2] > 0.333333333 * self.wind_speed):
+                    C2 = 1.2 * C0
+                elif (obs[2] > 0.25 * self.wind_speed):
+                    C2 = 0.8 * C0
+                elif obs[2] < 0.6:
+                    C2 = (-0.15) * (self.step_count / 60.0)
+                    self.step_count += 1
+                else:
+                    C2 = 0.0
+            elif (ta < pta):
+                C1 = 0.7 * C0
+                C2 = 0.0
+            else:
+                C1 = -2.0 * C0
+                C2 = 0.0
+            #########################################
+            if alpha > 150:
+                C3 = (((150 - alpha) / 30.0) - 1.0) * C0
+            elif alpha < 5:
+                C3 = (-1.0) * C0
+            else:
+                C3 = 0.0
+            #########################################
+            C4 = ((C0 + C1 + C2 + C3) *
+                  ((((db > 0) * np.min([1, db/28.0]) * 0.1) + ((dr > 0) * np.min([1, dr/23.0]) * 0.1)) +
+                   (((db > 28) * (db / 90.0) * 0.3) + ((dr > 0) * np.min([1, dr/90.0]) * 0.3))))
+            #########################################
+            R = C0 + C1 + C2 + C3 + C4
+        elif dS == 0:
+            R = (-0.15) * (self.step_count / 60.0)
+            self.step_count += 1
+        else:
+            R = np.min([-5.0, ((-0.15) * (self.step_count / 60.0))]) * C0
+
+        return np.max([R, -1])
+
+    def rewardFunctionC(self, obs, action): #-->rewardFunctionC (INATIVA)
+        dS    = self.PREVOBS[0] - obs[0]
+        ta    = abs(obs[1])
+        pta   = abs(self.PREVOBS[1])
+        db    = abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
+        dr    = abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
+        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
+
+        #--> POSITIVE/NEGATIVE RETURN EARNED BY GO NEAR/AWAY THE WAYPOINT
+        C0    = dS / self.D0;
+
+        if dS > 0:
+            if ta <= 90.0:
+                C1 = (np.cos(ta * self.d2r)**3) * C0
+                if (obs[2] > 0.4 * self.wind_speed):
+                    C2 = 1.0 * C0
+                elif (obs[2] > 0.333333333 * self.wind_speed):
+                    C2 = 0.7 * C0
+                elif (obs[2] > 0.25 * self.wind_speed):
+                    C2 = 0.4 * C0
+                elif obs[2] < 0.6:
+                    C2 = (-0.15) * (self.step_count / 60.0)
+                    self.step_count += 1
+                else:
+                    C2 = 0.0
+
+                if dS > self.PREdS:
+                    C2 *= 1.5
+                    self.PREdS = dS  # --> UPDATE THE PREdS GLOBAL VARIABLE (PREdS stores the maximum dS actived by the boat during an episode)
+            elif (ta < pta):
+                C1 = 0.7 * C0
+                C2 = 0.0
+            else:
+                C1 = -2.0 * C0
+                C2 = 0.0
+            #########################################
+            if alpha > 150:
+                C3 = (((150 - alpha) / 30.0) - 1.0) * C0
+            elif alpha < 5:
+                C3 = (-1.0) * C0
+            else:
+                C3 = 0.0
+            #########################################
+            C4                   = C0 + C1 + C2 + C3
+            boom_energy_factor   = ((db > 0) * np.min([1.0, db / 28.0]) * 0.1) + ((db > 28) * (db / 90.0) * 0.3)
+            rudder_energy_factor = ((dr > 0) * np.min([1.0, dr / 23.0]) * 0.1) + ((dr > 23) * np.min([1, dr / 90.0]) * 0.3)
+            if C4 > 0:
+                C4 *= (-1.0)*(boom_energy_factor + rudder_energy_factor)
+            else:
+                C4 *= boom_energy_factor + rudder_energy_factor
+            #########################################
+            R = C0 + C1 + C2 + C3 + C4
+        elif dS == 0:
+            R = (-0.15) * (self.step_count / 60.0)
+            self.step_count += 1
+        else:
+            R = np.min([-5.0, ((-0.15) * (self.step_count / 60.0))]) * C0
+
+        return np.max([R, -1])
 
     def rewardFunction(self, obs, action): #-->rewardFunctionD (ATIVA)
         # QUais sao as funcoes de truncamento e finalizacao dos episodios?
@@ -335,9 +565,6 @@ class Eboat925_v0(EboatBase):
         pta   = abs(self.PREVOBS[1])
         db    = abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
         dr    = abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
-        dp    = abs(self.PREVOBS[7] - (action[2] * 5.0))        #--> DIFFERENCE BETWEEN THE POSITION OF THE PROPELLER AND THE NEW POSITION OF THE PROPELLER REQUIRED BY THE AGENT
-        #Raycast = rc
-        rc    = abs(self.PREVOBS[9] - (action[3] * 1.0))        #--> DIFFERENCE BETWEEN THE POSITION OF THE PROPELLER AND THE NEW POSITION OF THE PROPELLER REQUIRED BY THE AGENT
         alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
 
         #--> POSITIVE/NEGATIVE RETURN EARNED BY GO NEAR/AWAY THE WAYPOINT
@@ -381,26 +608,17 @@ class Eboat925_v0(EboatBase):
             boom_position_factor = 0.6 * (((action[0] + 1.0) * 45.0) < 5.0)
             boom_energy_factor   = ((db > 0) * np.min([1.0, db / 28.0]) * 0.1) + ((db > 28) * (db / 90.0) * 0.3)
             rudder_energy_factor = ((dr > 0) * np.min([1.0, dr / 23.0]) * 0.1) + ((dr > 23) * np.min([1, dr / 90.0]) * 0.3)
-            propeller_energy_factor = ((dp > 0) * np.min([1.0, dp / 5.0]) * 0.1) + ((dp > 5) * np.min([1, dp / 90.0]) * 0.3)
             if C4 > 0:
-                C4 *= (-1.0)*(boom_position_factor + boom_energy_factor + rudder_energy_factor + propeller_energy_factor)
+                C4 *= (-1.0)*(boom_position_factor + boom_energy_factor + rudder_energy_factor)
             else:
-                C4 *= boom_position_factor + boom_energy_factor + rudder_energy_factor + propeller_energy_factor
+                C4 *= boom_position_factor + boom_energy_factor + rudder_energy_factor
             #########################################
-            R = C0 + C1 + C2 + C3 + C4 
+            R = C0 + C1 + C2 + C3 + C4
         elif dS >= 0:
             R = (-0.15) * (self.step_count / 60.0)
             self.step_count += 1
         else:
             R = np.min([-5.0, ((-0.15) * (self.step_count / 60.0))]) * C0
-            
-        #Raycast
-        if rc > 0:
-            R *= 0.5
-        elif rc < 0:
-            R *= 1.5
-        else:
-            pass
 
         return np.max([R, -1])
 
@@ -419,10 +637,8 @@ class Eboat925_v0(EboatBase):
         self.rudderAng_pub.publish(action[1] * 60.0)
         # self.propVel_pub.publish(0) values -5 to 5
         # self.propVel_pub.publish(action[2] * 5) transform to integer values -5 to 5
-        self.propVel_pub.publish(int(action[2] * 5)) 
-        #Raycast
-        self.raycast_pub.publish(Float32MultiArray(data=[action[3] * 1.0]))
-                
+        # self.propVel_pub.publish(int(action[2] * 5)) transform to integer values -5 to 5
+
         #-->GET OBSERVATIONS
         obs = self.getObservations()
 
@@ -449,8 +665,6 @@ class Eboat925_v0(EboatBase):
                        # (self.step_count > 59) |
                        (np.isnan(obs).any())
                       )
-        #Raycast
-        self.raycast_data = obs[9]
 
         # -->PROCESS DONE SIGNAL
         if done:
@@ -463,7 +677,7 @@ class Eboat925_v0(EboatBase):
         else:
             # -->UPDATE PREVIOUS STATE VARIABLES
             self.PREVOBS = obs
-            self.PREVACT = action[0], action[1], action[2], action[3]
+            self.PREVACT = action[0], action[1]
 
         # self.step_count += 1
 
@@ -481,9 +695,6 @@ class Eboat925_v0(EboatBase):
         self.propVel_pub.publish(0)
         self.boomAng_pub.publish(0.0)
         self.rudderAng_pub.publish(0.0)
-        #Raycast
-        self.raycast_pub.publish(Float32MultiArray(data=[0.0]))
-        
 
         #-->SET A RANDOM INITIAL STATE FOR THE WIND
         self.wind_speed = np.random.randint(low=self.min_windspeed, high=self.max_windspeed)
@@ -526,24 +737,6 @@ class Eboat925_v0(EboatBase):
         self.PREVACT    = 0.0, 0.0
         self.step_count = 0
         self.battery    = self.maxcharge, self.maxcharge
-        #Raycast
-        self.raycast_data = obs[9]
 
         return robs, {}
 
-""" class rays():    
-        
-    def process_scan_in_groups(self, group_size=20):
-        # This is the actual processing code to be integrated
-        processed_data = []
-        if self.laser_scan is not None:
-            ranges_array = np.array(self.laser_scan.ranges)
-            if ranges_array.size % group_size == 0:
-                groups = np.split(ranges_array, ranges_array.size // group_size)
-                for group in groups:
-                    processed_data.append(np.mean(group))  # Example processing: mean of each group
-            else:
-                rospy.logerr("The number of rays in the scan does not evenly divide into groups of size %d", group_size)
-        else:
-            rospy.logwarn("No laser scan data available to process.")
-        return processed_data """

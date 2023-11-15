@@ -33,6 +33,12 @@ register(
 )
 
 register(
+    id='rays-v0',
+    entry_point='esailor_gym.envs:rays',
+    max_episode_steps=1000000,
+)
+
+register(
     id='Eboat62-v0',
     entry_point='esailor_gym.envs:Eboat62_v0',
     max_episode_steps=1000000,

@@ -1,4 +1,4 @@
-// Auhtor : Eduardo Charles Vasconcellos
+// Auhtor : araujo Charles Vasconcellos
 // Contact: evasconcellos@id.uff.br
 //
 

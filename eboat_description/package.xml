@@ -4,13 +4,13 @@
   <version>0.0.0</version>
   <description>The eboat_description package</description>
 
-  <maintainer email="evasconcellos@id.uff.br">Eduardo Charles Vasconcellos</maintainer>
+  <maintainer email="evasconcellos@id.uff.br">araujo Charles Vasconcellos</maintainer>
 
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>MIT</license>
 
-  <author email="evasconcellos@id.uff.br">Eduardo Charles Vasconcellos</author>
+  <author email="evasconcellos@id.uff.br">araujo Charles Vasconcellos</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

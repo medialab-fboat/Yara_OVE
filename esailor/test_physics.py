@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor2/bin/python
+#!/home/araujo/miniconda3/envs/esailor2/bin/python
 
 import numpy as np
 import rospy

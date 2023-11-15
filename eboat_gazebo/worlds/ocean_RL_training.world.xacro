@@ -17,6 +17,24 @@
             <uri>$(find eboat_description)/models/wayPointMarker</uri>
         </include>
 
+        <include>
+            <name>buoy_red</name>
+            <pose>15 5 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_red</uri>
+        </include>
+
+        <include>
+            <name>buoy_green</name>
+            <pose>15.0 0.0 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_green</uri>
+        </include>
+
+        <include>
+            <name>buoy_yellow</name>
+            <pose>-20.0 10.0 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/buoy_yellow</uri>
+        </include>
+
         <!--PHYSICS ENGINE-->
         <physics type="ode">
             <ode>
@@ -25,7 +43,7 @@
                 </solver>
             </ode>
             <max_step_size>0.01</max_step_size>
-            <real_time_update_rate>0</real_time_update_rate>
+            <real_time_update_rate>30</real_time_update_rate>
         </physics>
     </world>
 </sdf>

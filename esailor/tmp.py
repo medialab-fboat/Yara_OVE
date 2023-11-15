@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor2/bin/python
+#!/home/araujo/miniconda3/envs/esailor2/bin/python
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -83,7 +83,7 @@ def lateralReturnVal():
     plt.show()
 
 def liftDragCoefficientsForRudderAndKeel():
-    df = pandas.read_csv("/home/eduardo/USVSim/scripts/naca001234_400k.csv")
+    df = pandas.read_csv("/home/araujo/scripts/naca001234_400k.csv")
     A = df.atkang.values
     cl = df.cl.values
     cd = df.cd.values

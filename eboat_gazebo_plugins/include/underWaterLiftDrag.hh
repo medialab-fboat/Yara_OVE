@@ -3,7 +3,7 @@
     the presence of wind. The principle of lift and drag
     is applied to compute the forces
 
-    AUTHOR : Eduardo Charles Vasconcellos
+    AUTHOR : araujo Charles Vasconcellos
     CONTACT: evasconcellos@id.uff.br
 
     10/2022

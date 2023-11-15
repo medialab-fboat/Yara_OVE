@@ -54,7 +54,7 @@ def testeDoAgente():
 
     print(ros_path)
 
-    EBOAT_HOME = "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1"
+    EBOAT_HOME = "/home/araujo/eboat_ws/src/eboat_gz_1"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean_fixed_cam.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
@@ -84,7 +84,7 @@ def agentPPOTraining():
     print("\n\n\nPASSANDO ADIANTE\n\n")
 
     env.close()
-    os.system('/home/eduardo/USVSim/eboat_ws/kill_gaz.sh')
+    os.system('/home/araujo/eboat_ws/kill_gaz.sh')
 
 if __name__ == '__main__':
     # testeDoAgente()
@@ -97,4 +97,4 @@ if __name__ == '__main__':
     # print("\n\n\nPASSANDO ADIANTE\n\n")
     #
     # env.close()
-    # os.system('/home/eduardo/USVSim/eboat_ws/kill_gaz.sh')
+    # os.system('/home/araujo/eboat_ws/kill_gaz.sh')

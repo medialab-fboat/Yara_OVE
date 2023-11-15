@@ -1,7 +1,7 @@
 /*
     This plugin simulates de windsock in presence of wind
 
-    AUTHOR : Eduardo Charles Vasconcellos
+    AUTHOR : araujo Charles Vasconcellos
     CONTACT: evasconcellos@id.uff.br
 
     10/2022

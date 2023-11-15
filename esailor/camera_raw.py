@@ -1,6 +1,6 @@
-#!/home/eduardo/miniconda3/envs/esailor/bin/python
+#!/home/araujo/miniconda3/envs/esailor/bin/python
 
-__author__  = 'Eduardo Charles Vasconcellos <evasconcellos at id.uff.br>'
+__author__  = 'araujo Charles Vasconcellos <evasconcellos at id.uff.br>'
 __version__ = '0.0'
 __licence__ = 'Apache2'
 

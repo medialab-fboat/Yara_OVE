@@ -132,7 +132,7 @@ class GazeboEnv(gym.Env):
 
         ppid = self._roslaunch.pid
         print(f"\n\n===================\nProcess id: {ppid}\n===================\n")
-        os.system(f'ps -au eduardo | grep {self._roslaunch.pid}')
+        os.system(f'ps -au araujo | grep {self._roslaunch.pid}')
         # self._roslaunch.kill()
         # self._roslaunch.terminate()
         os.killpg(os.getpgid(self._roslaunch.pid), signal.SIGTERM)
@@ -153,7 +153,7 @@ class GazeboEnv(gym.Env):
 
 class EboatSingleWayPointEnvCC35v0(GazeboEnv):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/yara_ws/src/Yara_OVE"
+        self.EBOAT_HOME = "/home/araujo/yara_ws/src/Yara_OVE"
         GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)
@@ -464,7 +464,7 @@ class EboatSingleWayPointEnvCC35v0(GazeboEnv):
 
 class EboatSingleWayPointEnvCC25v0(EboatSingleWayPointEnvCC35v0):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/yara_ws/src/Yara_OVE"
+        self.EBOAT_HOME = "/home/araujo/yara_ws/src/Yara_OVE"
         GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
 
         self.boomAng_pub   = rospy.Publisher("/eboat/control_interface/sail", Float32, queue_size=5)
@@ -827,7 +827,7 @@ class EboatSingleWayPointEnvCC25v0(EboatSingleWayPointEnvCC35v0):
 
 class EboatStraightLineEnvCC29v0(EboatSingleWayPointEnvCC35v0):
     def __init__(self):
-        self.EBOAT_HOME = "/home/eduardo/USVSim/yara_ws/src/Yara_OVE"
+        self.EBOAT_HOME = "/home/araujo/yara_ws/src/Yara_OVE"
         GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean_RL_training.launch"))
         # GazeboEnv.__init__(self, os.path.join(self.EBOAT_HOME, "eboat_gazebo/launch/ocean.launch"))
 

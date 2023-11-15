@@ -4,11 +4,11 @@
   <version>0.0.0</version>
   <description>The eboat control interfaces package</description>
 
-  <maintainer email="evasconcellos@id.uff.br">Eduardo</maintainer>
+  <maintainer email="evasconcellos@id.uff.br">araujo</maintainer>
 
   <license>Apache 2.0</license>
 
-  <author email="evasconcellos@id.uff.br">Eduardo</author>
+  <author email="evasconcellos@id.uff.br">araujo</author>
 
 
   <buildtool_depend>catkin</buildtool_depend>

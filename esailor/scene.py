@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor/bin/python
+#!/home/araujo/miniconda3/envs/esailor/bin/python
 
 #-->PYTHON UTIL
 import time
@@ -199,7 +199,7 @@ class scene():
     def close(self):
         ppid = self._roslaunch.pid
         print(f"\n\n===================\nProcess id: {ppid}\n===================\n")
-        os.system(f'ps -au eduardo | grep {self._roslaunch.pid}')
+        os.system(f'ps -au araujo | grep {self._roslaunch.pid}')
         os.killpg(os.getpgid(self._roslaunch.pid), signal.SIGTERM)
 
         print("\n\n\nCLOSE FUNCTION\n\n")

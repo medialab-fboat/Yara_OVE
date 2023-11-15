@@ -2,4 +2,4 @@ from esailor_gym.envs.gazebo_ocean_eboat_CC import EboatSingleWayPointEnvCC35v0
 from esailor_gym.envs.gazebo_ocean_eboat_CC import EboatSingleWayPointEnvCC25v0
 from esailor_gym.envs.gazebo_ocean_eboat_CC import EboatStraightLineEnvCC29v0
 from esailor_gym.envs.eboatEnvs import Eboat925_v0
-from esailor_gym.envs.eboatEnvs import Eboat62_v0
+from esailor_gym.envs.eboatEnvs import rays

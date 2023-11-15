@@ -1,4 +1,4 @@
-#!/home/eduardo/miniconda3/envs/esailor2/bin/python
+#!/home/araujo/miniconda3/envs/esailor2/bin/python
 
 import numpy as np
 import rospy
@@ -149,7 +149,7 @@ def spawnModel(rosserviseproxy, model_name="wayPointMarker", model_id="wayPointM
     ipose.position.z = waypoint[2]
     print(f"\n===========================\nspawnModel\n===========================\n")
     with open(
-            f"/home/eduardo/USVSim/yara_ws/src/Yara_OVE/eboat_description/models/{model_name}/model.sdf") as f:
+            f"/home/araujo/yara_ws/src/Yara_OVE/eboat_description/models/{model_name}/model.sdf") as f:
         sdffile = f.read()
         try:
             result = rosserviseproxy(f"{model_id}",
@@ -201,7 +201,7 @@ def singleWayPoint(model, wind_speed = 7):
 
     print(ros_path)
 
-    EBOAT_HOME       = "/home/eduardo/USVSim/yara_ws/src/Yara_OVE"
+    EBOAT_HOME       = "/home/araujo/yara_ws/src/Yara_OVE"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
@@ -234,7 +234,7 @@ def singleWayPoint(model, wind_speed = 7):
 
     spawnModel(spawn_model, model_name="wayPointMarker", model_id="wayPointMarker", waypoint=[100, 0, 0])
 
-    sensors = subprocess.Popen([sys.executable, os.path.join("/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
+    sensors = subprocess.Popen([sys.executable, os.path.join("/home/araujo/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
 
     time.sleep(10)
 
@@ -264,7 +264,7 @@ def singleWayPoint(model, wind_speed = 7):
     sensors.kill()
     ppid = roslaunch.pid
     print(f"\n\n===================\nProcess id: {ppid}\n===================\n")
-    os.system(f'ps -au eduardo | grep {roslaunch.pid}')
+    os.system(f'ps -au araujo | grep {roslaunch.pid}')
     os.killpg(os.getpgid(roslaunch.pid), signal.SIGTERM)
 
     print("\n\n\nCLOSE FUNCTION\n\n")
@@ -288,7 +288,7 @@ def multiWayPoints(model, wind_speed = [7, 0, 0]):
 
     print(ros_path)
 
-    EBOAT_HOME = "/home/eduardo/USVSim/yara_ws/src/Yara_OVE"
+    EBOAT_HOME = "/home/araujo/yara_ws/src/Yara_OVE"
     launch_file_path = os.path.join(EBOAT_HOME, "eboat_gazebo/launch/ocean.launch")
 
     roslaunch = subprocess.Popen([sys.executable, os.path.join(ros_path, b"roslaunch"), "-p", port, launch_file_path])
@@ -315,7 +315,7 @@ def multiWayPoints(model, wind_speed = [7, 0, 0]):
         if i == 0:
             spawnModel(spawn_model, model_name="wayPointMarker", model_id="wayPointMarker", waypoint=wp)
 
-    sensors     = subprocess.Popen([sys.executable, os.path.join("/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
+    sensors     = subprocess.Popen([sys.executable, os.path.join("/home/araujo/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
     camera_raw  = subprocess.Popen([sys.executable, "./camera_raw.py"])
     camera_proc = subprocess.Popen([sys.executable, "./camera_detection.py"])
 
@@ -354,18 +354,18 @@ def multiWayPoints(model, wind_speed = [7, 0, 0]):
     camera_proc.kill()
     ppid = roslaunch.pid
     print(f"\n\n===================\nProcess id: {ppid}\n===================\n")
-    os.system(f'ps -au eduardo | grep {roslaunch.pid}')
+    os.system(f'ps -au araujo | grep {roslaunch.pid}')
     os.killpg(os.getpgid(roslaunch.pid), signal.SIGTERM)
 
     print("\n\n\nCLOSE FUNCTION\n\n")
 
 def main():
     # --> RL agent
-    # model = PPO.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_10m_straight_09082023_10_34_00/eboat_ocean_50")
-    model = SAC.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/SAC/ensign29_7_winds_10m_straight_10082023_10_05_47/eboat_ocean_50")
+    # model = PPO.load("/home/araujo/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_10m_straight_09082023_10_34_00/eboat_ocean_50")
+    model = SAC.load("/home/araujo/yara_ws/src/Yara_OVE/esailor/models/SAC/ensign29_7_winds_10m_straight_10082023_10_05_47/eboat_ocean_50")
 
-    # model = PPO.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_5m_straight_17082023_10_23_35/eboat_ocean_50")
-    # model = SAC.load("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor/models/SAC/ensign29_7_winds_5m_straight_18082023_00_22_05/eboat_ocean_50")
+    # model = PPO.load("/home/araujo/yara_ws/src/Yara_OVE/esailor/models/PPO/ensign29_7_winds_5m_straight_17082023_10_23_35/eboat_ocean_50")
+    # model = SAC.load("/home/araujo/yara_ws/src/Yara_OVE/esailor/models/SAC/ensign29_7_winds_5m_straight_18082023_00_22_05/eboat_ocean_50")
 
     # singleWayPoint(model, wind_speed = 7)
     # os.system('./kill_gaz.sh')
