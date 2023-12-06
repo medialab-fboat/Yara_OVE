@@ -1,0 +1,94 @@
+[INFO] [1700805455.175152]: self.laser_scan.ranges[100:120]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+self.laser_scan.range[100:120]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.178160]: laser_scan_callback
+laser_scan_callback
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.180144]: len(self.laser_scan.ranges)=120
+len(self.laser_scan.ranges)=120
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.181921]: self.laser_scan.ranges[0:20]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+self.laser_scan.ranges[0:20]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf,
+inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.183609]: self.laser_scan.ranges[20:40]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+Traceback (most recent call last):
+  File "./esailor.py", line 573, in <module>
+self.laser_scan.ranges[20:40]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.187746]: self.laser_scan.ranges[40:60]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+    logdir     = "logs")
+  File "./esailor.py", line 284, in training
+self.laser_scan.ranges[40:60]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.191516]: self.laser_scan.ranges[60:80]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+    progress_bar        = True
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/stable_baselines3/ppo/ppo.py
+", line 314, in learn
+self.laser_scan.ranges[60:80]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.195334]: self.laser_scan.ranges[80:100]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+    progress_bar=progress_bar,
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/stable_baselines3/common/on_
+policy_algorithm.py", line 259, in learn
+self.laser_scan.ranges[80:100]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.198849]: self.laser_scan.ranges[100:120]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+    continue_training = self.collect_rollouts(self.env, callback, self.rollout_buffer, 
+n_rollout_steps=self.n_steps)
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/stable_baselines3/common/on_
+policy_algorithm.py", line 169, in collect_rollouts
+self.laser_scan.range[100:120]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.202698]: laser_scan_callback
+    actions, values, log_probs = self.policy(obs_tensor)
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/torch/nn/modules/module.py",
+line 1194, in _call_impl
+laser_scan_callback
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.208596]: len(self.laser_scan.ranges)=120
+    return forward_call(*input, **kwargs)
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/stable_baselines3/common/pol
+icies.py", line 626, in forward
+    distribution = self._get_action_dist_from_latent(latent_pi)
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/stable_baselines3/common/pol
+icies.py", line 656, in _get_action_dist_from_latent
+len(self.laser_scan.ranges)=120
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.214316]: self.laser_scan.ranges[0:20]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+    return self.action_dist.proba_distribution(mean_actions, self.log_std)
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/stable_baselines3/common/dis
+tributions.py", line 164, in proba_distribution
+    self.distribution = Normal(mean_actions, action_std)
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/torch/distributions/normal.p
+y", line 56, in __init__
+self.laser_scan.ranges[0:20]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf,
+inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.220063]: self.laser_scan.ranges[20:40]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+    super(Normal, self).__init__(batch_shape, validate_args=validate_args)
+  File 
+"/home/araujo/miniconda3/envs/esailor/lib/python3.7/site-packages/torch/distributions/distribu
+tion.py", line 57, in __init__
+    f"Expected parameter {param} "
+ValueError: Expected parameter loc (Tensor of shape (1, 4)) of distribution Normal(loc: 
+torch.Size([1, 4]), scale: torch.Size([1, 4])) to satisfy the constraint Real(), but found 
+invalid values:
+tensor([[nan, nan, nan, nan]], device='cuda:0')
+self.laser_scan.ranges[20:40]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.226742]: self.laser_scan.ranges[40:60]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+self.laser_scan.ranges[40:60]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.228628]: self.laser_scan.ranges[60:80]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+self.laser_scan.ranges[60:80]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.232111]: self.laser_scan.ranges[80:100]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+self.laser_scan.ranges[80:100]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:54 < 20:10:29 , 14 it/s ][INFO] [1700805455.233885]: self.laser_scan.ranges[100:120]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf)
+self.laser_scan.range[100:120]=(inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, inf, 
+inf, inf, inf, inf, inf, inf, inf, inf)
+   2% ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20,610/1,001,472  [ 0:26:55 < 20:10:29 , 14 it/s ](esailor) araujo@araujo-Dell-G15-5530:~/yara_ws/src/Yara_OVE/esailor$ 

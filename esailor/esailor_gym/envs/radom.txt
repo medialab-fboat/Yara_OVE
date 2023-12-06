@@ -1,0 +1,87 @@
+   # -->RESET BOUY POSITION
+        """ new_x = np.random.uniform(0, 20)
+        new_y = np.random.uniform(-10, 10)
+        print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        self.setState("buoy_red", [new_x, new_y, 0], 0) """
+        
+        # Obtenha as posições iniciais da boia e do waypoint
+        #print("Preparando para chamar getState para buoy_red")
+
+        buoy_position = self.getState("buoy_red").pose.position
+        waypoint_position = self.getState("wayPointMarker").pose.position
+
+        # Calcule a direção entre a boia e o waypoint
+        direction_x = waypoint_position.x - buoy_position.x
+        direction_y = waypoint_position.y - buoy_position.y
+
+        # Gere um valor aleatório entre 0 e 1
+        alpha = np.random.random()
+        
+        # Adicione uma variação aleatória à direção
+        variation = 15.0  # por exemplo, 5 metros. Ajuste conforme necessário
+        direction_x += np.random.uniform(-variation, variation)
+        direction_y += np.random.uniform(-variation, variation)
+
+        # Calcule a nova posição para a boia
+        new_x = buoy_position.x + alpha * direction_x
+        new_y = buoy_position.y + alpha * direction_y
+        
+        # Mova a boia para a nova posição
+        #print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        self.setState("buoy_red", [new_x, new_y, 0], 0)
+        
+        #Mudar para buoy_yellow   
+        
+        # Obtenha as posições iniciais da boia e do waypoint
+        #print("Preparando para chamar getState para buoy_yellow")
+        
+        buoy_position = self.getState("buoy_yellow").pose.position
+        waypoint_position = self.getState("wayPointMarker").pose.position
+        
+        # Calcule a direção entre a boia e o waypoint
+        direction_x = waypoint_position.x - buoy_position.x
+        direction_y = waypoint_position.y - buoy_position.y
+        
+        # Gere um valor aleatório entre 0 e 1
+        alpha = np.random.random()
+        
+        # Adicione uma variação aleatória à direção
+        variation = 15.0  # por exemplo, 5 metros. Ajuste conforme necessário
+        direction_x += np.random.uniform(-variation, variation)
+        direction_y += np.random.uniform(-variation, variation)
+        
+        # Calcule a nova posição para a boia
+        new_x = buoy_position.x + alpha * direction_x
+        new_y = buoy_position.y + alpha * direction_y
+        
+        # Mova a boia para a nova posição
+        #print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        self.setState("buoy_yellow", [new_x, new_y, 0], 0)
+        
+        #Mudar para buoy_green
+        
+        # Obtenha as posições iniciais da boia e do waypoint
+        #print("Preparando para chamar getState para buoy_green")
+        
+        buoy_position = self.getState("buoy_green").pose.position
+        waypoint_position = self.getState("wayPointMarker").pose.position
+        
+        # Calcule a direção entre a boia e o waypoint
+        direction_x = waypoint_position.x - buoy_position.x
+        direction_y = waypoint_position.y - buoy_position.y
+        
+        # Gere um valor aleatório entre 0 e 1
+        alpha = np.random.random()
+        
+        # Adicione uma variação aleatória à direção
+        variation = 15.0  # por exemplo, 5 metros. Ajuste conforme necessário
+        direction_x += np.random.uniform(-variation, variation)
+        direction_y += np.random.uniform(-variation, variation)
+        
+        # Calcule a nova posição para a boia
+        new_x = buoy_position.x + alpha * direction_x
+        new_y = buoy_position.y + alpha * direction_y
+        
+        # Mova a boia para a nova posição
+        #print(f"Setting buoy to new position: x={new_x}, y={new_y}")
+        self.setState("buoy_green", [new_x, new_y, 0], 0)

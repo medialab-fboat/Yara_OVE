@@ -364,17 +364,12 @@
         <visual>
             <origin xyz="-2.03098 6.90927e-15 -0.125" rpy="0 -0 0" />
             <geometry>
-                <box size="2 0 0"/>
+                <box size="0.1 0.1 0.1"/>
             </geometry>
-        </visual>
-        <collision>
-            <origin xyz="-2.03098 6.90927e-15 -0.125" rpy="0 -0 0" />
-            <geometry>
-                <box size="2 0 0"/>
-            </geometry>
-        </collision>
+        </visual>        
         <inertial>
-            <mass value="0.001" />
+            <origin xyz="0.0526688 -2.92253e-05 0.2517" rpy="0 0 0"/>            
+            <mass value="0.1" />
             <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001" />
         </inertial>
     </link>
@@ -389,21 +384,20 @@
 
 <!--RAY SENSOR liked on camera link-->
     <gazebo reference="ray_link">
-        <sensor type="ray" name="camera_bow_sensor">
+        <sensor type="ray" name="laser_scan">
             <visualize>true</visualize>
             <material>Gazebo/Blue</material>
-            <contact>
-                <collide>true</collide>
-                    <collide_without_contact>true</collide_without_contact>
-                    <collide_bitmask>0x02</collide_bitmask>
-                    <collide_without_contact_bitmask>0x01</collide_without_contact_bitmask>
-            </contact> 
+                <contact>
+                        <collide_without_contact>true</collide_without_contact>
+                        <collide_bitmask>0x02</collide_bitmask>
+                        <collide_without_contact_bitmask>0x01</collide_without_contact_bitmask>
+                </contact> 
             <visualize>true</visualize>
             <update_rate>1</update_rate>
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>120</samples>
+                        <samples>15</samples>
                         <resolution>1</resolution>
                         <min_angle>-1.05</min_angle>
                         <max_angle>1.05</max_angle>
@@ -411,7 +405,7 @@
                 </scan>
                 <range>
                     <min>0.1</min>
-                    <max>40.0</max>
+                    <max>10</max>
                     <resolution>0.1</resolution>
                  </range>
                     <noise>
@@ -424,8 +418,8 @@
                     <stddev>0.01</stddev>
                     </noise>
                 </ray>
-                <plugin name="gazebo_ros_camera_bow_controller" filename="libgazebo_ros_laser.so">
-                    <topicName>/eboat/camera_bow/scan</topicName>
+                <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+                    <topicName>/eboat/laser/scan</topicName>
                     <frameName>ray_link</frameName>
                 </plugin>
             </sensor>

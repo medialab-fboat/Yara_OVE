@@ -5,7 +5,7 @@ import rospy
 from std_msgs.msg import Float32MultiArray
 from sensor_msgs.msg import LaserScan
 
-class rays():
+class rays:
     def __init__(self):
         #rospy.init_node('listener', anonymous=True)
         rospy.Subscriber("/eboat/laser/scan", LaserScan, self._laser_scan_callback)
@@ -19,9 +19,6 @@ class rays():
             except:
                 rospy.logerr("Current /eboat/laser/scan not ready yet, retrying for getting laser_scan")
 
-    def _laser_scan_callback(self, data):
-        self.laser_scan = data
-        
     #dividir os 120 feixes em grupos 20 feixes, e inserir na rede neural
     #cada grupo de 20 feixes vai ser um input da rede neural
     #cada input vai ser um array de 1 valor, que vai ser a media dos 20 feixes
@@ -32,67 +29,119 @@ class rays():
     # a rede neural vai ter 6 inputs, cada um com 1 valor
     #os 6 inputs vao ser os 6 grupos de 20 feixes 
     #se nao tiver obstaculo, valor 0.5
-    #se tiver obstaculo, valor 1 - (distancia do obstaculo / 5)    
-
-    def step(self):
-        obsData = None
-        while obsData is None:
-            try:
-                obsData = rospy.wait_for_message('/eboat/mission_control/observations',
-                                                 Float32MultiArray,
-                                                 timeout=20).data
-            except:
-                pass
-            # --> obsData: 0 distance from the goal,
-            #              1 angle between the foward direction and the direction towards the goal
-            #              2 surge velocity
-            #              3 apparent wind speed,
-            #              4 apparent wind angle,
-            #              5 boom angle,
-            #              6 rudder angle,
-            #              7 eletric propultion power,
-            #              8 roll angle
-            #             10 boat's current X position
-            #             11 boat's current Y position
-
-            print(np.array(obsData, dtype=float))
-            print("-------")
-            print(self.laser_scan)
-            print("============")
-
-        return np.array(obsData, dtype=float)
-
-
-    def _laser_scan_callback(self, data):
-        # Process the incoming LIDAR data here
-        ranges = np.array(data.ranges)
-        # Normalize ranges by 5.0 (max range) to get values between 0 and 1
-        normalized_ranges = ranges / 5.0
-        # Any range equal to 1 means no obstacle detected within 5 meters in that direction
-        obstacles = normalized_ranges < 1.0
-        # Prepare the data for PPO
-        self.processed_lidar_data = normalized_ranges if obstacles.any() else np.zeros(120)
-
-    def get_processed_lidar_data(self):
-        return self.processed_lidar_data if self.laser_scan else np.zeros(120)
+    #se tiver obstaculo, valor 1 - (distancia do obstaculo / 5)   
     
-    def process_scan_in_groups(self, group_size=20):
-        if self.laser_scan is not None:
-            # Converting the ranges data to a numpy array for easier manipulation
-            ranges_array = np.array(self.laser_scan.ranges)
-            # Ensuring the array can be divided into groups of the specified size
-            if ranges_array.size % group_size == 0:
-                # Splitting the array into sub-arrays of the specified group size
-                groups = np.split(ranges_array, ranges_array.size // group_size)
-                # Here you would process each group and input into the neural network
-                for group in groups:
-                    # Process each group - placeholder for neural network input code
-                    # For example: neural_network_input(group)
-                    pass
-            else:
-                rospy.logerr("The number of rays in the scan does not evenly divide into groups of size %d", group_size)
-        else:
-            rospy.logerr("No laser scan data available!")
+    def _laser_scan_callback(self, data):
+        self.laser_scan = data
+        #rospy.loginfo("laser_scan_callback")
+        
+        rospy.loginfo("len(self.laser_scan.ranges)="+str(len(self.laser_scan.ranges)))
             
+        rospy.loginfo("self.laser_scan.ranges[0:20]="+str(self.laser_scan.ranges[0:20]))
+        
+        rospy.loginfo("self.laser_scan.ranges[20:40]="+str(self.laser_scan.ranges[20:40]))
+        
+        rospy.loginfo("self.laser_scan.ranges[40:60]="+str(self.laser_scan.ranges[40:60]))
+        
+        rospy.loginfo("self.laser_scan.ranges[60:80]="+str(self.laser_scan.ranges[60:80]))
+        
+        rospy.loginfo("self.laser_scan.ranges[80:100]="+str(self.laser_scan.ranges[80:100]))
+        
+        rospy.loginfo("self.laser_scan.ranges[100:120]="+str(self.laser_scan.ranges[100:120]))
+        
+    
+    def get_laser_scan(self):
+        return self.laser_scan
+    
+    def get_laser_scan_as_np(self):
+        return np.array(self.laser_scan.ranges)
+    
+    def get_laser_scan_as_np_groups(self):
+        return np.array([self.laser_scan.ranges[0:20],self.laser_scan.ranges[20:40],self.laser_scan.ranges[40:60],self.laser_scan.ranges[60:80],self.laser_scan.ranges[80:100],self.laser_scan.ranges[100:120]])
+    
+    def get_laser_scan_as_np_groups_mean(self):
+        return np.array([np.mean(self.laser_scan.ranges[0:20]),np.mean(self.laser_scan.ranges[20:40]),np.mean(self.laser_scan.ranges[40:60]),np.mean(self.laser_scan.ranges[60:80]),np.mean(self.laser_scan.ranges[80:100]),np.mean(self.laser_scan.ranges[100:120])])
+    
+    #Normaliza os valores do laser scan para ficarem entre 0 e 1
+    def get_laser_scan_as_np_groups_mean_normalized(self):
+        laser_scan_as_np_groups_mean = self.get_laser_scan_as_np_groups_mean()
+        laser_scan_as_np_groups_mean_normalized = (laser_scan_as_np_groups_mean - np.min(laser_scan_as_np_groups_mean)) / (np.max(laser_scan_as_np_groups_mean) - np.min(laser_scan_as_np_groups_mean))
+        return laser_scan_as_np_groups_mean_normalized
+    
+    #Enviar os valores do laser scan para a rede neural
+    def get_laser_scan_as_np_groups_mean_normalized_reshaped(self):
+        laser_scan_as_np_groups_mean_normalized = self.get_laser_scan_as_np_groups_mean_normalized()
+        return laser_scan_as_np_groups_mean_normalized.reshape(1,6)
+    
+    
+    def __init__(self):
+        #rospy.init_node('listener', anonymous=True)
+        rospy.Subscriber("/eboat/laser/scan", LaserScan, self._laser_scan_callback)
+
+        self.laser_scan = None
+        rospy.logdebug("Waiting for /scan to be READY...")
+        while ((self.laser_scan is None) and (not rospy.is_shutdown())):
+            try:
+                self.laser_scan = rospy.wait_for_message("/eboat/laser/scan", LaserScan, timeout=1.0)
+                rospy.logdebug("Current /eboat/laser/scan READY=>")
+            except:
+                rospy.logerr("Current /eboat/laser/scan not ready yet, retrying for getting laser_scan")
+
+    #dividir os 120 feixes em grupos 20 feixes, e inserir na rede neural
+    #cada grupo de 20 feixes vai ser um input da rede neural
+    #cada input vai ser um array de 1 valor, que vai ser a media dos 20 feixes
+    #calcular a media dos valores maiores que zero
+    #se nao tiver nenhum valor maior que zero, input = 0
+    #calcular maior valor menor que 0 e menor valor maior que 0
+    #valor minimo maior que zero, valor maximo menor que 1   #
+    # a rede neural vai ter 6 inputs, cada um com 1 valor
+    #os 6 inputs vao ser os 6 grupos de 20 feixes 
+    #se nao tiver obstaculo, valor 0.5
+    #se tiver obstaculo, valor 1 - (distancia do obstaculo / 5)   
+    
+    def _laser_scan_callback(self, data):
+        self.laser_scan = data
+        #rospy.loginfo("laser_scan_callback")
+        
+        rospy.loginfo("len(self.laser_scan.ranges)="+str(len(self.laser_scan.ranges)))
+            
+        rospy.loginfo("self.laser_scan.ranges[0:20]="+str(self.laser_scan.ranges[0:20]))
+        
+        rospy.loginfo("self.laser_scan.ranges[20:40]="+str(self.laser_scan.ranges[20:40]))
+        
+        rospy.loginfo("self.laser_scan.ranges[40:60]="+str(self.laser_scan.ranges[40:60]))
+        
+        rospy.loginfo("self.laser_scan.ranges[60:80]="+str(self.laser_scan.ranges[60:80]))
+        
+        rospy.loginfo("self.laser_scan.ranges[80:100]="+str(self.laser_scan.ranges[80:100]))
+        
+        rospy.loginfo("self.laser_scan.ranges[100:120]="+str(self.laser_scan.ranges[100:120]))
+        
+    
+    def get_laser_scan(self):
+        return self.laser_scan
+    
+    def get_laser_scan_as_np(self):
+        return np.array(self.laser_scan.ranges)
+    
+    def get_laser_scan_as_np_groups(self):
+        return np.array([self.laser_scan.ranges[0:20],self.laser_scan.ranges[20:40],self.laser_scan.ranges[40:60],self.laser_scan.ranges[60:80],self.laser_scan.ranges[80:100],self.laser_scan.ranges[100:120]])
+    
+    def get_laser_scan_as_np_groups_mean(self):
+        return np.array([np.mean(self.laser_scan.ranges[0:20]),np.mean(self.laser_scan.ranges[20:40]),np.mean(self.laser_scan.ranges[40:60]),np.mean(self.laser_scan.ranges[60:80]),np.mean(self.laser_scan.ranges[80:100]),np.mean(self.laser_scan.ranges[100:120])])
+    
+    #Normaliza os valores do laser scan para ficarem entre 0 e 1
+    def get_laser_scan_as_np_groups_mean_normalized(self):
+        laser_scan_as_np_groups_mean = self.get_laser_scan_as_np_groups_mean()
+        laser_scan_as_np_groups_mean_normalized = (laser_scan_as_np_groups_mean - np.min(laser_scan_as_np_groups_mean)) / (np.max(laser_scan_as_np_groups_mean) - np.min(laser_scan_as_np_groups_mean))
+        return laser_scan_as_np_groups_mean_normalized
+    
+    #Enviar os valores do laser scan para a rede neural
+    def get_laser_scan_as_np_groups_mean_normalized_reshaped(self):
+        laser_scan_as_np_groups_mean_normalized = self.get_laser_scan_as_np_groups_mean_normalized()
+        return laser_scan_as_np_groups_mean_normalized.reshape(1,6)
+    
+    
+    
             
         

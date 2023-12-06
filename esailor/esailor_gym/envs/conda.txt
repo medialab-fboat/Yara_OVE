@@ -1,0 +1,4 @@
+export PATH="~/miniconda3/bin:$PATH"
+source ~/.bashrc
+source ~/yara_ws/devel/setup.bash
+source activate esailor  # Replace 'esailor' with the correct environment name if different

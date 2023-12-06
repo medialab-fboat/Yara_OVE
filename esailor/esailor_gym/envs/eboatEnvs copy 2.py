@@ -1,9 +1,6 @@
-
-from .laser_scan_processor import LaserScanProcessor
+#from .raycast_updated_with_groups import rays
 
 from sensor_msgs.msg import LaserScan
-import threading
-
 import gymnasium as gym
 import rospy
 import numpy as np
@@ -22,6 +19,10 @@ from std_msgs.msg import Float32, Int16, Float32MultiArray
 from geometry_msgs.msg import Point
 from gymnasium.utils import seeding
 
+from tf.transformations import quaternion_from_euler
+from gazebo_msgs.srv import SetModelState, GetModelState
+from gazebo_msgs.msg import ModelState
+
 import random
 from rosgraph_msgs.msg import Clock
 
@@ -31,17 +32,8 @@ from std_msgs.msg import Float32, Int16, Float32MultiArray
 from geometry_msgs.msg import Point, Pose
 
 from tf.transformations import quaternion_from_euler
-from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel, GetModelState
+from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel
 from gazebo_msgs.msg import ModelState
-
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib.animation import FuncAnimation
-
-
-
 
 class EboatBase(gym.Env):
     def __init__(self):
@@ -62,8 +54,6 @@ class EboatBase(gym.Env):
         # -->TRANSFORM THE XACRO FILE TO URDF
         # subprocess.run(["xacro", urdffilepath, f"{modelname}.urdf"], capture_output=True)
         os.system(f"xacro {urdffilepath} > {modelname}.urdf")
-        
-        self.laser_processor = LaserScanProcessor()
 
         # -->SPAWN THE MODEL IN THE GAZEBO SIMULATION
         self.spawn_urdf = rospy.ServiceProxy("/gazebo/spawn_urdf_model", SpawnModel)
@@ -129,54 +119,39 @@ class EboatBase(gym.Env):
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
         self.set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         self.get_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-        #self.laser_scan = rospy.Subscriber(f"/eboat/laser/scan", LaserScan, self._laser_scan_callback)         
-
-    """ def _laser_scan_callback(self, laser_data):
-        num_groups = 6
-        group_size = len(laser_data.ranges) // num_groups
-        groups = [laser_data.ranges[i:i+group_size] for i in range(0, len(laser_data.ranges), group_size)]
-
-        group_means = np.zeros(num_groups)
-
-        for i, group in enumerate(groups):
-            valid_ranges = [range_val for range_val in group if range_val < float('inf')]
-            group_means[i] = np.mean(valid_ranges) if valid_ranges else 0
-
-        self.processed_lidar_data = group_means
-        neural_inputs = 1 - np.clip(group_means / 5, 0, 1) # 5 is the maximum range of the lidar, 
-                                                           # so we normalize the values between 0 and 1
-        self.processed_lidar_data = neural_inputs if neural_inputs.any() else np.zeros(num_groups)
-
-    # Chamar esta função fora do callback para evitar problemas com threads.
-    def plot_groups(groups, num_groups):
-        import matplotlib.pyplot as plt
-        plt.style.use('fivethirtyeight')
-        fig, axs = plt.subplots(num_groups, 1, figsize=(10, 8))
-
-        for ax, group in zip(axs, groups):
-            ax.plot(group)
-            ax.set_title(f'Group {groups.index(group) + 1}')
-            
-        plt.tight_layout()
-        try:
-            plt.show(block=False)
-        except Exception as e:
-            print(f"Plotting error: {e}. Saving plot to file instead.")
-            fig.savefig('/home/araujo/yara_ws/src/Yara_OVE/esailor/esailor_gym/envs/laser_scan_visualizer.png')
-        plt.tight_layout()
-        plt.show()
-
-    # Função para processar os dados em grupos
-    def process_scan_in_groups(ranges, group_size=20):
-        ranges_array = np.array(ranges)
-        if ranges_array.size % group_size == 0:
-            groups = np.split(ranges_array, ranges_array.size // group_size)
-            group_means = [np.mean(group) for group in groups if np.any(group < float('inf'))]
-            return group_means
-        else:
-            rospy.logerr("The number of rays in the scan does not evenly divide into groups of size %d", group_size)
-            return []
- """    
+        self.laser_scan = rospy.Subscriber(f"/eboat/laser/scan", LaserScan, self._laser_scan_callback)         
+        
+        
+    def _laser_scan_callback(self, laser_data):
+    #dividir os 120 feixes em grupos 20 feixes, e inserir na rede neural
+    #cada grupo de 20 feixes vai ser um input da rede neural sendo 6 inputs no total
+    #cada input vai ser um array de 1 valor, que vai ser a media dos 20 feixes
+    #calcular a media dos valores maiores que zero
+    #se nao tiver nenhum valor maior que zero, input = 0
+    #calcular maior valor menor que 0 e menor valor maior que 0
+    #valor minimo maior que zero, valor maximo menor que 1   
+    # a rede neural vai ter 6 inputs, cada um com 1 valor  
+    #se tiver obstaculo, valor 1 - (distancia do obstaculo / 5)  
+    
+        self.laser_scan = laser_data
+        rospy.loginfo("laser_scan_callback")
+        print("laser_scan_callback") 
+        rospy.loginfo("len(self.laser_scan.ranges)="+str(len(self.laser_scan.ranges)))
+        print("len(self.laser_scan.ranges)="+str(len(self.laser_scan.ranges)))
+        rospy.loginfo("self.laser_scan.ranges[0:20]="+str(self.laser_scan.ranges[0:20]))
+        print("self.laser_scan.ranges[0:20]="+str(self.laser_scan.ranges[0:20]))
+        rospy.loginfo("self.laser_scan.ranges[20:40]="+str(self.laser_scan.ranges[20:40]))
+        print("self.laser_scan.ranges[20:40]="+str(self.laser_scan.ranges[20:40]))
+        rospy.loginfo("self.laser_scan.ranges[40:60]="+str(self.laser_scan.ranges[40:60]))
+        print("self.laser_scan.ranges[40:60]="+str(self.laser_scan.ranges[40:60]))
+        rospy.loginfo("self.laser_scan.ranges[60:80]="+str(self.laser_scan.ranges[60:80]))
+        print("self.laser_scan.ranges[60:80]="+str(self.laser_scan.ranges[60:80]))
+        rospy.loginfo("self.laser_scan.ranges[80:100]="+str(self.laser_scan.ranges[80:100]))
+        print("self.laser_scan.ranges[80:100]="+str(self.laser_scan.ranges[80:100]))
+        rospy.loginfo("self.laser_scan.ranges[100:120]="+str(self.laser_scan.ranges[100:120]))
+        print("self.laser_scan.ranges[100:120]="+str(self.laser_scan.ranges[100:120]))
+        
+    
     def rot(self, modulus, theta):
         rot = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]], dtype=np.float32)
 
@@ -202,16 +177,8 @@ class EboatBase(gym.Env):
             #              8 roll angle
             #              9 boat's current X position
             #             10 boat's current Y position
-            #             11 Grouped laser scan data color 1
-            #             12 Grouped laser scan data color 2
-            #             13 Grouped laser scan data color 3
-            #             14 Grouped laser scan data color 4
-            #             15 Grouped laser scan data color 5
-            
-        #LaserScan groups
-        self.laser_scan_data = obsData[11:16]
+            #             11 LaserScan data
 
-        print("Length of obsData:", len(obsData))
         return np.array(obsData, dtype=float)
 
     def rescaleObs(self, observations):
@@ -240,11 +207,9 @@ class EboatBase(gym.Env):
         robs[7] = observations[7] / 5.0
         # --> Roll angle                     [-180, 180]
         robs[8] = observations[8] / 180.0
-        # --> Boat's current X position      [-100, 100]
-        robs[9] = observations[9] / 100.0
-        # --> Boat's current Y position      [-100, 100]
-        robs[10] = observations[10] / 100.0
-               
+        # --> LaserScan data                 [0, 1]
+        #robs[9] = observations[9] / 1.0 
+        
 
         return robs
 
@@ -267,10 +232,8 @@ class EboatBase(gym.Env):
         state.twist.linear.z = 0
         state.twist.angular.x = 0
         state.twist.angular.y = 0
-        state.twist.angular.z = 0
-        
-        #Raycast
-        state.raycast = 0
+        state.twist.angular.z = 0       
+       
 
         rospy.wait_for_service('/gazebo/set_model_state')
         try:
@@ -279,7 +242,7 @@ class EboatBase(gym.Env):
             assert result.success is True
         except rospy.ServiceException:
             print("/gazebo/get_model_state service call failed")
-           
+
 class Eboat925_v0(EboatBase):
     def __init__(self):
         # print(f"\n----------------------\n{ros_port}\n----------------------\n")
@@ -297,9 +260,7 @@ class Eboat925_v0(EboatBase):
         #     print(time.time())
         #     exit(1)
 
-        super().__init__()
-        
-        self.laser_scan_data = []
+        super(Eboat925_v0, self).__init__()
 
         #-->DEFINE OBSERVATION AND ACTION SPACES
         self.action_space = spaces.Box(low=-1,
@@ -307,10 +268,7 @@ class Eboat925_v0(EboatBase):
                                        shape=(4,),
                                        dtype=np.float32)
 
-        #self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(9,), dtype=np.float32)
-        #self.observation_space = spaces.Box(low=np.array([0]*11), high=np.array([np.inf]*11), shape=(11,), dtype=np.float32)
-        self.observation_space = spaces.Box(low=np.array([0]*(11+len(self.laser_scan_data))), high=np.array([np.inf]*(11+len(self.laser_scan_data))), shape=(11+len(self.laser_scan_data),), dtype=np.float32)
-
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(11,), dtype=np.float32)
 
         #-->SET WIND INITIAL CONDITIONS AND DEFINE ITS HOW IT WILL VARIATE
         self.windVec = np.array([0, 0, 0], dtype=np.float32)
@@ -318,12 +276,7 @@ class Eboat925_v0(EboatBase):
         self.max_windspeed   = 11
         self.wind_directions = np.array([-135, -90, -45, -5, 5, 45, 90, 135])
         self.wind_speed      = 0.0
-        #Raycast
-        #self.laser_scan = None
-        #rospy.Subscriber(f"/{self.model_namespace}/laser/scan", LaserScan, self._laser_scan_callback)
-        #self.processed_lidar_data = np.zeros(120)
-        #self.raycast = rays()
-        #self.raycast_data = None 
+        
         
         time.sleep(5)
 
@@ -358,14 +311,11 @@ class Eboat925_v0(EboatBase):
         self.PREdS         = 0.0                           #--> DISTANCE TRAVELED BY THE BOAT TOWARDS THE GOAL (D(t = n) - D(t = n-1))
         self.d2r           = np.pi / 180.0
         self.step_count    = 0
-        self.lateral_limit = 35                             #-->DEFINE THE HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT LINE BEFORE A DONE SIGNAL
+        self.lateral_limit = 25                             #-->DEFINE THE HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT LINE BEFORE A DONE SIGNAL
         self.PREVACT       = np.array([-1, -1])
         self.maxcharge     = 10
         self.battery       = np.full(2, fill_value=self.maxcharge, dtype=int)
-        #Raycast
-        #self.raycast_data = 0  
-            
-
+        
     def rewardFunction(self, obs, action): #-->rewardFunctionD (ATIVA)
         # QUais sao as funcoes de truncamento e finalizacao dos episodios?
         dS    = self.PREVOBS[0] - obs[0]
@@ -374,11 +324,7 @@ class Eboat925_v0(EboatBase):
         db    = abs(self.PREVOBS[5] - (action[0] + 1.0) * 45.0) #--> DIFFERENCE BETWEEN THE POSITION OF THE BOOM AND THE NEW POSITION OF THE BOOM REQUIRED BY THE AGENT
         dr    = abs(self.PREVOBS[6] - (action[1] * 60.0))       #--> DIFFERENCE BETWEEN THE POSITION OF THE RUDDER AND THE NEW POSITION OF THE RUDDER REQUIRED BY THE AGENT
         dp    = abs(self.PREVOBS[7] - (action[2] * 5.0))        #--> DIFFERENCE BETWEEN THE POSITION OF THE PROPELLER AND THE NEW POSITION OF THE PROPELLER REQUIRED BY THE AGENT
-       
-        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle       
-       
-        # Add logic to rescale the laser scan data within observations
-        
+        alpha = 180 - obs[5] - abs(obs[4])                      #--> Sail attack angle
 
         #--> POSITIVE/NEGATIVE RETURN EARNED BY GO NEAR/AWAY THE WAYPOINT
         C0 = dS / self.D0;
@@ -433,72 +379,97 @@ class Eboat925_v0(EboatBase):
             self.step_count += 1
         else:
             R = np.min([-5.0, ((-0.15) * (self.step_count / 60.0))]) * C0
+            
+       
 
         return np.max([R, -1])
+    
+    def apply_turn(self, turn_direction):
+        #Logic to apply the turn action on rudder and boom
+        if turn_direction == 1:
+            self.rudderAng_pub.publish(60.0)
+            self.boomAng_pub.publish(45.0)
+        elif turn_direction == -1:
+            self.rudderAng_pub.publish(-60.0)
+            self.boomAng_pub.publish(-45.0)
+        else:
+            self.rudderAng_pub.publish(0.0)
+            self.boomAng_pub.publish(0.0)
 
     def step(self, action):
-        # Unpause the simulation
+        # ract = np.array([(action[0]+1)*45, action[1]*60])
+        # print(self.step_count, ract)
+        #--> UNPAUSE SIMULATION
         rospy.wait_for_service("/gazebo/unpause_physics")
         try:
             self.unpause()
-        except rospy.ServiceException as e:
-            print("/gazebo/unpause_physics service call failed!")
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/unpause_physics service call failed!"))
 
-        # Publish the actions to the ROS topics
+        #-->PUBLISH THE ACTIONS IN THE ROSTOPIC (SEND COMMANDS TO THE ACTUATORS)
         self.boomAng_pub.publish((action[0] + 1) * 45.0)
-        self.rudderAng_pub.publish(action[1] * 60.0)
-        self.propVel_pub.publish(int(action[2] * 5))
+        self.rudderAng_pub.publish(action[1] * 60.0)       
+        self.propVel_pub.publish(int(action[2] * 5))         
 
-        # Get observations from the environment
+        
+        #Laserscan data
+        self.laser_scan = None
+        rospy.logdebug("Waiting for /scan to be READY...")
+        while ((self.laser_scan is None) and (not rospy.is_shutdown())):
+            try:
+                self.laser_scan = rospy.wait_for_message("/eboat/laser/scan", LaserScan, timeout=1.0)
+                rospy.logdebug("Current /eboat/laser/scan READY=>")
+            except:
+                rospy.logerr("Current /eboat/laser/scan not ready yet, retrying for getting laser_scan")
+        
+        #Avoidence obstacle is the closest obstacle in the group
+        #obstacles = self._laser_scan_callback(LaserScan)
+        #obstacles = [obstacle if obstacle < 10 else 10 for obstacle in obstacles]
+        #print(obstacles)
+        
+                
+        #-->GET OBSERVATIONS
         obs = self.getObservations()
 
-        # Process laser scan data if available
-        if len(obs) >= 15:  # Assuming laser data are the last 5 elements in obs
-            laser_data = self.laser_processor.process_data()
-            max_range = 5
-            for i in range(-5, 0):  # Loop over the last 5 elements of obs
-                if obs[i] > max_range:
-                    obs[i] = max_range
-                elif obs[i] < 0:
-                    obs[i] = 0
-        else:
-            print("Laser data not available in observations")
-
-        # Pause the simulation
+        #-->PAUSE SIMULATION
         rospy.wait_for_service("/gazebo/pause_physics")
         try:
             self.pause()
-        except rospy.ServiceException as e:
-            print("/gazebo/pause_physics service call failed!")
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/pause_physics service call failed!"))
 
-        # Rescale observations
+        #-->RESCALE EACH OBSERVATION TO THE INTERVAL [-1, 1]
         robs = self.rescaleObs(obs)
 
-        # Calculate the reward
+        #-->CALCULATES THE REWARD
         reward = self.rewardFunction(obs, action)
 
-        # Check for a terminal state
-        posY = obs[10]
+        #-->CHECK FOR A TERMINAL STATE
+        posY    = obs[10]
         windAng = abs(obs[4])
-        done = bool((obs[0] <= 5) or
-                    (obs[0] > self.PREVOBS[0]) or
-                    (abs(posY) > self.lateral_limit) or
-                    ((windAng >= 160) and (windAng <= 200) and (obs[2] < 0.5)) or
-                    (np.isnan(obs).any()))
-
-        # Process done signal
+        done    = bool((obs[0] <= 5) |
+                       (obs[0] > self.PREVOBS[0]) |
+                       (abs(posY) > self.lateral_limit) |
+                       ((windAng >= 160) & (windAng <= 200) & (obs[2] < 0.5)) |  # -->A done signal is returned if the wind is blowing from the bow and the surge velocity is smaller than 0.5 m/s
+                       (np.isnan(obs).any())
+                      )
+        
+        # -->PROCESS DONE SIGNAL
         if done:
             if (obs[0] <= 5):
                 reward = 1
             elif (not (np.isnan(obs).any())):
                 reward = -1
+            else:
+                pass
+        else:
+            # -->UPDATE PREVIOUS STATE VARIABLES
+            self.PREVOBS = obs
+            self.PREVACT = action[0], action[1], action[2], action[3]
 
-        # Update previous state variables
-        self.PREVOBS = obs
-        self.PREVACT = action[0], action[1], action[2]
+        # self.step_count += 1
 
         return robs, reward, done, False, {}
-
 
     def reset(self, seed = None, options = None):
         # -->RESETS THE STATE OF THE ENVIRONMENT.
@@ -511,9 +482,8 @@ class Eboat925_v0(EboatBase):
         # -->SET THE ACTUATORS BACK TO THE DEFAULT SETTING
         self.propVel_pub.publish(0)
         self.boomAng_pub.publish(0.0)
-        self.rudderAng_pub.publish(0.0)
-        #LaserScan groups
-                
+        self.rudderAng_pub.publish(0.0)             
+        
 
         #-->SET A RANDOM INITIAL STATE FOR THE WIND
         self.wind_speed = np.random.randint(low=self.min_windspeed, high=self.max_windspeed)
@@ -556,7 +526,6 @@ class Eboat925_v0(EboatBase):
         self.PREVACT    = 0.0, 0.0
         self.step_count = 0
         self.battery    = self.maxcharge, self.maxcharge
-        #Raycast
-        #self.raycast_data = obs[9]
+        
 
         return robs, {}

@@ -31,6 +31,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 
 #-->PYTORCH
 import torch as th
+from sensor_msgs.msg import LaserScan
 
 class esailor():
     def __init__(self):
@@ -355,8 +356,11 @@ class esailor():
         robs[7] = observations[7] / 5.0
         # --> Roll angle                     [-180, 180]
         robs[8] = observations[8] / 180.0
-        # --> Raycast                        [0, 1]
-        robs[9] = observations[9]
+        # --> Boat's current X position      [-100, 100]
+        robs[9] = observations[9] / 100.0
+        # --> Boat's current Y position      [-100, 100]
+        robs[10] = observations[10] / 100.0
+        
         
 
         return robs
@@ -414,8 +418,8 @@ class esailor():
         rudderAng_pub = rospy.Publisher(f"/{model_namespace}/control_interface/rudder", Float32, queue_size=1)
         propVel_pub = rospy.Publisher(f"/{model_namespace}/control_interface/propulsion", Int16, queue_size=1)
         wind_pub = rospy.Publisher(f"/eboat/atmosferic_control/wind", Point, queue_size=1)
-        #add the topic for raycast
-        #raycast = rospy.Publisher(f"/{model_namespace}/mission_control/raycast", Float32MultiArray, queue_size=1)
+        #LaserScanProcessor()       
+
 
         # -->SERACH FOR THE SDF FILE DESCRIBING THE WAYPOINT
         files = glob.glob(os.path.join(self.HOME, f"**/*Yara_OVE/**/*wayPointMarker/model.sdf"), recursive=True)
@@ -498,7 +502,7 @@ class esailor():
                     except:
                         pass
 
-                action, _ = model.predict(self.rescaleObs(obs)[[0, 1, 2, 4, 5 ,6]])
+                action, _ = model.predict(self.rescaleObs(obs)[[0, 1, 2, 4, 5 ,6, 7, 8, 9, 10]])
                 actionVec.append([((action[0] + 1) * 45.0), (action[1] * 60.0)])
                 boomAng_pub.publish(actionVec[-1][0])
                 rudderAng_pub.publish(actionVec[-1][1])
@@ -506,7 +510,7 @@ class esailor():
                 propVel_pub.publish(actionVec[-1][2])
                 # print(f"Observation: {obs}")
                 #ADD THE RAYCAST
-                raycast.publish(obsData)               
+                       
 
                 print(f"Action: {actionVec[-1][0]} | {actionVec[-1][1]}")
 
@@ -563,7 +567,7 @@ if __name__ == "__main__":
     agent.training(rlagent    = "PPO",
                    policy     = "MlpPolicy",
                    envid      = "Eboat92_5-v0",
-                   numofsteps = 489 * 2048,
+                   numofsteps = 1000000,
                    refmodel   = refmodel,
                    actor      = [6, 6, 3],
                    critic     = [6, 6, 3],

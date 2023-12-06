@@ -32,7 +32,7 @@
               </solver>
           </ode>
           <max_step_size>0.01</max_step_size>
-          <real_time_update_rate>100.0</real_time_update_rate>
+          <real_time_update_rate>3000</real_time_update_rate>
       </physics>
 
       <!--Wind. Note, wind parameters are set in the plugin.-->
