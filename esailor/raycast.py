@@ -10,7 +10,7 @@ class rays():
         rospy.init_node('listener', anonymous=True)
         rospy.Subscriber("/eboat/laser/scan", LaserScan, self._laser_scan_callback)
 
-        self.laser_scan = None
+        self.laser_scan = np.zeros(5, dtype=int)
         rospy.logdebug("Waiting for /scan to be READY...")
         while ((self.laser_scan is None) and (not rospy.is_shutdown())):
             try:
@@ -20,7 +20,15 @@ class rays():
                 rospy.logerr("Current /eboat/laser/scan not ready yet, retrying for getting laser_scan")
 
     def _laser_scan_callback(self, data):
-        self.laser_scan = data
+        laser_ranges = np.asarray(data.ranges)
+        laser_ranges[laser_ranges == np.inf] = data.range_max
+
+        self.laser_scan[4] = np.min(laser_ranges[0:23])
+        self.laser_scan[3] = np.min(laser_ranges[24:47])
+        self.laser_scan[2] = np.min(laser_ranges[48:72])
+        self.laser_scan[1] = np.min(laser_ranges[73:96])
+        self.laser_scan[0] = np.min(laser_ranges[97:120])
+
 
     def step(self):
         obsData = None
@@ -52,5 +60,5 @@ class rays():
 
 if __name__ == '__main__':
     test = rays()
-    for i in range(20):
+    for i in range(2):
         test.step()

@@ -27,7 +27,7 @@ def callback(ros_data):
     np_arr = np.fromstring(ros_data.data, np.uint8)
     image_np = cv2.imdecode(np_arr, cv2.IMREAD_COLOR) # OpenCV >= 3.0:
 
-    cv2.imshow('cv_img', image_np)
+    cv2.imshow('bow_camera', image_np)
     cv2.waitKey(2)
 
 
@@ -39,7 +39,7 @@ def listener():
     # run simultaneously.
     rospy.init_node('boat_camera', anonymous=True)
 
-    rospy.Subscriber("/eboat/mission_control/bow_camera/image_raw/compressed", CompressedImage, callback)
+    rospy.Subscriber("/mission_control/bow_camera/image_raw/compressed", CompressedImage, callback)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()

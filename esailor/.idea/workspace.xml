@@ -5,13 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8be4a9dd-a09e-4c83-ba59-ebc95a3c6fc1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4.urdf.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4.urdf.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/empty_ocean.world.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/empty_ocean.world.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.world.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.world.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean_fixed_cam.world.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean_fixed_cam.world.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/esailor.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/esailor.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/camera_raw.py" beforeDir="false" afterPath="$PROJECT_DIR$/camera_raw.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor_gym/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor_gym/envs/eboatEnvs.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/eboatEnvs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/raycast.py" beforeDir="false" afterPath="$PROJECT_DIR$/raycast.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tmp.py" beforeDir="false" afterPath="$PROJECT_DIR$/tmp.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -29,6 +34,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>
@@ -37,17 +45,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/eduardo/USVSim/scripts/lift_drag_curves.py&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.raycast.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "charles",
+    "last_opened_file_path": "/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
-  <component name="RunManager" selected="Python.esailor">
+}]]></component>
+  <component name="RunManager" selected="Python.raycast">
     <configuration name="esailor" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="esailor" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -67,8 +78,31 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="raycast" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="esailor" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/raycast.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="tmp" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="esailor" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -90,6 +124,7 @@
     </configuration>
     <configuration name="trainingCC" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="esailor" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -111,11 +146,19 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.raycast" />
         <item itemvalue="Python.esailor" />
         <item itemvalue="Python.tmp" />
         <item itemvalue="Python.trainingCC" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-5a2391486177-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.13763.11" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">

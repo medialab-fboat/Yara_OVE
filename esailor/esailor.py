@@ -169,12 +169,13 @@ class esailor():
         if self._roslaunch == None:
             print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
             self.launchGazeboSimulation("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/eboat_gazebo/launch/empty_ocean.launch")
+            # self.launchGazeboSimulation()
 
         #--> ADJUST PHYSICS PROPERTIES
         if not(self._holdPhysiscsProperties):
             self._checkPhysicsProperties()
 
-        #--> SET BASE FILE NAME STRUCTURE TOSAVE TESORBOARD LOGS AND TRAINED MODELS
+        #--> SET BASE FILE NAME STRUCTURE TOSAVE TENSORBOARD LOGS AND TRAINED MODELS
         sufix += "_A"
         for val in actor:
             sufix += f"{val}"
@@ -424,8 +425,11 @@ class esailor():
         baseDist    = baseDistance
         baseVec     = np.array([1.0, 0.0])
         path2follow = [baseVec * baseDist]
-        thetaVec    = [-30     , -80     , -140    , 180     , 90          , 40      , -40     , 0       , 0       ]
-        D           = [baseDist, baseDist, baseDist, baseDist, 4 * baseDist, baseDist, baseDist, baseDist, baseDist]
+        # thetaVec    = [-30     , -80     , -140    , 180     , 90          , 40      , -40     , 0       , 0       ]
+        # thetaVec     = [-30     , -80    , -140     , 145     , 90          , 40      , -40     , 0       , 0       ]
+        # D           = [baseDist, baseDist, baseDist, baseDist, 4 * baseDist, baseDist, baseDist, baseDist, baseDist]
+        thetaVec = [0, 90]
+        D        = [baseDist, baseDist]
         #========================================================
         # theta_wind = 180
         # theta_model = (theta_wind > 150) * 0.7854 - (theta_wind < -150) * 0.7854
@@ -443,8 +447,8 @@ class esailor():
         time.sleep(5)
 
         #--> INITIALIZE THE SENSOR HUD
-        # sensors = subprocess.Popen([sys.executable, os.path.join(
-        #     "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
+        sensors = subprocess.Popen([sys.executable, os.path.join(
+            "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
         # camera_raw = subprocess.Popen([sys.executable, "./camera_raw.py"])
         # camera_proc = subprocess.Popen([sys.executable, "./camera_detection.py"])
 
@@ -454,8 +458,8 @@ class esailor():
             path2follow.append(path2follow[-1] + np.dot((baseVec * D[i]), rot))
 
         #--> SET THE WIND
-        # wind_pub.publish(Point(6.17, 0.0, 0.0))
-        wind_pub.publish(Point(-4.243, -4.234, 0.0))
+        wind_pub.publish(Point(6.17, 0.0, 0.0))
+        # wind_pub.publish(Point(-4.243, -4.234, 0.0))
 
         if self._physics_properties().pause:
             self.pauseSim(False)
@@ -492,7 +496,8 @@ class esailor():
                     except:
                         pass
 
-                action, _ = model.predict(self.rescaleObs(obs)[[0, 1, 2, 4, 5 ,6]])
+                # action, _ = model.predict(self.rescaleObs(obs)[[0, 1, 2, 4, 5 ,6]])
+                action, _ = model.predict(self.rescaleObs(obs))
                 actionVec.append([((action[0] + 1) * 45.0), (action[1] * 60.0)])
                 boomAng_pub.publish(actionVec[-1][0])
                 rudderAng_pub.publish(actionVec[-1][1])
@@ -509,7 +514,7 @@ class esailor():
             rospy.wait_for_service("/gazebo/delete_model")
             _ = delmodel("wayPointMarker")
 
-        # sensors.kill()
+        sensors.kill()
         # camera_raw.kill()
         # camera_proc.kill()
 
@@ -523,6 +528,99 @@ class esailor():
         plt.legend()
         plt.grid()
         plt.show()
+
+    def rescaleObs2(self, observations, DMAX):
+        lobs = len(observations)
+        if lobs > 9:
+            lobs -= 2
+        robs = np.zeros(lobs, dtype=np.float32)
+        # --> Distance from the waypoint (m) [-1, 1] --> [0   , DMAX];
+        robs[0] = (observations[0] + 1) * 0.5 * DMAX
+        # --> Trajectory angle               [-1, 1] --> [-180, 180]
+        robs[1] = observations[1] * 180.0
+        # --> Boat surge velocity (m/s)      [-1, 1] --> [-10   , 10 ]
+        robs[2] = observations[2] * 10
+        # --> Aparent wind speed (m/s)       [-1, 1] --> [0   , 30]
+        robs[3] = (observations[3] + 1) * 15.0
+        # --> Apparent wind angle            [-1, 1] --> [-180, 180]
+        robs[4] = observations[4] * 180.0
+        # --> Boom angle                     [-1, 1] --> [0   , 90]
+        robs[5] = (observations[5] + 1) * 45.0
+        # --> Rudder angle                   [-1, 1] --> [-60 , 60 ]
+        robs[6] = observations[6] * 60.0
+        # --> Electric propulsion speed      [-1, 1] --> [-5, 5]
+        robs[7] = observations[7] * 5.0
+        # --> Roll angle                     [-1, 1] --> [-180, 180]
+        robs[8] = observations[8] * 180.0
+
+        return robs
+
+    def humanPolicy(self,
+                 envid      = "Eboat92-v0",
+                 numofsteps = 120,
+                 ):
+
+        #--> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
+        if self._roslaunch == None:
+            print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
+            self.launchGazeboSimulation("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/eboat_gazebo/launch/empty_ocean.launch")
+            # self.launchGazeboSimulation()
+
+        #--> ADJUST PHYSICS PROPERTIES
+        # if not(self._holdPhysiscsProperties):
+        #     self._checkPhysicsProperties()
+
+        #--> START GYMNASIUM ENVIRONMENT
+        env = gym.make(envid)
+
+        obs, _ = env.reset()
+        robs   = self.rescaleObs2(obs, env.DMAX)
+        print("Distance to the waypoint: {:6.3f}".format(robs[0]))
+        print("Trajectory angle        : {:6.3f}".format(robs[1]))
+        print("Surge velocity          : {:6.3f}".format(robs[2]))
+        print("Apparent wind speed     : {:6.3f}".format(robs[3]))
+        print("Apparent wind angle     : {:6.3f}".format(robs[4]))
+        print("Boom angle              : {:6.3f}".format(robs[5]))
+        print("Rudder angle            : {:6.3f}".format(robs[6]))
+        print("Eletric propulsion power: {:6.3f}".format(robs[7]))
+        print("Roll angle              : {:6.3f}".format(robs[8]))
+        print("Attack angle            : {:6.3f}".format(180 - robs[5] - abs(robs[4])))
+        print("============================================")
+
+        step   = 0
+        cumu   = 0
+        action = np.zeros(2, dtype=np.float32)
+        while True:
+            input_action = input("\nChose an action in the format [boom angle rudder angle]:").split(" ")
+            if len(input_action) > 1:
+                action[0] = (np.float32(input_action[0]) / 45.0) - 1
+                action[1] = np.float32(input_action[1]) / 60.0
+            #
+            obs, reward, done, trunc, _ = env.step(action)
+            robs  = self.rescaleObs2(obs, env.DMAX)
+            cumu += reward
+            print("Action                  : [{:6.3f}, {:6.3f}]".format((action[0]+1.0)*45.0, action[1]*60.0))
+            print("Distance to the waypoint: {:6.3f}".format(robs[0]))
+            print("Trajectory angle        : {:6.3f}".format(robs[1]))
+            print("Surge velocity          : {:6.3f}".format(robs[2]))
+            print("Apparent wind speed     : {:6.3f}".format(robs[3]))
+            print("Apparent wind angle     : {:6.3f}".format(robs[4]))
+            print("Boom angle              : {:6.3f}".format(robs[5]))
+            print("Rudder angle            : {:6.3f}".format(robs[6]))
+            print("Eletric propulsion power: {:6.3f}".format(robs[7]))
+            print("Roll angle              : {:6.3f}".format(robs[8]))
+            print("Attack angle            : {:6.3f}".format(180 - robs[5] - abs(robs[4])))
+            print("-----------------------------------")
+            print("Step return             : {:6.3f}".format(reward))
+            print("Cumulated retrun        : {:6.3f}".format(cumu))
+            print("Number of steps         : {:d}".format(step+1))
+            print("============================================")
+
+            if (done | trunc | (step >= numofsteps)):
+                break
+            else:
+                step += 1
+
 
     def close(self):
         if self._roslaunch.pid != None:
@@ -545,17 +643,21 @@ if __name__ == "__main__":
     # refmodel = PPO.load("./models/PPO/esailor_2c_winds_18092023_11_07_45/esailor_model_1001472_steps.zip")
     # refmodel = PPO.load("./models/PPO/esailor_1c_winds_19092023_01_14_09/esailor_model_1001472_steps.zip")
     # refmodel = PPO.load("./models/PPO/esailor_8d_winds_19092023_22_14_05/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_a_2w_A663_C663_22092023_17_15_42/esailor_model_1001472_steps.zip")
+    # refmodel = PPO.load("./models/PPO/esailor_a_cr_A663_C663_25092023_11_15_25/esailor_model_490000_steps.zip")
+    # refmodel = PPO.load("./models/PPO/esailor_a_dz_A663_C663_25092023_18_33_09/esailor_model_1001472_steps.zip")
+    # refmodel = PPO.load("./models/PPO/esailor_a_cr_A12123_C12123_26092023_22_41_36/esailor_model_1001472_steps.zip")
+    # refmodel = PPO.load("./models/PPO/esailor_92_cr_A12123_C12123_27092023_22_33_51/esailor_model_1001472_steps.zip")
     refmodel = None
     agent    = esailor()
     agent.training(rlagent    = "PPO",
                    policy     = "MlpPolicy",
-                   envid      = "Eboat62-v0",
+                   envid      = "Eboat93-v0",
                    numofsteps = 489 * 2048,
                    refmodel   = refmodel,
-                   actor      = [6, 6, 3],
-                   critic     = [6, 6, 3],
-                   sufix      = "esailor_a_cr",
+                   actor      = [11, 6],
+                   critic     = [11, 6],
+                   sufix      = "esailor_93",
                    logdir     = "logs")
     # agent.testModel(refmodel)
+    # agent.humanPolicy(envid="Eboat92-v0", numofsteps=120)
     agent.close()
