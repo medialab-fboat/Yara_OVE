@@ -5,3 +5,4 @@ from esailor_gym.envs.eboatEnvs import Eboat925_v0
 from esailor_gym.envs.eboatEnvs import Eboat92_v0
 from esailor_gym.envs.eboatEnvs import Eboat62_v0
 from esailor_gym.envs.eboatEnvs import Eboat93_v0
+from esailor_gym.envs.eboatEnvs import Eboat93_v1

@@ -47,6 +47,13 @@ register(
 
 register(
     id='Eboat93-v0',
-    entry_point='esailor_gym.envs:Eboat62_v0',
+    entry_point='esailor_gym.envs:Eboat93_v0',
+    max_episode_steps=1000000,
+)
+
+
+register(
+    id='Eboat93-v1',
+    entry_point='esailor_gym.envs:Eboat93_v1',
     max_episode_steps=1000000,
 )

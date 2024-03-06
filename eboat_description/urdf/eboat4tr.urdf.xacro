@@ -258,13 +258,13 @@
         </inertial>
     </link>
 
-    <joint name="propeller_joint" type="revolute">
-        <origin xyz="-0.089683 -7.7043e-18 -0.949" rpy="-1.26162e-16 -0 0" />
+    <joint name="propeller_joint" type="continuous">
+        <origin xyz="-0.089683 0 -0.949" rpy="0 0 0" />
         <parent link="eletric_engine_link" />
         <child link="propeller_link" />
         <axis xyz="1 0 0"/>
         <limit effort="1000" velocity="20" />
-        <joint_properties friction="0.0"/>
+        <dynamics damping="0.0" friction="0.0"/>
     </joint>
 
     <link name="deck_link">

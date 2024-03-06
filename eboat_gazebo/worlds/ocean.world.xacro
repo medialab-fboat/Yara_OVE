@@ -23,6 +23,11 @@
             <pose>10.0 0 0 0 0 0</pose>
             <uri>$(find eboat_description)/models/buoy_red</uri>
         </include>
+        <include>
+            <name>yacht</name>
+            <pose>100.0 0 0 0 0 0</pose>
+            <uri>$(find eboat_description)/models/sailyacht</uri>
+        </include>
 
         <!--PHYSICS ENGINE-->
         <physics type="ode">

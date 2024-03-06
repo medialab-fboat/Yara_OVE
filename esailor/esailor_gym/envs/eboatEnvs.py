@@ -13,6 +13,7 @@ from gymnasium import utils, spaces
 from std_srvs.srv import Empty
 
 from std_msgs.msg import Float32, Int16, Float32MultiArray
+from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point
 from gymnasium.utils import seeding
 
@@ -1275,15 +1276,17 @@ class Eboat93_v0(EboatBase):
 
         self.observation_space = spaces.Box(low   = -1  ,
                                             high  = 1   ,
-                                            shape = (9,),
+                                            shape = (5,),
                                             dtype = np.float32)
 
         #-->SET WIND INITIAL CONDITIONS AND DEFINE ITS HOW IT WILL VARIATE
         self.windVec         = np.array([0, 0, 0], dtype=np.float32)
-        self.wind_speed      = [5, 6, 7, 8, 9, 10, 11, 12] * 0.51444
-        # self.wind_speed      = [12 * 0.51444]  #--> 12 knots (~6.17 m/s)
-        self.wind_directions = np.concatenate([np.arange(-150, -5, 15), np.array([-5, 5]), np.arange(15, 151, 15)])
-        # self.wind_directions = np.array([-135, 135])
+        # self.wind_speedVec   = np.array([5, 7, 9, 11, 12]) * 0.51444
+        self.wind_speedVec = np.array([5, 6, 7, 8, 9, 10, 11, 12]) * 0.51444
+        # self.wind_speedVec   = [12 * 0.51444]  #--> 12 knots (~6.17 m/s)
+        self.wind_directions = np.concatenate([[-175], np.arange(-150, -5, 15), np.array([-5, 5]), np.arange(15, 151, 15), [175]])
+
+        print(f"\n\n-------------------------------------------\n{self.wind_directions}\n-------------------------------------------\n")
 
         time.sleep(5)
 
@@ -1312,37 +1315,75 @@ class Eboat93_v0(EboatBase):
             print(("/gazebo/pause_physics service call failed!"))
 
         #-->AUXILIARY VARIABLES
-        self.DTOL          = 25
-        self.D0            = self.PREVOBS[0]
-        self.DMAX          = self.PREVOBS[0] + self.DTOL
-        self.DLim          = self.PREVOBS[0] + self.DTOL
-        self.S             = 0.0                           #--> TOTAL DISTANCE TRAVELED BY THE BOAT
-        self.preD          = 0.0                           #--> DISTANCE TRAVELED BY THE BOAT IN THE PREVIOUS STEP
+        self.DTOL          = 1.2
+        self.D0            = 100.0
+        self.DMAX          = self.DTOL * 100.0
+        self.DLim          = self.DTOL * 100.0
+        # self.S             = 0.0                           #--> TOTAL DISTANCE TRAVELED BY THE BOAT
+        # self.preD          = 0.0                           #--> DISTANCE TRAVELED BY THE BOAT IN THE PREVIOUS STEP
         self.d2r           = np.pi / 180.0
         self.step_count    = 0
         self.lateral_limit = 0.6 * 100.0                   #--> DEFINE A TOLERANCE FOR HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT COURSE
-        self.dS            = 0                             #--> TRAVELED DISTANCE
+        self.dS            = 0                             #--> TOTAL TRAVELED DISTANCE
 
-    def rewardFunction(self, obs, action):
-        dS0  = obs[0] - self.PREVOBS[0]
-        R    = dS0 / self.D0
-        epwr = abs(obs[7])
-        if dS0 > self.dS:
-            R *= 2
-        if (epwr > 0) & (dS0 > 0):
-            R = 0
-        elif (epwr > 0) & (dS0 < 0) & (abs(obs[1]) < abs(self.PREVOBS[1])):
-            R *= 0.5
-        elif (epwr > 0) & (dS0 < 0):
-            R *= epwr
+    def repositionWayPoint(self, newdistance = None):
+        if newdistance != None:
+            # -->SERACH FOR THE SDF FILE DESCRIBING THE WAYPOINT
+            HOME = os.path.expanduser('~')
+            files = glob.glob(os.path.join(HOME, f"**/*Yara_OVE/**/*wayPointMarker/model.sdf"), recursive=True)
+            if len(files) > 0:
+                sdffilepath = files[0]
+                del (files)
+            else:
+                raise IOError(f"File wayPointMarker/model.sdf does not exist")
+
+            # -->SPAWN THE WAYPOINT MARKER IN THE GAZEBO SIMULATION
+            # self.spawn_sdf = rospy.ServiceProxy("/gazebo/spawn_sdf_model", SpawnModel)
+            ipose = Pose()
+            ipose.position.x = newdistance
+            ipose.position.y = 0.0
+            ipose.position.z = 0.0
+            # self.waypoint_namespace = f"wayPointMarker"
+            delmodel = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
+            rospy.wait_for_service("/gazebo/delete_model")
+            result = delmodel(self.waypoint_namespace)
+            with open(sdffilepath, "r") as f:
+                sdffile = f.read()
+                try:
+                    result = self.spawn_sdf(model_name=self.waypoint_namespace,
+                                            model_xml=sdffile,
+                                            robot_namespace=self.waypoint_namespace,
+                                            initial_pose=ipose,
+                                            reference_frame="world")
+                except rospy.ServiceException:
+                    result = "/gazebo/SpawnModel service call failed"
+                print(f"\n\n===========================\n{result}\n===========================\n")
+
+            self.D0   = newdistance
+            self.DMAX = self.DTOL * newdistance
+            self.DLim = self.DTOL * newdistance
+
+    def rewardFunction(self, obs):
+        dS0  = self.PREVOBS[0] - obs[0]
+        epwr = np.min([abs(obs[7]), 5.0])
+
+        if obs[0] < 5.1:
+            R = 1.0
+        elif obs[0] > self.DMAX:
+            R = -1.0
+        # elif abs(obs[9]) > self.lateral_limit:
+        #     R = -1.0
+        # elif abs(obs[1]) > 90:
+        #     R = -1.0
+        elif dS0 > 0:
+            R = (dS0 / self.DMAX) * (1.0 - 0.9 * (epwr / 5.0))
         else:
-            pass
+            R = (2.0 * (dS0 / self.DMAX)) - (0.01 * epwr)
 
-        self.dS = dS0
-
+        return R
 
     def step(self, action):
-        act = np.array([((action[0] + 1) * 45.0), (action[1] * 60.0), (action[3] * 5)])
+        act = np.array([((action[0] + 1) * 45.0), (action[1] * 60.0), (action[2] * 5)])
         #--> UNPAUSE SIMULATION
         rospy.wait_for_service("/gazebo/unpause_physics")
         try:
@@ -1353,7 +1394,7 @@ class Eboat93_v0(EboatBase):
         #-->PUBLISH THE ACTIONS IN THE ROSTOPIC (SEND COMMANDS TO THE ACTUATORS)
         self.boomAng_pub.publish(act[0])
         self.rudderAng_pub.publish(act[1])
-        self.enginePower_pub.publish(int(act[3]))
+        self.enginePower_pub.publish(int(act[2]))
 
         #-->GET OBSERVATIONS
         obs = self.getObservations()
@@ -1366,34 +1407,21 @@ class Eboat93_v0(EboatBase):
             print(("/gazebo/pause_physics service call failed!"))
 
         #-->RESCALE EACH OBSERVATION TO THE INTERVAL [-1, 1]
-        robs = self.rescaleObs(obs)
+        robs = self.rescaleObs(obs)[:5]
 
         #-->CALCULATES THE REWARD
-        reward = self.rewardFunction(obs, act)
+        reward = self.rewardFunction(obs)
 
         #-->CHECK FOR A TERMINAL STATE
-        windAng = abs(obs[4])
-        done    = bool((obs[0] <= 5))
-        trunc = bool(((windAng >= 160) & (windAng <= 200) & (obs[2] < 0.1)) |  # -->A truncate signal is returned if the wind is blowing from the bow and the surge velocity is smaller than 0.5 m/s)
-                     (obs[0] > self.DLim) |
-                     (self.step_count > 600) |
-                     (np.isnan(obs).any())
-                    )
+        done  = bool((obs[0] < 5.1) |
+                     (obs[0] > self.DMAX) |
+                     # (abs(obs[1]) > 90) |
+                     # (abs(obs[9]) > self.lateral_limit) |
+                     (np.isnan(obs).any()))
+        trunc = bool(self.step_count > 300)
 
-        # -->PROCESS DONE SIGNAL
-        if done:
-            if (obs[0] <= 5):
-                reward = 1
-            else:
-                reward = -1
-        elif ((windAng >= 160) & (windAng <= 200) & (obs[2] < 0.1)) | (obs[0] > self.DLim):
-            reward = -1
-        else:
-            if obs[0] < self.PREVOBS[0]:
-                self.DLim = 1.25 * obs[0]
-            # -->UPDATE PREVIOUS STATE VARIABLES
-            self.PREVOBS = obs
-
+        # -->UPDATE PREVIOUS STATE VARIABLES
+        self.PREVOBS     = obs
         self.step_count += 1
 
         return robs, reward, done, trunc, {}
@@ -1407,9 +1435,9 @@ class Eboat93_v0(EboatBase):
             print(("/gazebo/reset_simulation service call failed!"))
 
         # -->SET THE ACTUATORS BACK TO THE DEFAULT SETTING
-        self.enginePower_pub.publish(0)
         self.boomAng_pub.publish(0.0)
         self.rudderAng_pub.publish(0.0)
+        self.enginePower_pub.publish(0)
 
         #-->SET A RANDOM INITIAL STATE FOR THE WIND
         if len(self.wind_directions) > 1:
@@ -1417,12 +1445,12 @@ class Eboat93_v0(EboatBase):
         else:
             theta_wind = self.wind_directions[0]
 
-        if len(self.wind_directions) > 1:
-            windSpeed = np.random.choice(self.wind_speed)
+        if len(self.wind_speedVec) > 1:
+            self.wind_speed = np.random.choice(self.wind_speedVec)
         else:
-            windSpeed = self.wind_directions[0]
+            self.wind_speed = self.wind_speedVec[0]
             
-        self.windVec[:2] = self.rot(windSpeed, (theta_wind * self.d2r))
+        self.windVec[:2] = self.rot(self.wind_speed, (theta_wind * self.d2r))
         self.wind_pub.publish(Point(self.windVec[0], self.windVec[1], self.windVec[2]))
 
         #-->UNPAUSE SIMULATION TO MAKE OBSERVATION
@@ -1443,12 +1471,409 @@ class Eboat93_v0(EboatBase):
             print(("/gazebo/pause_physics service call failed!"))
 
         #-->RESCALE EACH OBSERVATION TO THE INTERVAL [-1, 1]
-        robs = self.rescaleObs(obs)
+        robs = self.rescaleObs(obs)[:5]
 
         #-->RESET INITIAL STATE VALUES
         self.PREVOBS    = obs
         self.step_count = 0
-        self.DLim       = self.D0 + self.DTOL
+        # self.DLim       = self.DTOL * obs[0]
+
+        return robs, {}
+
+class Eboat93_v1(EboatBase):
+    def __init__(self):
+
+        # super().__init__()
+        #---------------------------------------------------------------------------------------------------------------
+        # -->DEFINE A UNIQUE MODEL NAME FOR OUR BOAT
+        modelname = f"eboat4trOD"
+
+        # -->SERACH FOR THE URDF FILE DESCRIBING THE BOAT
+        HOME = os.path.expanduser('~')
+        files = glob.glob(os.path.join(HOME, f"**/*Yara_OVE/**/*{modelname}.urdf.xacro"), recursive=True)
+        if len(files) > 0:
+            urdffilepath = files[0]
+            del (files)
+        else:
+            raise IOError(f"File {modelname}.urdf.xacro does not exist")
+
+        # -->TRANSFORM THE XACRO FILE TO URDF
+        # subprocess.run(["xacro", urdffilepath, f"{modelname}.urdf"], capture_output=True)
+        os.system(f"xacro {urdffilepath} > {modelname}.urdf")
+
+        # -->SPAWN THE MODEL IN THE GAZEBO SIMULATION
+        self.spawn_urdf = rospy.ServiceProxy("/gazebo/spawn_urdf_model", SpawnModel)
+        ipose = Pose()
+        ipose.position.x = 0.0
+        ipose.position.y = 0.0
+        ipose.position.z = 0.0
+        self.model_namespace = f"eboat_{1}"
+        count = 0
+        spawnflag = "Fail"
+        while (spawnflag == "Fail") & (count < 18):
+            with open(f"{modelname}.urdf", "r") as f:
+                urdffile = f.read()
+                try:
+                    result = self.spawn_urdf(model_name=self.model_namespace,
+                                             model_xml=urdffile,
+                                             robot_namespace=self.model_namespace,
+                                             initial_pose=ipose,
+                                             reference_frame="world")
+                    spawnflag = "Sucess"
+                except rospy.ServiceException:
+                    result = "/gazebo/SpawnModel service call failed"
+                    count += 1
+                    time.sleep(5)
+        print(f"\n\n===========================\n{result}\n===========================\n")
+
+        # -->SERACH FOR THE SDF FILE DESCRIBING THE WAYPOINT
+        HOME = os.path.expanduser('~')
+        files = glob.glob(os.path.join(HOME, f"**/*Yara_OVE/**/*wayPointMarker/model.sdf"), recursive=True)
+        if len(files) > 0:
+            sdffilepath = files[0]
+            del (files)
+        else:
+            raise IOError(f"File wayPointMarker/model.sdf does not exist")
+
+        # -->SPAWN THE WAYPOINT MARKER IN THE GAZEBO SIMULATION
+        self.spawn_sdf = rospy.ServiceProxy("/gazebo/spawn_sdf_model", SpawnModel)
+        ipose.position.x = 100.0
+        ipose.position.y = 0.0
+        ipose.position.z = 0.0
+        self.waypoint_namespace = f"wayPointMarker"
+        with open(sdffilepath, "r") as f:
+            sdffile = f.read()
+            try:
+                result = self.spawn_sdf(model_name=self.waypoint_namespace,
+                                        model_xml=sdffile,
+                                        robot_namespace=self.waypoint_namespace,
+                                        initial_pose=ipose,
+                                        reference_frame="world")
+            except rospy.ServiceException:
+                result = "/gazebo/SpawnModel service call failed"
+            print(f"\n\n===========================\n{result}\n===========================\n")
+
+        # -->DEFINE THE NECESSARY ROS TOPICS AND SERVICES
+        self.boomAng_pub = rospy.Publisher(f"/{self.model_namespace}/control_interface/sail", Float32, queue_size=1)
+        self.rudderAng_pub = rospy.Publisher(f"/{self.model_namespace}/control_interface/rudder", Float32,
+                                             queue_size=1)
+        self.enginePower_pub = rospy.Publisher(f"/{self.model_namespace}/control_interface/propulsion", Int16,
+                                               queue_size=1)
+        self.wind_pub = rospy.Publisher(f"/eboat/atmosferic_control/wind", Point, queue_size=1)
+        self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
+        self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
+        self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
+        self.set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+        self.get_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+        self.delmodel = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
+        #---------------------------------------------------------------------------------------------------------------
+
+        # -->DEFINE OBSERVATION AND ACTION SPACES
+        self.action_space = spaces.Box(low=-1,
+                                       high=1,
+                                       shape=(3,),
+                                       dtype=np.float32)
+
+        self.observation_space = spaces.Box(low=-1,
+                                            high=1,
+                                            shape=(14,),
+                                            dtype=np.float32)
+
+        # -->SET WIND INITIAL CONDITIONS AND DEFINE ITS HOW IT WILL VARIATE
+        self.windVec = np.array([0, 0, 0], dtype=np.float32)
+        self.wind_speedVec = np.array([5, 6, 7, 8, 9, 10, 11, 12]) * 0.51444
+        self.wind_directions = np.concatenate([np.arange(-150, -5, 15), np.array([-5, 5]), np.arange(15, 151, 15)])
+
+        time.sleep(5)
+
+        # --> UNPAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/unpause_physics")
+        try:
+            self.unpause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/unpause_physics service call failed!"))
+
+        # -->GET OBSERVATIONS AT TIME 0 (INITIAL STATE)
+        print(
+            "\n\n===========================\nGetting observations on the initial state (t=0)\n===========================\n")
+        self.PREVOBS = None
+        while (self.PREVOBS is None):
+            try:
+                self.PREVOBS = rospy.wait_for_message(f"/{self.model_namespace}/mission_control/observations",
+                                                      Float32MultiArray,
+                                                      timeout=20).data
+            except:
+                pass
+
+        # -->PAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/pause_physics")
+        try:
+            self.pause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/pause_physics service call failed!"))
+
+        # -->AUXILIARY VARIABLES
+        self.DTOL = 25
+        self.D0   = self.PREVOBS[0]
+        self.DMAX = self.PREVOBS[0] + self.DTOL
+        self.DLim = self.PREVOBS[0] + self.DTOL
+        self.S    = 0.0  # --> TOTAL DISTANCE TRAVELED BY THE BOAT
+        self.preD = 0.0  # --> DISTANCE TRAVELED BY THE BOAT IN THE PREVIOUS STEP
+        self.d2r  = np.pi / 180.0
+        self.step_count = 0
+        self.lateral_limit = 0.6 * 100.0  # --> DEFINE A TOLERANCE FOR HOW MUCH THE BOAT CAN TRAVEL AWY FROM THE STRAIGHT COURSE
+        self.dS = 0  # --> TRAVELED DISTANCE
+
+        #--> Find the models representing the obstacles
+        HOME = os.path.expanduser('~')
+        modelname = "box1"
+        files = glob.glob(os.path.join(HOME, f"**/*Yara_OVE/**/{modelname}/model.sdf"), recursive=True)
+        self.path2models = ""
+        if len(files) > 0:
+            self.path2models = files[0]
+            del (files)
+        else:
+            raise IOError(f"File {modelname}/model.sdf does not exist")
+        ipose = Pose()
+        ipose.position.x = np.random.randint(low=40, high=80, size=1)
+        ipose.position.y = np.random.randint(low=-5, high=5, size=1)
+        ipose.position.z = 0.0
+        self.spawnSDFModel("obstacle", self.path2models, ipose)
+
+        #--> Distance detection rays
+        # rospy.init_node('listener', anonymous=True)
+        rospy.Subscriber("/eboat/laser/scan", LaserScan, self._laser_scan_callback)
+
+        self.laser_scan = np.zeros(5, dtype=int)
+        rospy.logdebug("Waiting for /scan to be READY...")
+        while ((self.laser_scan is None) and (not rospy.is_shutdown())):
+            try:
+                self.laser_scan = rospy.wait_for_message("/eboat/laser/scan", LaserScan, timeout=1.0)
+                rospy.logdebug("Current /eboat/laser/scan READY=>")
+            except:
+                rospy.logerr("Current /eboat/laser/scan not ready yet, retrying for getting laser_scan")
+        #-------------------------------------------------------------------------------------------------------
+
+    def _laser_scan_callback(self, data):
+        laser_ranges = np.asarray(data.ranges)
+        laser_ranges[laser_ranges == np.inf] = data.range_max
+
+        self.laser_scan[4] = np.min(laser_ranges[0:23])
+        self.laser_scan[3] = np.min(laser_ranges[24:47])
+        self.laser_scan[2] = np.min(laser_ranges[48:72])
+        self.laser_scan[1] = np.min(laser_ranges[73:96])
+        self.laser_scan[0] = np.min(laser_ranges[97:120])
+
+    def spawnSDFModel(self, model_namespace, descriptor_file_path, ipose=None):
+        # -->SPAWN THE WAYPOINT MARKER IN THE GAZEBO SIMULATION
+        spawn_sdf = rospy.ServiceProxy("/gazebo/spawn_sdf_model", SpawnModel)
+        if ipose == None:
+            ipose = Pose()
+            ipose.position.x = 60.0
+            ipose.position.y = 0.0
+            ipose.position.z = 0.0
+
+        with open(descriptor_file_path, "r") as f:
+            sdffile = f.read()
+            try:
+                result = spawn_sdf(model_name=model_namespace,
+                                   model_xml=sdffile,
+                                   robot_namespace=model_namespace,
+                                   initial_pose=ipose,
+                                   reference_frame="world")
+            except rospy.ServiceException:
+                result = "/gazebo/SpawnModel service call failed"
+            print(f"\n\n----------------------------------------\n{descriptor_file_path}\n{result}\n----------------------------------------\n")
+
+    def rescaleObs(self, observations, dzones):
+        lobs = len(observations)
+        llas = len(dzones)
+        if lobs > 9:
+            lobs -= 2
+        robs = np.zeros(lobs + llas, dtype=np.float32)
+        # --> Distance from the waypoint (m) [0   , DMAX];
+        robs[0] = 2 * (observations[0] / self.DMAX) - 1
+        # --> Trajectory angle               [-180, 180]
+        robs[1] = observations[1] / 180.0
+        # --> Boat surge velocity (m/s)     [-10   , 10 ]
+        robs[2] = observations[2] / 10
+        # --> Aparent wind speed (m/s)       [0   , 30]
+        robs[3] = observations[3] / 15 - 1
+        # --> Apparent wind angle            [-180, 180]
+        robs[4] = observations[4] / 180.0
+        # --> Boom angle                     [0   , 90]
+        robs[5] = (observations[5] / 45.0) - 1
+        # --> Rudder angle                   [-60 , 60 ]
+        robs[6] = observations[6] / 60.0
+        # --> Electric propulsion speed      [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
+        robs[7] = observations[7] / 5.0
+        # --> Roll angle                     [-180, 180]
+        robs[8] = observations[8] / 180.0
+        # --> Distance zones for obstacle detection
+        robs[9:] = dzones / 30.0 - 1
+
+        return robs
+
+    def rewardFunction(self, obs, action):
+        base = 0.2 * self.wind_speed
+        dS0 = self.PREVOBS[0] - obs[0]
+        epwr = abs(obs[7])
+        delta = [abs(action[0] - self.PREVOBS[5]), abs(action[1] - self.PREVOBS[6])]
+        rwd = np.zeros(3)
+        pnlt = np.zeros(5)
+
+        if (epwr == 0) & (dS0 > 0):
+            rwd[0] = 0.5
+            if abs(obs[1]) < 1.5708:
+                rwd[1] = 0.2
+            else:
+                pass
+            if dS0 > self.dS:
+                rwd[2] = 0.3
+            else:
+                pass
+        elif (epwr > 0) & (dS0 > 0):
+            pnlt[0] = 0.3
+        elif (epwr > 0) & (dS0 < 0):
+            pnlt[1] = 0.4
+        else:
+            pnlt[2] = 0.2
+
+        if delta[0] > 5:
+            pnlt[3] = 0.1
+        else:
+            pass
+        if delta[1] > 5:  # --> moving the rudder more then 5 degree imposes a penalty
+            pnlt[4] = 0.1
+        else:
+            pass
+
+        R = (rwd.sum() - pnlt.sum()) * base
+
+        self.dS = dS0
+
+        return R
+
+    def step(self, action):
+        act = np.array([((action[0] + 1) * 45.0), (action[1] * 60.0), (action[2] * 5)])
+        # --> UNPAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/unpause_physics")
+        try:
+            self.unpause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/unpause_physics service call failed!"))
+
+        # -->PUBLISH THE ACTIONS IN THE ROSTOPIC (SEND COMMANDS TO THE ACTUATORS)
+        self.boomAng_pub.publish(act[0])
+        self.rudderAng_pub.publish(act[1])
+        self.enginePower_pub.publish(np.int16(act[2]))
+
+        # -->GET OBSERVATIONS
+        obs = self.getObservations()
+
+        # -->PAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/pause_physics")
+        try:
+            self.pause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/pause_physics service call failed!"))
+
+        # -->RESCALE EACH OBSERVATION TO THE INTERVAL [-1, 1]
+        robs = self.rescaleObs(obs, self.laser_scan)
+        # print("\n----------------------------\n", robs.shape, robs)
+        # print("=======\n", self.laser_scan.shape, self.laser_scan)
+
+        # -->CALCULATES THE REWARD
+        reward = self.rewardFunction(obs, act)
+
+        # -->CHECK FOR A TERMINAL STATE
+        windAng = abs(obs[4])
+        done = bool((obs[0] <= 5))
+        trunc = bool(((windAng >= 160) & (windAng <= 200) & (obs[
+                                                                 2] < 0.1)) |  # -->A truncate signal is returned if the wind is blowing from the bow and the surge velocity is smaller than 0.5 m/s)
+                     (obs[0] > (1.25 * self.DLim)) |
+                     (self.step_count > 600) |
+                     (np.isnan(obs).any())
+                     )
+
+        # -->PROCESS DONE SIGNAL
+        if done:
+            if (obs[0] <= 5):
+                reward = 1
+            else:
+                reward = -1
+        elif ((windAng >= 160) & (windAng <= 200) & (obs[2] < 0.1)) | (obs[0] > self.DLim):
+            reward = -1
+        else:
+            if obs[0] < self.DLim:
+                self.DLim = obs[0]
+            # -->UPDATE PREVIOUS STATE VARIABLES
+            self.PREVOBS = obs
+
+        self.step_count += 1
+
+        return robs, reward, done, trunc, {}
+
+    def reset(self, seed=None, options=None):
+        # -->RESETS THE STATE OF THE ENVIRONMENT.
+        rospy.wait_for_service('/gazebo/reset_simulation')
+        try:
+            self.reset_proxy()
+        except (rospy.ServiceException) as e:
+            print(("/gazebo/reset_simulation service call failed!"))
+
+        # -->SET THE ACTUATORS BACK TO THE DEFAULT SETTING
+        self.boomAng_pub.publish(0.0)
+        self.rudderAng_pub.publish(0.0)
+        self.enginePower_pub.publish(0)
+
+        # -->SET A RANDOM INITIAL STATE FOR THE WIND
+        if len(self.wind_directions) > 1:
+            theta_wind = np.random.choice(self.wind_directions)
+        else:
+            theta_wind = self.wind_directions[0]
+
+        if len(self.wind_speedVec) > 1:
+            self.wind_speed = np.random.choice(self.wind_speedVec)
+        else:
+            self.wind_speed = self.wind_speedVec[0]
+
+        self.windVec[:2] = self.rot(self.wind_speed, (theta_wind * self.d2r))
+        self.wind_pub.publish(Point(self.windVec[0], self.windVec[1], self.windVec[2]))
+
+        #--> Spawn obstacle in a random position within the expected trajectory path
+        rospy.wait_for_service("/gazebo/delete_model")
+        result = self.delmodel("obstacle")
+        ipose = Pose()
+        ipose.position.x = np.random.randint(low=40, high=80, size=1)
+        ipose.position.y = np.random.randint(low=-5, high=5 , size=1)
+        ipose.position.z = 0.0
+        self.spawnSDFModel("obstacle", self.path2models, ipose)
+
+        # -->UNPAUSE SIMULATION TO MAKE OBSERVATION
+        rospy.wait_for_service('/gazebo/unpause_physics')
+        try:
+            self.unpause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/unpause_physics service call failed!"))
+
+        # -->GET OBSERVATIONS
+        obs = self.getObservations()
+
+        # -->PAUSE SIMULATION
+        rospy.wait_for_service("/gazebo/pause_physics")
+        try:
+            self.pause()
+        except(rospy.ServiceException) as e:
+            print(("/gazebo/pause_physics service call failed!"))
+
+        # -->RESCALE EACH OBSERVATION TO THE INTERVAL [-1, 1]
+        robs = self.rescaleObs(obs, self.laser_scan)
+
+        # -->RESET INITIAL STATE VALUES
+        self.PREVOBS = obs
+        self.step_count = 0
+        self.DLim = self.D0 + self.DTOL
 
         return robs, {}
 

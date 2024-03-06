@@ -35,24 +35,24 @@
     <xacro:propulsor_control_interface name="eboat4" />
 
     <!--RAY SENSOR-->
-    <gazebo reference="hokuyo_link">
-        <sensor type="gpu_ray" name="head_hokuyo_sensor">
+    <gazebo reference="camera_link">
+        <sensor type="ray" name="head_hokuyo_sensor">
             <pose>0 0 0 0 0 0</pose>
             <visualize>true</visualize>
             <update_rate>40</update_rate>
             <ray>
                 <scan>
                 <horizontal>
-                    <samples>720</samples>
+                    <samples>121</samples>
                     <resolution>1</resolution>
-                    <min_angle>-1.570796</min_angle>
-                    <max_angle>1.570796</max_angle>
+                    <min_angle>-1.05</min_angle>
+                    <max_angle>1.05</max_angle>
                 </horizontal>
                 </scan>
                 <range>
-                <min>0.10</min>
-                <max>30.0</max>
-                <resolution>0.01</resolution>
+                <min>0.1</min>
+                <max>60.0</max>
+                <resolution>0.1</resolution>
                 </range>
                 <noise>
                 <type>gaussian</type>
@@ -64,13 +64,12 @@
                 <stddev>0.01</stddev>
                 </noise>
             </ray>
-            <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_gpu_laser.so">
+            <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
                 <topicName>/eboat/laser/scan</topicName>
-                <frameName>camera_bow_link</frameName>
+                <frameName>camera_link</frameName>
             </plugin>
         </sensor>
     </gazebo>
-
 
     <!--ROBOT DESCRIPTION-->
     <link name="base_link">
@@ -296,7 +295,7 @@
         </inertial>
     </link>
 
-    <joint name="propeller_joint" type="revolute">
+    <joint name="propeller_joint" type="continuous">
         <origin xyz="-0.089683 -7.7043e-18 -0.949" rpy="-1.26162e-16 -0 0" />
         <parent link="eletric_engine_link" />
         <child link="propeller_link" />
@@ -374,6 +373,24 @@
         <origin xyz="0.791272 5.41378e-16 0.339059" rpy="-5.66659e-17 9.06655e-16 -5.13764e-32" />
         <parent link="hull_link" />
         <child link="camera_bow_link" />
+    </joint>
+
+    <link name="camera_link">
+        <visual>
+        <origin xyz="0 0 0" rpy="0 1.5708 0" />
+        <!--<geometry>
+            <cylinder length="0.02" radius="0.02"/>
+        </geometry>-->
+        <!--<material name="camera_bow_material">
+            <color rgba="1.0 1.0 1.0 1.0"/>
+        </material>-->
+        </visual>
+    </link>
+
+    <joint name="camera_joint" type="fixed">
+        <origin xyz="${2.03098+0.180448} 0 ${0.645+0.125}" rpy="0 0 0" />
+        <parent link="deck_link" />
+        <child link="camera_link" />
     </joint>
 
     <!--COLORS-->

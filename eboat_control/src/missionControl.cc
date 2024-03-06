@@ -214,49 +214,13 @@ void MissionControlPlugin::OnUpdate()
         //SIMULATION TIME STAMP
         //obsMsg.data.push_back(simtime);
 
-        ///////////////////////////////////////////////////
-        //--> Working to get laser sensor data from another plugin
-        /*sensors::RaySensor mysensor;
-        //
-        mysensor.SetParent("base_link", this->model->GetLink("base_link")->GetId());
-        mysensor.Load(this->world->Name());
-        mysensor.SetPose(ignition::math::Pose3d(0, 0, 0.6, 0, 0, 0));
-        mysensor.SetActive(true);
-        //mysensor.LaserShape()->AddRay(ignition::math::Vector3d(1.0, 0.0, 0.0), ignition::math::Vector3d(41.0, 0.0, 0.0));
-        
-        std::cout << "RayCount()      : " << mysensor.LaserShape()->RayCount() << std::endl;
-        std::cout << "GetSampleCount(): " << mysensor.LaserShape()->GetSampleCount() << std::endl;
-        std::cout << "Alcance         : [" << mysensor.LaserShape()->GetMinRange() << ", " << mysensor.LaserShape()->GetMaxRange() << "]" << std::endl;
-        std::cout << mysensor.RangeMax() << " " << mysensor.LaserShape()->Ray(0)->GetLength() << std::endl;
-        std::cout << "MinAngle        : " << mysensor.LaserShape()->MinAngle() << std::endl;
-        std::cout << "MaxAngle        : " << mysensor.LaserShape()->MaxAngle() << std::endl;
-
-        
-        double dist;
-        std::string entity;
-        mysensor.LaserShape()->Ray(320)->GetIntersection(dist, entity);
-        std::cout << "My ray intersect entity [" << entity << "] at distance of [" << dist << "]" <<std::endl;
-        std::cout <<  mysensor.IsActive() << std::endl;
-        std::cout << "----------------------------------------------" << std::endl;*/
-        ///////////////////////////////////////////////////
-
         // PUBLISH OBSERVATIONS
         this->obsPub.publish(obsMsg);
         
         //////////////////////////////////////
-        /*std_msgs::Float32MultiArray mobsMsg;
-        //double surgeVel = linearVel
-        double swayVel = -portD.Dot(this->model->WorldLinearVel());
-        mobsMsg.data.push_back(linearVel);
-        mobsMsg.data.push_back(swayVel);
-        mobsMsg.data.push_back(this->model->WorldPose().Pos().X());
-        mobsMsg.data.push_back(this->model->WorldPose().Pos().Y());
-        this->maneuverObs.publish(mobsMsg);*/
-
-        /////////////////////////////////////////
-        //obsMsg.data.push_back(this->model->WorldPose().Pos().X());
-        //obsMsg.data.push_back(this->model->WorldPose().Pos().Y());
-        //this->obsPub.publish(obsMsg);
-        
+        /*std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
+        std::cout << "->joint name    = " << this->propulsorJoint->GetName() << std::endl;
+        std::cout << "->turbineVel    = " << this->propulsorJoint->GetVelocity(0) * this->speedFactor << std::endl;
+        std::cout << "->turbineAngVel = " << this->propulsorJoint->GetVelocity(0) << std::endl;*/
     }
 }

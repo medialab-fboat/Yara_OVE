@@ -5,9 +5,14 @@ import time
 import random
 import numpy as np
 import glob
+import sys
 from datetime import datetime
 import sys, os, signal, subprocess
+
+import pandas as pd
 from matplotlib import pyplot as plt
+
+from simple_pid import PID
 
 #-->ROS
 import rospy
@@ -144,7 +149,7 @@ class esailor():
             set_physics_properties = rospy.ServiceProxy("/gazebo/set_physics_properties", SetPhysicsProperties)
             try:
                 result = set_physics_properties(time_step       = np.float64(0.01),
-                                                max_update_rate = np.float64(0.0),
+                                                max_update_rate = np.float64(0),
                                                 gravity         = self._physics_properties().gravity,
                                                 ode_config      = self._physics_properties().ode_config
                                                )
@@ -154,14 +159,34 @@ class esailor():
         rospy.wait_for_service('/gazebo/get_physics_properties')
         # print("\n\n-------------------------------------\n", self._physics_properties(), "\n-------------------------------------\n")
 
+    def checkEnv(self,
+                 envid = "Eboat93-v1"):
+        # --> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
+        if self._roslaunch == None:
+            print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
+            self.launchGazeboSimulation(
+                "/home/eduardo/USVSim/yara_ws/src/Yara_OVE/eboat_gazebo/launch/empty_ocean.launch")
+            # self.launchGazeboSimulation()
+
+        # --> ADJUST PHYSICS PROPERTIES
+        if not (self._holdPhysiscsProperties):
+            self._checkPhysicsProperties()
+
+        # --> START GYMNASIUM ENVIRONMENT
+        env = gym.make(envid)
+        # env.repositionWayPoint(newdistance = 200)
+        _, _ = env.reset()
+        for i in range(20):
+            _, _, _, _, _ = env.step([1, 0, 0])
+
     def training(self,
                  rlagent    = "PPO",
                  policy     = "MlpPolicy",
-                 envid      = "Eboat92_5-v0",
+                 envid      = "Eboat93-v0",
                  numofsteps = 500000,
                  refmodel   = None,
                  actor      = [11, 11],
-                 critic     = [9, 9],
+                 critic     = [11, 11],
                  sufix      = "esailor",
                  logdir     = "logs"):
 
@@ -175,7 +200,7 @@ class esailor():
         if not(self._holdPhysiscsProperties):
             self._checkPhysicsProperties()
 
-        #--> SET BASE FILE NAME STRUCTURE TOSAVE TENSORBOARD LOGS AND TRAINED MODELS
+        #--> SET BASE FILE NAME STRUCTURE TO SAVE TENSORBOARD LOGS AND TRAINED MODELS
         sufix += "_A"
         for val in actor:
             sufix += f"{val}"
@@ -529,6 +554,213 @@ class esailor():
         plt.grid()
         plt.show()
 
+    def nav(self, model, boomAng_pub, rudderAng_pub, propPwr_pub, model_namespace="eboat"):
+        duration = 0
+        mission = True
+        actionVec = []
+        states_and_actions = []
+        while (mission & (duration < 180)):
+            obsData = None
+            while (obsData is None):
+                try:
+                    obsData = rospy.wait_for_message(f"/{model_namespace}/mission_control/observations",
+                                                     Float32MultiArray,
+                                                     timeout=20).data
+                    obs = np.array(obsData)
+                except:
+                    pass
+
+            action, _ = model.predict(self.rescaleObs(obs))
+            actionVec.append([((action[0] + 1) * 45.0), (action[1] * 60.0), np.int16(action[2] * 5)])
+            boomAng_pub.publish(actionVec[-1][0])
+            rudderAng_pub.publish(actionVec[-1][1])
+            propPwr_pub.publish(actionVec[-1][2])
+            print(f"Action: {actionVec[-1][0]} | {actionVec[-1][1]} | {actionVec[-1][2]}")
+            states_and_actions.append(list(obs) + actionVec)
+
+            if obs[0] <= 5:
+                mission = False
+            else:
+                duration += 1
+
+        return states_and_actions
+
+    def pidController(self, obs):
+        abs_wind = abs(obs[4])
+        if (abs_wind > 150 and abs_wind < 180):
+            epwr = 2
+        else:
+            epwr = 0
+        pid_rudder = PID(0.5, -0.05, 0.0)
+        pid_rudder.output_limits = (-60, 60)
+        bang = abs((abs_wind / 2) - 90.0)
+        rang = pid_rudder(obs[1])
+
+        return [bang, rang, epwr]
+
+    def testModel2(self, model, baseDistance = 100.0, rlagent = "PPO", obstacles = False):
+        # --> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
+        if self._roslaunch == None:
+            print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
+            self.launchGazeboSimulation()
+
+        # --> WAIT FOR PHYSICS
+        rospy.wait_for_service('/gazebo/get_physics_properties')
+
+        # -->SERACH FOR THE URDF FILE DESCRIBING THE BOAT
+        modelname = f"eboat4"
+        files = glob.glob(os.path.join(self.HOME, f"**/*Yara_OVE/**/*{modelname}.urdf.xacro"), recursive=True)
+        if len(files) > 0:
+            urdffilepath = files[0]
+            del (files)
+        else:
+            raise IOError(f"File {modelname}.urdf.xacro does not exist")
+
+        # -->TRANSFORM THE XACRO FILE TO URDF
+        os.system(f"xacro {urdffilepath} > {modelname}.urdf")
+
+        # -->SPAWN THE MODEL IN THE GAZEBO SIMULATION
+        model_namespace = "eboat"
+        ipose = None
+        self.spawnURDFModel(model_namespace, modelname, ipose=ipose)
+
+        # -->DEFINE THE NECESSARY ROS TOPICS AND SERVICES
+        boomAng_pub   = rospy.Publisher(f"/{model_namespace}/control_interface/sail", Float32, queue_size=1)
+        rudderAng_pub = rospy.Publisher(f"/{model_namespace}/control_interface/rudder", Float32, queue_size=1)
+        propPwr_pub   = rospy.Publisher(f"/{model_namespace}/control_interface/propulsion", Int16, queue_size=1)
+        wind_pub      = rospy.Publisher(f"/eboat/atmosferic_control/wind", Point, queue_size=1)
+
+        # -->SERACH FOR THE SDF FILE DESCRIBING THE WAYPOINT
+        files = glob.glob(os.path.join(self.HOME, f"**/*Yara_OVE/**/*wayPointMarker/model.sdf"), recursive=True)
+        if len(files) > 0:
+            sdffilepath = files[0]
+            del (files)
+        else:
+            raise IOError(f"File wayPointMarker/model.sdf does not exist")
+
+        # -->PATH PLANNING FOR THE TEST MISSION
+        baseDist = baseDistance
+        baseVec = np.array([1.0, 0.0])
+        path2follow = [baseVec * baseDist]
+        thetaVec = [-45     , -90     , -135    , -180    , 45      , 135]
+        D        = [baseDist, baseDist, baseDist, baseDist, baseDist, baseDist]
+        # ========================================================
+        # theta_wind = 180
+        # theta_model = (theta_wind > 150) * 0.7854 - (theta_wind < -150) * 0.7854
+        # --------------------------------
+        model_pose = Pose()
+        quaternion = quaternion_from_euler(0, 0, 0)
+        model_pose.position.x = 0.0
+        model_pose.position.y = 0.0
+        model_pose.position.z = 0.0
+        model_pose.orientation.x = quaternion[0]
+        model_pose.orientation.y = quaternion[1]
+        model_pose.orientation.z = quaternion[2]
+        model_pose.orientation.w = quaternion[3]
+        self.spawnSDFModel("wayPointMarker", sdffilepath, model_pose)
+        time.sleep(5)
+
+        # --> INITIALIZE THE SENSOR HUD
+        # sensors = subprocess.Popen([sys.executable, os.path.join(
+        #     "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
+        # camera_raw = subprocess.Popen([sys.executable, "./camera_raw.py"])
+        # camera_proc = subprocess.Popen([sys.executable, "./camera_detection.py"])
+
+        for i, theta in enumerate(thetaVec):
+            rad = theta * np.pi / 180.0
+            rot = np.array([[np.cos(rad), -np.sin(rad)], [np.sin(rad), np.cos(rad)]])
+            path2follow.append(path2follow[-1] + np.dot((baseVec * D[i]), rot))
+
+        # --> SET THE WIND
+        ws = 20
+        # wind_pub.publish(Point(6.17, 0.0, 0.0))
+        wind_pub.publish(Point((ws * 0.51444), 0.0, 0.0))
+
+        if self._physics_properties().pause:
+            self.pauseSim(False)
+
+        # delmodel = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
+        # rospy.wait_for_service("/gazebo/delete_model")
+        # result = delmodel("wayPointMarker")
+
+        states_and_actions = []
+        for i, waypoint in enumerate(path2follow):
+            if i > 0:
+                self.DMAX = D[i - 1] + 25
+            else:
+                self.DMAX = baseDist + 25
+            model_pose.position.x = waypoint[0]
+            model_pose.position.y = waypoint[1]
+            self.pauseSim(True)
+            # self.spawnSDFModel("wayPointMarker", sdffilepath, model_pose)
+            self.setState("wayPointMarker", model_pose)
+            time.sleep(5)
+            self.pauseSim(False)
+
+            print(f"Going to waypoint {i}/{len(path2follow)}: {waypoint}")
+            duration = 0
+            mission = True
+            while (mission & (duration < 180)):
+                obsData = None
+                while (obsData is None):
+                    try:
+                        obsData = rospy.wait_for_message(f"/{model_namespace}/mission_control/observations",
+                                                         Float32MultiArray,
+                                                         timeout=20).data
+                        obs = np.array(obsData)
+                    except:
+                        pass
+
+                if model != None:
+                    action, _ = model.predict(self.rescaleObs(obs)[:5])
+                    actionROS = [((action[0] + 1) * 45.0), (action[1] * 60.0), np.int16(action[2] * 5)]
+                else:
+                    actionROS = self.pidController(obs)
+
+                boomAng_pub.publish(actionROS[0])
+                rudderAng_pub.publish(actionROS[1])
+                propPwr_pub.publish(actionROS[2])
+                # print(f"Observations: ", obs)
+                # print("----------------------------------------")
+                # print(f"Action      : {actionROS[0]} | {actionROS[1]} | {actionROS[2]}")
+                states_and_actions.append(list(obs) + actionROS)
+
+                if (obs[0] <= 5):
+                    mission = False
+                    print(f"D = {obs[0]} / {duration}")
+                else:
+                    duration += 1
+
+            # if i > 1:
+            #     break
+
+            # rospy.wait_for_service("/gazebo/delete_model")
+            # _ = delmodel("wayPointMarker")
+
+        # sensors.kill()
+        # print(states_and_actions)
+        df = pd.DataFrame(states_and_actions, columns=["distance","dirang","surge","apwindSpd","apwindAng","boomAng",
+                                                       "rudderAng", "propPwr", "roll", "X", "Y", "boomAct", "rudderAct",
+                                                       "propPwrAct"])
+        print(df)
+        if model == None:
+            df.to_csv(f"pid_mission_2_{ws}.csv", sep=";", index=False)
+        else:
+            df.to_csv(f"{rlagent}_mission_2_{ws}.csv", sep=";", index=False)
+
+        y = df.X.values
+        x = df.Y.values * (-1)
+        plt.plot(x, y, color="red")
+        plt.plot(0, 0, 'x', label='0')
+        for i, waypoint in enumerate(path2follow):
+            # print(waypoint)
+            plt.plot(-waypoint[1], waypoint[0], 'o', label=f"{i + 1}")
+        # plt.xlim(-410, 100)
+        # plt.ylim(-100, 410)
+        plt.legend()
+        plt.grid()
+        plt.show()
+
     def rescaleObs2(self, observations, DMAX):
         lobs = len(observations)
         if lobs > 9:
@@ -621,6 +853,168 @@ class esailor():
             else:
                 step += 1
 
+    def pidTest(self, baseDistance = 100.0):
+        # --> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
+        if self._roslaunch == None:
+            print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
+            self.launchGazeboSimulation()
+
+        # --> WAIT FOR PHYSICS
+        rospy.wait_for_service('/gazebo/get_physics_properties')
+
+        # -->SERACH FOR THE URDF FILE DESCRIBING THE BOAT
+        modelname = f"eboat4"
+        files = glob.glob(os.path.join(self.HOME, f"**/*Yara_OVE/**/*{modelname}.urdf.xacro"), recursive=True)
+        if len(files) > 0:
+            urdffilepath = files[0]
+            del (files)
+        else:
+            raise IOError(f"File {modelname}.urdf.xacro does not exist")
+
+        # -->TRANSFORM THE XACRO FILE TO URDF
+        os.system(f"xacro {urdffilepath} > {modelname}.urdf")
+
+        # -->SPAWN THE MODEL IN THE GAZEBO SIMULATION
+        model_namespace = "eboat"
+        ipose = None
+        self.spawnURDFModel(model_namespace, modelname, ipose=ipose)
+
+        # -->DEFINE THE NECESSARY ROS TOPICS AND SERVICES
+        boomAng_pub = rospy.Publisher(f"/{model_namespace}/control_interface/sail", Float32, queue_size=1)
+        rudderAng_pub = rospy.Publisher(f"/{model_namespace}/control_interface/rudder", Float32, queue_size=1)
+        propPwr_pub = rospy.Publisher(f"/{model_namespace}/control_interface/propulsion", Int16, queue_size=1)
+        wind_pub = rospy.Publisher(f"/eboat/atmosferic_control/wind", Point, queue_size=1)
+
+        # -->SERACH FOR THE SDF FILE DESCRIBING THE WAYPOINT
+        files = glob.glob(os.path.join(self.HOME, f"**/*Yara_OVE/**/*wayPointMarker/model.sdf"), recursive=True)
+        if len(files) > 0:
+            sdffilepath = files[0]
+            del (files)
+        else:
+            raise IOError(f"File wayPointMarker/model.sdf does not exist")
+
+        # -->PATH PLANNING FOR THE TEST MISSION
+        baseDist = baseDistance
+        baseVec = np.array([1.0, 0.0])
+        path2follow = [baseVec * baseDist]
+        thetaVec = [-45, -90, -135, -180, 45, 135]
+        D = [baseDist, baseDist, baseDist, baseDist, baseDist, baseDist]
+        # ========================================================
+        # theta_wind = 180
+        # theta_model = (theta_wind > 150) * 0.7854 - (theta_wind < -150) * 0.7854
+        # --------------------------------
+        model_pose = Pose()
+        quaternion = quaternion_from_euler(0, 0, 0)
+        model_pose.position.x = 0.0
+        model_pose.position.y = 0.0
+        model_pose.position.z = 0.0
+        model_pose.orientation.x = quaternion[0]
+        model_pose.orientation.y = quaternion[1]
+        model_pose.orientation.z = quaternion[2]
+        model_pose.orientation.w = quaternion[3]
+        self.spawnSDFModel("wayPointMarker", sdffilepath, model_pose)
+        time.sleep(5)
+
+        # --> INITIALIZE THE SENSOR HUD
+        # sensors = subprocess.Popen([sys.executable, os.path.join("/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
+        # camera_raw = subprocess.Popen([sys.executable, "./camera_raw.py"])
+        # camera_proc = subprocess.Popen([sys.executable, "./camera_detection.py"])
+
+        for i, theta in enumerate(thetaVec):
+            rad = theta * np.pi / 180.0
+            rot = np.array([[np.cos(rad), -np.sin(rad)], [np.sin(rad), np.cos(rad)]])
+            path2follow.append(path2follow[-1] + np.dot((baseVec * D[i]), rot))
+
+        # --> SET THE WIND
+        wind_pub.publish(Point(6.17, 0.0, 0.0))
+        # wind_pub.publish(Point(-4.243, -4.234, 0.0))
+
+        if self._physics_properties().pause:
+            self.pauseSim(False)
+
+        delmodel = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
+        rospy.wait_for_service("/gazebo/delete_model")
+        result = delmodel("wayPointMarker")
+
+        states_and_actions = []
+        for i, waypoint in enumerate(path2follow):
+            if i > 0:
+                self.DMAX = D[i - 1] + 25
+            else:
+                self.DMAX = baseDist + 25
+            model_pose.position.x = waypoint[0]
+            model_pose.position.y = waypoint[1]
+            # self.pauseSim(True)
+            # self.setState("wayPointMarker", model_pose)
+            self.spawnSDFModel("wayPointMarker", sdffilepath, model_pose)
+            # self.pauseSim(False)
+
+            print(f"Going to waypoint {i}: {waypoint}")
+            duration = 0
+            mission = True
+            while (mission & (duration < 20)):
+                obsData = None
+                while (obsData is None):
+                    try:
+                        obsData = rospy.wait_for_message(f"/{model_namespace}/mission_control/observations",
+                                                         Float32MultiArray,
+                                                         timeout=20).data
+                        obs = np.array(obsData)
+                    except:
+                        pass
+
+                abs_wind = abs(obs[4])
+                if (abs_wind > 150 and abs_wind < 180):
+                    epwr = 2
+                else:
+                    epwr = 0
+                pid_rudder = PID(0.5, -0.05, 0.0)
+                pid_rudder.output_limits = (-60, 60)
+                bang      = abs((abs_wind / 2) - 90.0)
+                rang      = pid_rudder(obs[1])
+                actionROS = [bang, rang, epwr]
+
+                print("----------------------------------------")
+                print(f"{duration} - {obs[1]} / {rang} | {bang} | {epwr}")
+
+                boomAng_pub.publish(actionROS[0])
+                rudderAng_pub.publish(actionROS[1])
+                propPwr_pub.publish(actionROS[2])
+                # print(f"Observations: ", obs)
+                # print("----------------------------------------")
+                # print(f"Action      : {actionROS[0]} | {actionROS[1]} | {actionROS[2]}")
+                states_and_actions.append(list(obs) + actionROS)
+
+                if obs[0] <= 5:
+                    mission = False
+                else:
+                    duration += 1
+
+            if i > -1:
+                break
+
+            rospy.wait_for_service("/gazebo/delete_model")
+            _ = delmodel("wayPointMarker")
+
+        # sensors.kill()
+        print(states_and_actions)
+        # df = pd.DataFrame(states_and_actions, columns=["distance","dirang","surge","apwindSpd","apwindAng","boomAng",
+        #                                                "rudderAng", "propPwr", "roll", "X", "Y", "boomAct", "rudderAct",
+        #                                                "propPwrAct"])
+        # print(df)
+        #
+        # x = df.X.values
+        # y = df.Y.values
+        # plt.plot(x, y, color="red")
+        # plt.plot(0, 0, 'x', label='0')
+        # for i, waypoint in enumerate(path2follow):
+        #     # print(waypoint)
+        #     plt.plot(-waypoint[1], waypoint[0], 'o', label=f"{i + 1}")
+        # # plt.xlim(-410, 100)
+        # # plt.ylim(-100, 410)
+        # plt.legend()
+        # plt.grid()
+        # plt.show()
 
     def close(self):
         if self._roslaunch.pid != None:
@@ -631,33 +1025,35 @@ class esailor():
 
             print("\n\n\nCLOSE FUNCTION\n\n")
 
-if __name__ == "__main__":
-    # refmodel = PPO.load("./models/PPO/esailor_01092023_12_52_49/esailor_model_1000000_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_6_winds_05092023_11_22_52/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_2_winds_06092023_23_18_14/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_6_winds_07092023_09_37_10/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_8_winds_11092023_21_55_00/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/test_esailor_2f_winds_12092023_12_56_39/esailor_model_680000_steps")
-    # refmodel = PPO.load("./models/PPO/esailor_2a_winds_14092023_12_24_47/esailor_model_970000_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_2b_winds_15092023_11_53_43/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_2c_winds_18092023_11_07_45/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_1c_winds_19092023_01_14_09/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_8d_winds_19092023_22_14_05/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_a_cr_A663_C663_25092023_11_15_25/esailor_model_490000_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_a_dz_A663_C663_25092023_18_33_09/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_a_cr_A12123_C12123_26092023_22_41_36/esailor_model_1001472_steps.zip")
-    # refmodel = PPO.load("./models/PPO/esailor_92_cr_A12123_C12123_27092023_22_33_51/esailor_model_1001472_steps.zip")
-    refmodel = None
-    agent    = esailor()
-    agent.training(rlagent    = "PPO",
-                   policy     = "MlpPolicy",
-                   envid      = "Eboat93-v0",
-                   numofsteps = 489 * 2048,
-                   refmodel   = refmodel,
-                   actor      = [11, 6],
-                   critic     = [11, 6],
-                   sufix      = "esailor_93",
-                   logdir     = "logs")
-    # agent.testModel(refmodel)
+def main(argv):
+    if len(argv) < 1:
+        rlagent = 'PPO'
+    else:
+        rlagent = argv[0]
+    print("RL agent :", rlagent)
+    
+    # refmodel = PPO.load("./models/PPO/esailor_93_A116_C116_29022024_18_28_51/esailor_model_1001472_steps.zip")
+    if rlagent == "PPO":
+        refmodel = PPO.load(f"./policy/esailor_53_{rlagent}_A3232_C3232_03032024/esailor_model_501760_steps.zip")
+    elif rlagent == "SAC":
+        refmodel = SAC.load(f"./policy/esailor_53_{rlagent}_A3232_C3232_03032024/esailor_model_501760_steps.zip")
+    else:
+        refmodel = None
+    agent = esailor()
+    # agent.training(rlagent=rlagent,
+    #                policy="MlpPolicy",
+    #                envid="Eboat93-v0",
+    #                numofsteps=(245 * 2048), #489 * 2048,
+    #                refmodel=refmodel,
+    #                actor=[32, 32],
+    #                critic=[32, 32],
+    #                sufix="esailor_93",
+    #                logdir="logs")
+    agent.testModel2(refmodel, rlagent = rlagent)
     # agent.humanPolicy(envid="Eboat92-v0", numofsteps=120)
+    # agent.checkEnv(envid="Eboat93-v0")
+    # agent.pidTest()
     agent.close()
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
