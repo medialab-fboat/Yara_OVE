@@ -10,8 +10,8 @@ fboat_data*.py
 logs/
 *.log
 
-# ignore models
-models/
+# ignore RL models
+esailor/models/
 
 # others
 
