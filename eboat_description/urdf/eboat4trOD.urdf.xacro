@@ -18,6 +18,8 @@
 
     <xacro:include filename="$(find eboat_description)/urdf/eboat4_physics_plugins.xacro"/>
 
+    <xacro:include filename="$(find eboat_description)/urdf/eboat4_sensors_plugins.xacro"/>
+
     <!-- Attach hydrodynamics plugin -->
     <xacro:usv_dynamics_gazebo name="eboat4_dynamics_plugin"/>
 
@@ -34,42 +36,8 @@
     <xacro:rudder_control_interface name="eboat4" />
     <xacro:propulsor_control_interface name="eboat4" />
 
-    <!--RAY SENSOR-->
-    <gazebo reference="camera_link">
-        <sensor type="ray" name="head_hokuyo_sensor">
-            <pose>0 0 0 0 0 0</pose>
-            <visualize>true</visualize>
-            <update_rate>40</update_rate>
-            <ray>
-                <scan>
-                <horizontal>
-                    <samples>121</samples>
-                    <resolution>1</resolution>
-                    <min_angle>-1.05</min_angle>
-                    <max_angle>1.05</max_angle>
-                </horizontal>
-                </scan>
-                <range>
-                <min>0.1</min>
-                <max>60.0</max>
-                <resolution>0.1</resolution>
-                </range>
-                <noise>
-                <type>gaussian</type>
-                <!-- Noise parameters based on published spec for Hokuyo laser
-                    achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
-                    stddev of 0.01m will put 99.7% of samples within 0.03m of the true
-                    reading. -->
-                <mean>0.0</mean>
-                <stddev>0.01</stddev>
-                </noise>
-            </ray>
-            <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
-                <topicName>/eboat/laser/scan</topicName>
-                <frameName>camera_link</frameName>
-            </plugin>
-        </sensor>
-    </gazebo>
+    <!--SENSORS-->
+    <xacro:bow_beam_detector visualize="False"/>
 
     <!--ROBOT DESCRIPTION-->
     <link name="base_link">
@@ -84,13 +52,13 @@
     </joint>
 
     <link name="hull_link">
-        <visual>
+        <visual name="hull_visual">
             <origin xyz="-1.23971 5.55112e-16 0.214059" rpy="0 -0 0" />
             <geometry>
                 <mesh filename="package://eboat_description/models/eboat4/meshes/hull_link.stl"/>
             </geometry>
         </visual>
-        <collision>
+        <collision name="hull_collision">
             <origin xyz="-1.23971 5.55112e-16 0.214059" rpy="0 -0 0" />
             <geometry>
                 <box size="2.7 1.0 0.63"/>
