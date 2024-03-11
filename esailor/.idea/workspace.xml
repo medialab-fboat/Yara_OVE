@@ -5,21 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8be4a9dd-a09e-4c83-ba59-ebc95a3c6fc1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../eboat_control/src/missionControl.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_control/src/missionControl.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_control/src/propulsorController.cc" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_control/src/propulsorController.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/models/buoy_red/meshes/part_1.stl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/models/buoy_red/meshes/part_2.stl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/models/buoy_red/model.sdf" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/models/buoy_red/model.sdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/package.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/package.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_control_plugins.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_control_plugins.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4tr.urdf.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4tr.urdf.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4trOD.urdf.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4trOD.urdf.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.world.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_gazebo/worlds/ocean.world.xacro" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../esailor.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../esailor.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/esailor_gym/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/esailor_gym/envs/eboatEnvs.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/eboatEnvs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

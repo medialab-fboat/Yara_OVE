@@ -1034,7 +1034,7 @@ def main(argv):
     
     # refmodel = PPO.load("./models/PPO/esailor_93_A116_C116_29022024_18_28_51/esailor_model_1001472_steps.zip")
     if rlagent == "PPO":
-        refmodel = PPO.load(f"./policy/esailor_53_{rlagent}_A3232_C3232_03032024/esailor_model_501760_steps.zip")
+        refmodel = PPO.load(f"./models/PPO/esailor_93_A3232_C3232_03032024_19_58_50/esailor_model_501760_steps.zip")
     elif rlagent == "SAC":
         refmodel = SAC.load(f"./policy/esailor_53_{rlagent}_A3232_C3232_03032024/esailor_model_501760_steps.zip")
     else:

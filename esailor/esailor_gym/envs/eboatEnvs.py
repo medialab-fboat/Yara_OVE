@@ -1576,13 +1576,13 @@ class Eboat93_v1(EboatBase):
 
         self.observation_space = spaces.Box(low=-1,
                                             high=1,
-                                            shape=(14,),
+                                            shape=(10,),
                                             dtype=np.float32)
 
         # -->SET WIND INITIAL CONDITIONS AND DEFINE ITS HOW IT WILL VARIATE
-        self.windVec = np.array([0, 0, 0], dtype=np.float32)
-        self.wind_speedVec = np.array([5, 6, 7, 8, 9, 10, 11, 12]) * 0.51444
-        self.wind_directions = np.concatenate([np.arange(-150, -5, 15), np.array([-5, 5]), np.arange(15, 151, 15)])
+        self.windVec         = np.array([0, 0, 0], dtype=np.float32)
+        self.wind_speedVec   = np.array([9]) * 0.51444 #np.array([5, 6, 7, 8, 9, 10, 11, 12]) * 0.51444
+        self.wind_directions = np.array([-150, -135, -90, -45, -5, 5, 45, 90, 135, 150]) #np.concatenate([np.arange(-150, -5, 15), np.array([-5, 5]), np.arange(15, 151, 15)])
 
         time.sleep(5)
 
