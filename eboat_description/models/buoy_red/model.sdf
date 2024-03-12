@@ -6,14 +6,14 @@
             <visual name="part_1_0_part_1_visual">
                 <pose>0 0 0 0 0 0</pose>
                 <geometry>
-                <mesh><uri>meshes/part_1.stl</uri></mesh>
+                    <mesh><uri>media/part_1.stl</uri></mesh>
                 </geometry>
                 <material><ambient>1 0 0 1</ambient><diffuse>1 0 0 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
             </visual>
             <collision name="part_1_0_part_1_visual">
                 <pose>0 0 0 0 -0 0</pose>
                 <geometry>
-                    <mesh><uri>meshes/part_1.stl</uri></mesh>
+                    <mesh><uri>media/part_1.stl</uri></mesh>
                 </geometry>
             </collision>
             <!--<collision name="part_1_0_part_1_visual">
@@ -37,14 +37,14 @@
             <visual name="part_2_0_part_2_visual">
                 <pose>0 0 0 0 0 0</pose>
                 <geometry>
-                <mesh><uri>meshes/part_2.stl</uri></mesh>
+                    <mesh><uri>media/part_2.stl</uri></mesh>
                 </geometry>
                 <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse><specular>0.1 0.1 0.1 1</specular><emissive>0 0 0 0</emissive></material>
             </visual>
             <collision name="part_2_0_part_2_visual">
                 <pose>0 -3.46945e-17 0 0 -0 0</pose>
                 <geometry>
-                <mesh><uri>meshes/part_2.stl</uri></mesh>
+                    <mesh><uri>media/part_2.stl</uri></mesh>
                 </geometry>
             </collision>
             <inertial>

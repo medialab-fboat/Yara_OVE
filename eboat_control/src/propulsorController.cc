@@ -53,6 +53,10 @@ void PropulsorControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _
     //--> LINKS
     this->eletricEngineLink = this->propulsorJoint->GetParent();
 
+    std::string rostopic_name = "/";
+    rostopic_name.append(this->model->GetName());
+    rostopic_name.append("/control_interface/propulsion");
+
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())
     {
@@ -69,7 +73,7 @@ void PropulsorControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _
     // Create a named topic, and subscribe to it.
     ros::SubscribeOptions propspeed =
         ros::SubscribeOptions::create<std_msgs::Int16>(
-            "/eboat/control_interface/propulsion",
+            rostopic_name,
             1,
             boost::bind(&PropulsorControllerPlugin::OnRosMsg, this, _1),
             ros::VoidPtr(), &this->rosQueue);
@@ -122,11 +126,16 @@ void PropulsorControllerPlugin::OnUpdate()
         double force = (this->turbineVel / 5.0) * 54.0 * 4.448 * (0.5); //--> force in newtons
         ignition::math::Vector3d thrust;
         //-->THE CODE BELOW TRY TO SIMULATE THAT, DUE TO THE BOAT HULL DESIGN, THE BACKARD PROPULSION IS LESS EFFECTIVE THAN THE FORWARD PROPULSION
-        //if (this->turbineVel < 0)
-        //    thrust = ignition::math::Vector3d((0.4*force),0,0);
-        //else
-        //    thrust = ignition::math::Vector3d(force,0,0);
-        thrust = ignition::math::Vector3d(force,0,0);
+        if (this->turbineVel < 0)
+            thrust = ignition::math::Vector3d((0.4*force),0,0);
+        else
+            thrust = ignition::math::Vector3d(force,0,0);
+        //thrust = ignition::math::Vector3d(force,0,0);
         this->eletricEngineLink->AddLinkForce(thrust, ignition::math::Vector3d(0,0,0));
     }
+    /////////////
+    /*std::cout << "========================================" << std::endl;
+    std::cout << "joint name    = " << this->propulsorJoint->GetName() << std::endl;
+    std::cout << "turbineVel    = " << turbineVel << std::endl;
+    std::cout << "turbineAngVel = " << turbineAngVel << std::endl;*/
 }

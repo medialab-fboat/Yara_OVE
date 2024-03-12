@@ -77,9 +77,6 @@ namespace gazebo
         /// \brief A thread the keeps running the rosQueue
         private: std::thread rosQueueThread;
 
-        /// \brief The ROS topic designation
-        private: std::string ros_topic_id;
-
         //////////////////////////////////////////////////////////////////////
         /// \brief Handle an incoming message from ROS
         /// \param[in] _msg A float value that is used to set the velocity

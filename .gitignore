@@ -10,8 +10,10 @@ fboat_data*.py
 logs/
 *.log
 
-# ignore models
-models/
+# ignore RL models
+esailor/models/
+
+# others
 
 __pycache__/
 
@@ -19,4 +21,11 @@ __pycache__/
 
 .vscode/
 
+<<<<<<< HEAD
 .idea/
+=======
+.ipynb_checkpoints/
+
+esailor/.idea/
+esailor/*.urdf
+>>>>>>> charles

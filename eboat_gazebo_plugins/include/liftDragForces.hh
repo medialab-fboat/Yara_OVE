@@ -149,7 +149,9 @@ namespace gazebo
         private: ignition::math::Vector3d liftDirection;
         private: ignition::math::Vector3d lift;
         private: ignition::math::Vector3d drag;
-        private: ignition::math::Vector3d force;
+        private: ignition::math::Vector3d force_on_sail;
+        private: ignition::math::Vector3d force_on_rudder;
+        private: ignition::math::Vector3d force_on_keel;
         private: ignition::math::Vector3d dynamic_cp;
         private: const double r2d = 180.0/M_PI;
     };

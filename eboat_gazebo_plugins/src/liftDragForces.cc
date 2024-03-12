@@ -210,6 +210,7 @@ void LiftDragForces::OnUpdate()
   this->waterVelVec = -this->rudderLink->WorldCoGLinearVel();
   this->waterVelVec.Z(0);
   /////////////////////////////////////////////////////////
+  ignition::math::Vector3d sail_lateral_force = ignition::math::Vector3d(0, 0, 0);
 
   if (this->aparentWindVelVec.Length() > 0)
   {
@@ -251,9 +252,9 @@ void LiftDragForces::OnUpdate()
       this->lift  = q * this->sailCL[100] * this->liftDirection;
     else
       this->lift  = q * this->sailCL[this->coefIndex] * this->liftDirection;
-    //this->lift  = q * this->sailCL[this->coefIndex] * this->liftDirection;  //-> the lift force is normal to the lift-drag plan
+
     this->drag  = q * this->sailCD[this->coefIndex] * this->dragDirection; //-> the drag
-    this->force = this->lift + this->drag;
+    this->force_on_sail = this->lift + this->drag;
     //////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////
@@ -268,19 +269,27 @@ void LiftDragForces::OnUpdate()
     //                The position where the force will be applied is given by the dynamic_cp variable.
     //ignition::math::Vector3d bow          = this->baseLink->WorldPose().Rot().RotateVector(this->boatBow);
     ignition::math::Vector3d port         = this->baseLink->WorldPose().Rot().RotateVector(this->boatPort);
-    //ignition::math::Vector3d forwardForce = this->force.Dot(bow) * bow;
-    ignition::math::Vector3d lateralForce = this->force.Dot(port) * port;
-    if (this->atkangle > 20)
+    //ignition::math::Vector3d forwardForce = this->force_on_sail.Dot(bow) * bow;
+    
+    double sign = 1.0;
+    if (this->atkangle > 165)
     {
-      this->baseLink->AddForceAtRelativePosition(this->force, this->sailCP);
-      // --> EMULA A RESISTENCIA DA BOLINA A FORCA LATERAL
-      this->model->GetLink("keel_link")->AddForceAtRelativePosition(-lateralForce, ignition::math::Vector3d(0,0,0.5));
+      int val = std::rand() % 10;
+      if (val < 2)
+        sign = -1.0;
+    }
+    if ((this->atkangle >= 5) & (this->atkangle <= 160))
+    {
+      this->baseLink->AddForceAtRelativePosition(sign * this->force_on_sail, this->sailCP);
+      //--> COMPUTE LATERAL COMPONENT OF THE FORCE TO BE RESISTED BY THE KEEL
+      sail_lateral_force = (this->force_on_sail.Dot(port) / (port.Length() * port.Length())) * port; 
     }
     else
     {
-      this->baseLink->AddForceAtRelativePosition(0.15*this->force, this->sailCP);
+      this->baseLink->AddForceAtRelativePosition(sign * 0.1 * this->force_on_sail, this->sailCP);
+      //--> COMPUTE LATERAL COMPONENT OF THE FORCE TO BE RESISTED BY THE KEEL
+      sail_lateral_force = 0.0;
     }
-    
 
     //->Force on sail: As we will aplly the wind force direct on the boat element, the sail element will stand still and it will not change position with the
     //                 wind direction and speed, as it should do.
@@ -291,12 +300,24 @@ void LiftDragForces::OnUpdate()
     //                 torque = (force.Dot(ldNormal)*ldNormal).Length()*armLength; // modulus of projected force times the arm length.
     //
     // this->joint->SetForce(0, ((force.Dot(normal)*normal).Length()*armLength));
-    double torque = (this->alpha < 90) ? (force.Dot(this->normal)*this->normal).Length()*this->armLength*(-1) // Negative
-                                 : (force.Dot(this->normal)*this->normal).Length()*this->armLength;     // Positive
-    this->joint->SetForce(0, torque);
+    double torque = (this->alpha < 90) ? (this->force_on_sail.Dot(this->normal)*this->normal).Length()*this->armLength*(-1) // Negative
+                                       : (this->force_on_sail.Dot(this->normal)*this->normal).Length()*this->armLength;     // Positive
+    this->joint->SetForce(0, sign * torque);
+    /////////////////////////////////////////////////////////
+    /*std::cout << "atkangle: " << atkangle << std::endl;
+    std::cout << "windVel : " << this->aparentWindVelVec << " (" << this->aparentWindVelVec.Length() << ")" << std::endl;
+    std::cout << "force   : " << this->force_on_sail << " (" << this->force_on_sail.Length() << ")" << std::endl;
+    std::cout << "lift    : " << this->lift << " (" << this->lift.Length() << ")" << std::endl;
+    std::cout << "drag    : " << this->drag << " (" << this->drag.Length() << ")" << std::endl;
+    /*ignition::math::Pose3d pose  = this->baseLink->WorldCoGPose();
+    pose.Pos().X(pose.Pos().X() + this->sailCP.X());
+    pose.Pos().Y(pose.Pos().Y() + this->sailCP.Y());
+    pose.Pos().Z(pose.Pos().Z() + this->sailCP.Z());
+    this->world->ModelByName("marker")->SetWorldPose(pose);
+    */
   }
 
-  if (this->waterVelVec.Length() > 0)
+  if (this->waterVelVec.Length() > 0.001)
   {
     /////////////////////////////////////////////////////////
     //-->ATTACK ANGLE
@@ -326,16 +347,30 @@ void LiftDragForces::OnUpdate()
     //////////////////////////////////////////////////////////
     //--> COMPUTE LIFT AND DRAG FORCES
     //->dynamic pressure
-    int iatk        = int(this->atkangle);
     this->q         = 0.5 * this->waterRHO * this->rudderArea * waterVel * waterVel;
+    //
+    int iatk        = int(this->atkangle);
     this->coefIndex = (this->atkangle - iatk) < 0.5 ? iatk
                                                     : iatk + 1;
+    
+    double atklow  = floor(this->atkangle);
+    double atkhigh = ceil(this->atkangle);
+    double cl      = rudderCL[int(atklow)];
+    double cd      = rudderCL[int(atklow)];
+    if (this->atkangle > atklow)
+    {
+      //--> y = y2 + (x - x2) * (y2 -y1) / (x2 - x1)
+      int x2    = int(atkhigh);
+      double dx = (atkhigh - atklow);
+      cl = rudderCL[x2] + (this->atkangle - x2) * (rudderCL[x2] - rudderCL[int(atklow)]) / dx;
+      cd = rudderCD[x2] + (this->atkangle - x2) * (rudderCD[x2] - rudderCD[int(atklow)]) / dx;
+    }
     if (iatk > 90)
       this->lift = 0.0;
     else
-      this->lift  = this->q * rudderCL[this->coefIndex] * this->liftDirection;  //-> the lift force is normal to the lift-drag plan
-    this->drag  = this->q * rudderCD[this->coefIndex] * this->dragDirection; //-> the drag
-    this->force = this->lift + this->drag;
+      this->lift = this->q * cl * this->liftDirection;  //-> the lift force is normal to the lift-drag plan
+    this->drag  = this->q * cd * this->dragDirection; //-> the drag
+    this->force_on_rudder = this->lift + this->drag;
     //////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////
@@ -344,9 +379,16 @@ void LiftDragForces::OnUpdate()
     //                   It's psition are relative to the base_link's center of mass (CoG).
     //                   The applied force vector is expressed in World frame and the centor of pressure are expressed in the link own frame.
     //->Apply resultant force
-    this->rudderLink->AddForceAtRelativePosition(this->force, this->rudderCP);
+    this->rudderLink->AddForceAtRelativePosition(0.3*this->force_on_rudder, this->rudderCP);
     //////////////////////////////////////////////////////////
-
+    /*std::cout << "-----------" << std::endl;
+    std::cout << "atkangle: " << atkangle << std::endl;
+    std::cout << "waterVel: " << this->waterVelVec << " (" << this->waterVelVec.Length() << ")" << std::endl;
+    std::cout << "force   : " << this->force_on_rudder << " (" << this->force_on_rudder.Length() << ")" << std::endl;
+    std::cout << "lift    : " << this->lift << " (" << this->lift.Length() << ")" << std::endl;
+    std::cout << "drag    : " << this->drag << " (" << this->drag.Length() << ")" << std::endl;
+    std::cout << "rudderCL: " << rudderCL[this->coefIndex] << std::endl;
+    std::cout << "cl      : " << cl << std::endl;*/
 
     //////////////////////////////////////////////////////////////////////////////
     // KEEL
@@ -354,7 +396,7 @@ void LiftDragForces::OnUpdate()
     this->keelLink    = this->model->GetLink("keel_link");
     this->keelForward = ignition::math::Vector3d(1,0,0);
     this->keelUpward  = ignition::math::Vector3d(0,0,1);
-    this->keelCP      = ignition::math::Vector3d(0,0,0.5);
+    this->keelCP      = ignition::math::Vector3d(0,0,0);
     /////////////////////////////////////////////////////////
     //-->ATTACK ANGLE
     //    The attack angle is defined as the angle between the
@@ -388,7 +430,7 @@ void LiftDragForces::OnUpdate()
     else
       this->lift  = this->q * rudderCL[this->coefIndex] * this->liftDirection;  //-> the lift force is normal to the lift-drag plan
     this->drag  = this->q * rudderCD[this->coefIndex] * this->dragDirection; //-> the drag
-    this->force = this->lift + this->drag;
+    this->force_on_keel = this->lift + this->drag;
     //////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////
@@ -397,7 +439,23 @@ void LiftDragForces::OnUpdate()
     //                   It's psition are relative to the base_link's center of mass (CoG).
     //                   The applied force vector is expressed in World frame and the centor of pressure are expressed in the link own frame.
     //->Apply resultant force
-    this->keelLink->AddForceAtRelativePosition(this->force, this->keelCP);
+    if (this->aparentWindVelVec.Length() > 0)
+      this->keelLink->AddForceAtRelativePosition(this->force_on_keel - 0.6 * sail_lateral_force, this->keelCP);
+    else
+      this->keelLink->AddForceAtRelativePosition(this->force_on_keel, this->keelCP);
     //////////////////////////////////////////////////////////
+    /*std::cout << "-----------" << std::endl;
+    std::cout << "atkangle: " << atkangle << std::endl;
+    std::cout << "waterVel: " << this->waterVelVec << " (" << this->waterVelVec.Length() << ")" << std::endl;
+    std::cout << "force   : " << this->force_on_keel << " (" << this->force_on_keel.Length() << ")" << std::endl;
+    std::cout << "lift    : " << this->lift << " (" << this->lift.Length() << ")" << std::endl;
+    std::cout << "drag    : " << this->drag << " (" << this->drag.Length() << ")" << std::endl;
+    std::cout << "------------------------------------------------------------------" << std::endl;
+    /*ignition::math::Pose3d pose  = this->keelLink->WorldCoGPose();
+    pose.Pos().X(pose.Pos().X() + this->keelCP.X());
+    pose.Pos().Y(pose.Pos().Y() + this->keelCP.Y());
+    pose.Pos().Z(pose.Pos().Z() + this->keelCP.Z());
+    this->world->ModelByName("marker")->SetWorldPose(pose);
+    */
   }
 }

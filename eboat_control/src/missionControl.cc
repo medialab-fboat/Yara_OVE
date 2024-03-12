@@ -10,6 +10,7 @@
 #include "gazebo/common/Assert.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/physics/ode/ODEPhysics.hh"
+#include "gazebo/sensors/RaySensor.hh"
 
 #include "ros/ros.h"
 #include "std_msgs/Float32.h"
@@ -41,7 +42,7 @@ MissionControlPlugin::MissionControlPlugin(): freq(1.0)
      * than we can send them, the number here specifies how many messages to
      * buffer up before throwing some away.
      */
-    this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>("/eboat/mission_control/observations", 1000);
+    //this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>("/eboat/mission_control/observations", 100);
     //this->maneuverObs = rosNode.advertise<std_msgs::Float32MultiArray>("/eboat/mission_control/maneuverObs", 500);
 }
 
@@ -101,6 +102,12 @@ void MissionControlPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
         this->port = _sdf->Get<ignition::math::Vector3d>("ahead");
     else
         this->port = ignition::math::Vector3d(0,1,0);
+    
+    std::string topic_name = "/";
+    topic_name.append(this->model->GetName());
+    topic_name.append("/mission_control/observations");
+
+    this->obsPub = rosNode.advertise<std_msgs::Float32MultiArray>(topic_name, 1);
 
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())
@@ -149,8 +156,8 @@ void MissionControlPlugin::OnUpdate()
         else
         {
             this->wayPoint = this->world->ModelByName(this->wayPointModelName);
-            distance = this->model->WorldPose().Pos().Distance(this->wayPoint->WorldPose().Pos());
-            trajectoryVec = (this->wayPoint->WorldPose().Pos() - this->model->WorldPose().Pos()) / distance;
+            distance       = this->model->WorldPose().Pos().Distance(this->wayPoint->WorldPose().Pos());
+            trajectoryVec  = (this->wayPoint->WorldPose().Pos() - this->model->WorldPose().Pos()) / distance;
         }
 
         // INSERT DISTANCE INTO ROS MESAGE
@@ -167,12 +174,17 @@ void MissionControlPlugin::OnUpdate()
             trajectoryAng *= -1;
         obsMsg.data.push_back(trajectoryAng);
 
-        // COMPUTE THE LINEAR VELOCITY OF THE BOAT
-        float linearVel = aheadD.Dot(this->model->WorldLinearVel());
-        obsMsg.data.push_back(linearVel);
+        // COMPUTE THE SURGE VELOCITY OF THE BOAT
+        float surgeVel = aheadD.Dot(this->model->WorldLinearVel());
+        obsMsg.data.push_back(surgeVel);
 
         // COMPUTE WIND ANGLE AND SPEED
         float windSpeed = apWind.Length();
+        if (isnan(windSpeed))
+        {
+            windSpeed = 0;
+            apWind    = ignition::math::Vector3d(0,0,0);
+        }
         /* The wind Angle is measured between the forward direction (ahead) and the aparent wind direction.
          * It is positive when the aparent wind direction points to port and negative otherwise.
         */
@@ -195,6 +207,10 @@ void MissionControlPlugin::OnUpdate()
         //GET ROLL ANGLE
         obsMsg.data.push_back(this->model->WorldPose().Rot().Roll()*this->r2d);
 
+        //GET BOAT CURRENT POSITION IN METRES (CARTESIAN COORDINATES)
+        obsMsg.data.push_back((float) this->link->WorldPose().Pos().X());
+        obsMsg.data.push_back((float) this->link->WorldPose().Pos().Y());
+
         //SIMULATION TIME STAMP
         //obsMsg.data.push_back(simtime);
 
@@ -202,19 +218,9 @@ void MissionControlPlugin::OnUpdate()
         this->obsPub.publish(obsMsg);
         
         //////////////////////////////////////
-        /*std_msgs::Float32MultiArray mobsMsg;
-        //double surgeVel = linearVel
-        double swayVel = -portD.Dot(this->model->WorldLinearVel());
-        mobsMsg.data.push_back(linearVel);
-        mobsMsg.data.push_back(swayVel);
-        mobsMsg.data.push_back(this->model->WorldPose().Pos().X());
-        mobsMsg.data.push_back(this->model->WorldPose().Pos().Y());
-        this->maneuverObs.publish(mobsMsg);*/
-
-        /////////////////////////////////////////
-        //obsMsg.data.push_back(this->model->WorldPose().Pos().X());
-        //obsMsg.data.push_back(this->model->WorldPose().Pos().Y());
-        //this->obsPub.publish(obsMsg);
-        
+        /*std::cout << "+++++++++++++++++++++++++++++++++++++++++" << std::endl;
+        std::cout << "->joint name    = " << this->propulsorJoint->GetName() << std::endl;
+        std::cout << "->turbineVel    = " << this->propulsorJoint->GetVelocity(0) * this->speedFactor << std::endl;
+        std::cout << "->turbineAngVel = " << this->propulsorJoint->GetVelocity(0) << std::endl;*/
     }
 }

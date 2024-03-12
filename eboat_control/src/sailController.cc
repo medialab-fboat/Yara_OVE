@@ -54,17 +54,16 @@ void SailControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
         this->boomEngVel = _sdf->Get<double>("boom_motor_speedy");
     else
         this->boomEngVel = 0.5;
-
-    if (_sdf->HasElement("ros_topic_id"))
-        this->ros_topic_id = sdf->Get<std::string>("ros_topic_id");
-    else
-        this->ros_topic_id = "/eboat/control_interface/sail";
     
     //--> LINKS
     this->sailLink = this->sailJoint->GetChild();
 
     //--> CONSTANTS
     this->d2r = M_PI / 180.0;
+
+    std::string rostopic_name = "/";
+    rostopic_name.append(this->model->GetName());
+    rostopic_name.append("/control_interface/sail");
 
     // Initialize ros, if it has not already bee initialized.
     if (!ros::isInitialized())
@@ -82,7 +81,7 @@ void SailControllerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     // Create a named topic, and subscribe to it.
     ros::SubscribeOptions boomAngleSub =
         ros::SubscribeOptions::create<std_msgs::Float32>(
-            this->ros_topic_id,
+            rostopic_name,
             1,
             boost::bind(&SailControllerPlugin::OnRosMsg, this, _1),
             ros::VoidPtr(), &this->rosQueue);
@@ -116,9 +115,9 @@ void SailControllerPlugin::OnUpdate()
     // the wind force.
     double sov = this->boomEngVel * this->world->Physics()->GetMaxStepSize();
     if (this->sailPosition > 90.0)
-         this->sailPosition == 90.0;
+         this->sailPosition = 90.0;
     else if (this->sailPosition < -90.0)
-         this->sailPosition == -90.0;
+         this->sailPosition = -90.0;
 
     if (this->sailPosition > this->sailJoint->UpperLimit(0) + sov) //--> in this condition the cable should be released
     {
@@ -141,4 +140,9 @@ void SailControllerPlugin::OnUpdate()
     //physics::JointPtr jibJoint = this->model->GetJoint("boom_jib_joint");
     //jibJoint->SetUpperLimit(0, this->sailJoint->UpperLimit(0));
     //jibJoint->SetLowerLimit(0, this->sailJoint->LowerLimit(0));
+
+    ///////////////////////////////////////
+    //std::cout << "Command  : " << this->sailPosition << std::endl;
+    //std::cout << "Execution: " << this->sailJoint->UpperLimit(0) << "|" << this->sailJoint->LowerLimit(0) << std::endl;
+    ///////////////////////////////////////
 }

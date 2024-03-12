@@ -38,8 +38,7 @@
 
     <!--WAVES-->
     <xacro:include filename="$(find wave_gazebo)/world_models/ocean_waves/model.xacro"/>
-    <!--<xacro:ocean_waves scale="2.6" gain="0.1" direction_x="0" direction_y="1"/>-->
-    <!--<xacro:ocean_waves scale="1.2" gain="0.2"/>--> <!-- gain="0.6"/>-->
-    <xacro:ocean_waves scale="1.1" gain="0.05"/>
+    <xacro:ocean_waves scale="2.5"/>
+    <!--<xacro:ocean_waves scale="3.5" gain="0.2" direction_x="0" direction_y="1"/>-->
 
 </world>

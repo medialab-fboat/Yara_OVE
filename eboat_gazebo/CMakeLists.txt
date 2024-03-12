@@ -57,6 +57,7 @@ xacro_add_files(
   worlds/ocean.world.xacro
   worlds/ocean_RL_training.world.xacro
   worlds/ocean_fixed_cam.world.xacro
+  worlds/empty_ocean.world.xacro
   INSTALL DESTINATION worlds
 )
 

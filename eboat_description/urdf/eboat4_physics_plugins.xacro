@@ -1,5 +1,33 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <!---->
+    <xacro:macro name="rudder_lift_drag" params="name">
+        <gazebo>
+            <plugin name="underwaterliftdrag_${name}" filename="libUnderWaterLiftDrag.so">
+                <link_name>rudder_link</link_name>
+                <forward>1 0 0</forward>
+                <upward>0 1 0</upward>
+                <area>0.19895</area>    <!--(m^2)-->
+                <cp>0 0 0</cp>
+                <water_density>997.0</water_density> <!--(kg/m^3)-->
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+    <xacro:macro name="keel_lift_drag" params="name">
+        <gazebo>
+            <plugin name="underwaterliftdrag_${name}" filename="libUnderWaterLiftDrag.so">
+                <link_name>keel_link</link_name>
+                <forward>1 0 0</forward>
+                <upward>0 1 0</upward>
+                <area>0.48299</area>    <!--(m^2)-->
+                <cp>0 0 0</cp>
+                <water_density>997.0</water_density> <!--(kg/m^3)-->
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+    <!---->
+
+
     <!--FOILS DYNAMICS USING LIFT AND DRAG (RUDDER, KEEL AND SAIL)-->
     <xacro:macro name="eboat_foil_gazebo" params="name">
         <gazebo>
@@ -12,12 +40,16 @@
                 <base_link_name>base_link</base_link_name>
                 <boom_joint_name>boom_joint</boom_joint_name>
                 <sail_cp>-0.012 0 1.5</sail_cp>
+                <!--<sail_cp>0.5 0 1.2</sail_cp>-->
+                <!--<sail_cp>0 0 1.2</sail_cp>-->
                 <rudder_link_name>rudder_link</rudder_link_name>
                 <rudder_forward>1 0 0</rudder_forward>
                 <rudder_upward>0 0 1</rudder_upward>
-                <rudder_area>0.2</rudder_area>
+                <rudder_area>0.10064</rudder_area>    <!--(m^2)-->
                 <rudder_cp>0 0 0</rudder_cp>
-                <water_density>997.0</water_density>
+                <keel_area>0.23779</keel_area>        <!--(m^2)-->
+                <keel_cp>0 0 0</keel_cp>
+                <water_density>997.0</water_density> <!--(kg/m^3)-->
             </plugin>
         </gazebo>
     </xacro:macro>
@@ -56,13 +88,15 @@
         <!-- Linear and quadratic drag -->
         <xU>${0.1 * 51.3}</xU>
         <xUU>${0.1 * 72.4}</xUU>
-        <yV>${0.2 * 80.0}</yV>
-        <yVV>${0.2 * 1600.0}</yVV>
+        <yV>${0.3 * 80.0}</yV>
+        <yVV>${0.3 * 1600.0}</yVV>
         <zW>${0.5 * 500.0}</zW>
         <zWW>0.0</zWW>
         <kP>${0.5 * 50.0}</kP>
         <mQ>${0.5 * 50.0}</mQ>
-        <nR>${0.15 * 400.0}</nR>
+        <!--<nR>${0.15 * 400.0}</nR>
+        <nRR>0.0</nRR>-->
+        <nR>${0.3 * 400.0}</nR>
         <nRR>0.0</nRR>
         <!-- General dimensions -->
         <hullRadius>0.4</hullRadius>
