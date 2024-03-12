@@ -685,21 +685,20 @@ class esailor():
         baseDist    = baseDistance
         baseVec     = np.array([1.0, 0.0])
         path2follow = [baseVec * baseDist]
-        laser_scan  = None
+        # --> Distance detection rays
+        rospy.Subscriber("/eboat/laser/scan", LaserScan, self._laser_scan_callback)
+        laser_scan = np.zeros(5, dtype=int)
+        rospy.logdebug("Waiting for /scan to be READY...")
+        while ((laser_scan is None) and (not rospy.is_shutdown())):
+            try:
+                laser_scan = rospy.wait_for_message("/eboat/laser/scan", LaserScan, timeout=1.0)
+                rospy.logdebug("Current /eboat/laser/scan READY=>")
+            except:
+                rospy.logerr("Current /eboat/laser/scan not ready yet, retrying for getting laser_scan")
+
         if obstacles:
             thetaVec = [0, 0, 0, 0, 0, 0]
             D        = np.arange(1, (len(thetaVec) + 1)) * baseDist
-            # --> Distance detection rays
-            rospy.Subscriber("/eboat/laser/scan", LaserScan, self._laser_scan_callback)
-            laser_scan = np.zeros(5, dtype=int)
-            rospy.logdebug("Waiting for /scan to be READY...")
-            while ((laser_scan is None) and (not rospy.is_shutdown())):
-                try:
-                    laser_scan = rospy.wait_for_message("/eboat/laser/scan", LaserScan, timeout=1.0)
-                    rospy.logdebug("Current /eboat/laser/scan READY=>")
-                except:
-                    rospy.logerr("Current /eboat/laser/scan not ready yet, retrying for getting laser_scan")
-
             self.createObstacles()
         else:
             thetaVec = [-45     , -90     , -135    , -180    , 45      , 135]
@@ -740,10 +739,10 @@ class esailor():
                 self.DMAX = baseDist + 25
             model_pose.position.x = waypoint[0]
             model_pose.position.y = waypoint[1]
-            # self.pauseSim(True)
+            self.pauseSim(True)
             self.setState("wayPointMarker", model_pose)
-            # time.sleep(5)
-            # self.pauseSim(False)
+            time.sleep(5)
+            self.pauseSim(False)
 
             print(f"Going to waypoint {i}/{len(path2follow)}: {waypoint}")
             duration = 0
@@ -771,8 +770,9 @@ class esailor():
                 boomAng_pub.publish(actionROS[0])
                 rudderAng_pub.publish(actionROS[1])
                 propPwr_pub.publish(actionROS[2])
-                print(f"Observations: {obs}")
+                print(f"Observations: {obs[:5]}")
                 print(f"              {dfo}")
+                print(f"              {(dfo / 30.0) - 1}")
                 print("----------------------------------------")
                 print(f"Action      : {actionROS[0]} | {actionROS[1]} | {actionROS[2]}")
                 print("========================================")
