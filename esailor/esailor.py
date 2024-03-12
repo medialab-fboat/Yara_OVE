@@ -27,6 +27,7 @@ from std_msgs.msg import Float32, Int16, Float32MultiArray
 from gazebo_msgs.srv import SetModelState, GetModelState, SpawnModel, DeleteModel, SetPhysicsProperties, GetPhysicsProperties
 from geometry_msgs.msg import Point, Pose, Vector3
 from gazebo_msgs.msg import ODEPhysics, ModelState
+from sensor_msgs.msg import LaserScan
 from tf.transformations import quaternion_from_euler
 
 #-->STABLE-BASELINES3
@@ -51,6 +52,7 @@ class esailor():
         self._unpause                = None
         self._holdPhysiscsProperties = False
         self.DMAX                    = 1.0
+        self.laser_scan              = np.zeros(5, dtype=int)
 
     def _autoSarch4EmptyOceanLaunchFile(self):
         # -->SEARCH FOR A LAUNCH FILE
@@ -138,7 +140,7 @@ class esailor():
             except(rospy.ServiceException) as e:
                 print(("/gazebo/unpause_physics service call failed!"))
 
-    def _checkPhysicsProperties(self):
+    def _checkPhysicsProperties(self, timestep = 0.01, max_update_rate = 100.0):
         rospy.wait_for_service('/gazebo/get_physics_properties')
         # print("\n\n-------------------------------------\n",self._physics_properties(),"\n-------------------------------------\n")
         if not(self._physics_properties().pause):
@@ -148,8 +150,8 @@ class esailor():
             rospy.wait_for_service('/gazebo/set_physics_properties')
             set_physics_properties = rospy.ServiceProxy("/gazebo/set_physics_properties", SetPhysicsProperties)
             try:
-                result = set_physics_properties(time_step       = np.float64(0.01),
-                                                max_update_rate = np.float64(0),
+                result = set_physics_properties(time_step       = np.float64(timestep),
+                                                max_update_rate = np.float64(max_update_rate),
                                                 gravity         = self._physics_properties().gravity,
                                                 ode_config      = self._physics_properties().ode_config
                                                )
@@ -175,9 +177,11 @@ class esailor():
         # --> START GYMNASIUM ENVIRONMENT
         env = gym.make(envid)
         # env.repositionWayPoint(newdistance = 200)
-        _, _ = env.reset()
-        for i in range(20):
-            _, _, _, _, _ = env.step([1, 0, 0])
+
+        for _ in range(3):
+            _, _ = env.reset()
+            for i in range(10):
+                _, _, _, _, _ = env.step([1, 0, 0.2])
 
     def training(self,
                  rlagent    = "PPO",
@@ -198,7 +202,7 @@ class esailor():
 
         #--> ADJUST PHYSICS PROPERTIES
         if not(self._holdPhysiscsProperties):
-            self._checkPhysicsProperties()
+            self._checkPhysicsProperties(max_update_rate = 0)
 
         #--> SET BASE FILE NAME STRUCTURE TO SAVE TENSORBOARD LOGS AND TRAINED MODELS
         sufix += "_A"
@@ -339,6 +343,7 @@ class esailor():
 
     def spawnSDFModel(self, model_namespace, descriptor_file_path, ipose = None):
         # -->SPAWN THE WAYPOINT MARKER IN THE GAZEBO SIMULATION
+        rospy.wait_for_service("/gazebo/spawn_sdf_model")
         spawn_sdf = rospy.ServiceProxy("/gazebo/spawn_sdf_model", SpawnModel)
         if ipose == None:
             ipose = Pose()
@@ -398,13 +403,13 @@ class esailor():
         state.twist.angular.y = 0
         state.twist.angular.z = 0
 
-        set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         rospy.wait_for_service('/gazebo/set_model_state')
+        set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
         try:
             result = set_state(state)
             assert result.success is True
         except rospy.ServiceException:
-            print("/gazebo/get_model_state service call failed")
+            print("/gazebo/set_model_state service call failed")
 
     def testModel(self, model, baseDistance = 100.0):
         # --> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
@@ -598,7 +603,38 @@ class esailor():
 
         return [bang, rang, epwr]
 
-    def testModel2(self, model, baseDistance = 100.0, rlagent = "PPO", obstacles = False):
+    def _laser_scan_callback(self, data):
+        laser_ranges = np.asarray(data.ranges)
+        laser_ranges[laser_ranges == np.inf] = data.range_max
+
+        self.laser_scan[4] = np.min(laser_ranges[0:23])
+        self.laser_scan[3] = np.min(laser_ranges[24:47])
+        self.laser_scan[2] = np.min(laser_ranges[48:72])
+        self.laser_scan[1] = np.min(laser_ranges[73:96])
+        self.laser_scan[0] = np.min(laser_ranges[97:120])
+
+    def createObstacles(self):
+        HOME = os.path.expanduser('~')
+        sdffilepath = []
+        for i in [2]: #[2, 3]:
+            files = glob.glob(os.path.join(HOME, f"**/yara_ws/**/*Yara_OVE/**/box{i}/model.sdf"), recursive=True)
+            if len(files) > 0:
+                sdffilepath = files[0]
+                del(files)
+            else:
+                raise IOError(f"File wayPointMarker/model.sdf does not exist")
+
+            model_namespace = f"box_{i}"
+            if i == 2:
+                opose = Pose()
+                opose.position.x = 70
+                opose.position.y = 1
+            else:
+                opose.position.x = 135
+                opose.position.y = -4
+            self.spawnSDFModel(model_namespace, sdffilepath, ipose=opose)
+
+    def testModel2(self, model, baseDistance = 100.0, rlagent = "PPO", wind_speed = 9, obstacles = False):
         # --> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
         if self._roslaunch == None:
             print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
@@ -638,12 +674,36 @@ class esailor():
         else:
             raise IOError(f"File wayPointMarker/model.sdf does not exist")
 
+        # --> INITIALIZE THE SENSOR HUD
+        sensor_hud = None
+        # sensors = subprocess.Popen([sys.executable, os.path.join(
+        #     "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
+        # camera_raw = subprocess.Popen([sys.executable, "./camera_raw.py"])
+        # camera_proc = subprocess.Popen([sys.executable, "./camera_detection.py"])
+
         # -->PATH PLANNING FOR THE TEST MISSION
-        baseDist = baseDistance
-        baseVec = np.array([1.0, 0.0])
+        baseDist    = baseDistance
+        baseVec     = np.array([1.0, 0.0])
         path2follow = [baseVec * baseDist]
-        thetaVec = [-45     , -90     , -135    , -180    , 45      , 135]
-        D        = [baseDist, baseDist, baseDist, baseDist, baseDist, baseDist]
+        laser_scan  = None
+        if obstacles:
+            thetaVec = [0, 0, 0, 0, 0, 0]
+            D        = np.arange(1, (len(thetaVec) + 1)) * baseDist
+            # --> Distance detection rays
+            rospy.Subscriber("/eboat/laser/scan", LaserScan, self._laser_scan_callback)
+            laser_scan = np.zeros(5, dtype=int)
+            rospy.logdebug("Waiting for /scan to be READY...")
+            while ((laser_scan is None) and (not rospy.is_shutdown())):
+                try:
+                    laser_scan = rospy.wait_for_message("/eboat/laser/scan", LaserScan, timeout=1.0)
+                    rospy.logdebug("Current /eboat/laser/scan READY=>")
+                except:
+                    rospy.logerr("Current /eboat/laser/scan not ready yet, retrying for getting laser_scan")
+
+            self.createObstacles()
+        else:
+            thetaVec = [-45     , -90     , -135    , -180    , 45      , 135]
+            D        = [baseDist, baseDist, baseDist, baseDist, baseDist, baseDist]
         # ========================================================
         # theta_wind = 180
         # theta_model = (theta_wind > 150) * 0.7854 - (theta_wind < -150) * 0.7854
@@ -660,28 +720,17 @@ class esailor():
         self.spawnSDFModel("wayPointMarker", sdffilepath, model_pose)
         time.sleep(5)
 
-        # --> INITIALIZE THE SENSOR HUD
-        # sensors = subprocess.Popen([sys.executable, os.path.join(
-        #     "/home/eduardo/USVSim/eboat_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor", "sensor_array.py")])
-        # camera_raw = subprocess.Popen([sys.executable, "./camera_raw.py"])
-        # camera_proc = subprocess.Popen([sys.executable, "./camera_detection.py"])
-
         for i, theta in enumerate(thetaVec):
             rad = theta * np.pi / 180.0
             rot = np.array([[np.cos(rad), -np.sin(rad)], [np.sin(rad), np.cos(rad)]])
             path2follow.append(path2follow[-1] + np.dot((baseVec * D[i]), rot))
 
         # --> SET THE WIND
-        ws = 20
-        # wind_pub.publish(Point(6.17, 0.0, 0.0))
+        ws = wind_speed
         wind_pub.publish(Point((ws * 0.51444), 0.0, 0.0))
 
         if self._physics_properties().pause:
             self.pauseSim(False)
-
-        # delmodel = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
-        # rospy.wait_for_service("/gazebo/delete_model")
-        # result = delmodel("wayPointMarker")
 
         states_and_actions = []
         for i, waypoint in enumerate(path2follow):
@@ -691,16 +740,15 @@ class esailor():
                 self.DMAX = baseDist + 25
             model_pose.position.x = waypoint[0]
             model_pose.position.y = waypoint[1]
-            self.pauseSim(True)
-            # self.spawnSDFModel("wayPointMarker", sdffilepath, model_pose)
+            # self.pauseSim(True)
             self.setState("wayPointMarker", model_pose)
-            time.sleep(5)
-            self.pauseSim(False)
+            # time.sleep(5)
+            # self.pauseSim(False)
 
             print(f"Going to waypoint {i}/{len(path2follow)}: {waypoint}")
             duration = 0
             mission = True
-            while (mission & (duration < 180)):
+            while (mission & (duration < 90)):
                 obsData = None
                 while (obsData is None):
                     try:
@@ -710,9 +758,12 @@ class esailor():
                         obs = np.array(obsData)
                     except:
                         pass
+                dfo = self.laser_scan
 
                 if model != None:
-                    action, _ = model.predict(self.rescaleObs(obs)[:5])
+                    print("\n------------\n", self.laser_scan)
+                    robs      = np.concatenate((self.rescaleObs(obs)[:5], ((dfo  / 30.0) - 1)), axis = 0)
+                    action, _ = model.predict(robs)
                     actionROS = [((action[0] + 1) * 45.0), (action[1] * 60.0), np.int16(action[2] * 5)]
                 else:
                     actionROS = self.pidController(obs)
@@ -720,9 +771,11 @@ class esailor():
                 boomAng_pub.publish(actionROS[0])
                 rudderAng_pub.publish(actionROS[1])
                 propPwr_pub.publish(actionROS[2])
-                # print(f"Observations: ", obs)
-                # print("----------------------------------------")
-                # print(f"Action      : {actionROS[0]} | {actionROS[1]} | {actionROS[2]}")
+                print(f"Observations: {obs}")
+                print(f"              {dfo}")
+                print("----------------------------------------")
+                print(f"Action      : {actionROS[0]} | {actionROS[1]} | {actionROS[2]}")
+                print("========================================")
                 states_and_actions.append(list(obs) + actionROS)
 
                 if (obs[0] <= 5):
@@ -731,13 +784,16 @@ class esailor():
                 else:
                     duration += 1
 
-            # if i > 1:
-            #     break
+            if i > 0:
+                break
 
-            # rospy.wait_for_service("/gazebo/delete_model")
-            # _ = delmodel("wayPointMarker")
 
-        # sensors.kill()
+
+        if sensor_hud != None:
+            sensor_hud.kill()
+        else:
+            pass
+
         # print(states_and_actions)
         df = pd.DataFrame(states_and_actions, columns=["distance","dirang","surge","apwindSpd","apwindAng","boomAng",
                                                        "rudderAng", "propPwr", "roll", "X", "Y", "boomAct", "rudderAct",
@@ -1033,25 +1089,26 @@ def main(argv):
     print("RL agent :", rlagent)
     
     # refmodel = PPO.load("./models/PPO/esailor_93_A116_C116_29022024_18_28_51/esailor_model_1001472_steps.zip")
-    if rlagent == "PPO":
-        refmodel = PPO.load(f"./models/PPO/esailor_93_A3232_C3232_03032024_19_58_50/esailor_model_501760_steps.zip")
-    elif rlagent == "SAC":
-        refmodel = SAC.load(f"./policy/esailor_53_{rlagent}_A3232_C3232_03032024/esailor_model_501760_steps.zip")
-    else:
-        refmodel = None
+    # if rlagent == "PPO":
+    #     refmodel = PPO.load(f"./models/PPO/esailor_93_A3232_C3232_03032024_19_58_50/esailor_model_501760_steps.zip")
+    # elif rlagent == "SAC":
+    #     refmodel = SAC.load(f"./policy/esailor_53_{rlagent}_A3232_C3232_03032024/esailor_model_501760_steps.zip")
+    # else:
+    #     refmodel = None
+    refmodel = PPO.load(f"./models/PPO/esailor_103_A3232_C3232_11032024_23_02_16/esailor_model_501760_steps.zip")
     agent = esailor()
     # agent.training(rlagent=rlagent,
     #                policy="MlpPolicy",
-    #                envid="Eboat93-v0",
+    #                envid="Eboat103-v1", #"Eboat53-v0",
     #                numofsteps=(245 * 2048), #489 * 2048,
     #                refmodel=refmodel,
     #                actor=[32, 32],
     #                critic=[32, 32],
-    #                sufix="esailor_93",
+    #                sufix="esailor_103",
     #                logdir="logs")
-    agent.testModel2(refmodel, rlagent = rlagent)
+    agent.testModel2(refmodel, rlagent = rlagent, wind_speed = 9, obstacles = True)
     # agent.humanPolicy(envid="Eboat92-v0", numofsteps=120)
-    # agent.checkEnv(envid="Eboat93-v0")
+    # agent.checkEnv(envid="Eboat103-v1")
     # agent.pidTest()
     agent.close()
 
