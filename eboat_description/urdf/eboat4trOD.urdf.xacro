@@ -53,7 +53,7 @@
 
     <link name="hull_link">
         <visual name="hull_visual">
-            <origin xyz="-1.23971 5.55112e-16 0.214059" rpy="0 -0 0" />
+            <origin xyz="-1.23971 0 0.214059" rpy="0 0 0"/>
             <geometry>
                 <mesh filename="package://eboat_description/models/eboat4/meshes/hull_link.stl"/>
             </geometry>

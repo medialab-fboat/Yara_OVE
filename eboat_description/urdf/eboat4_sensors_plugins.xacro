@@ -80,4 +80,19 @@
         </gazebo>
     </xacro:macro>
 
+    <!--xacro:macro name="contact_sensor">
+        <gazebo reference="hull_link">
+            <sensor name="contactsensor_sensor" type="contact">
+                <always_on>true</always_on>
+                <contact>
+                    <collision>hull_collision</collision>
+                </contact>
+                <plugin filename="libgazebo_ros_bumper.so" name="left_arm_fist_plugin">
+                    <bumperTopicName>hull_contact</bumperTopicName>
+                    <frameName>hull_link</frameName>
+                </plugin>
+            </sensor>
+        </gazebo>
+    </xacro:macro>-->
+
 </robot>

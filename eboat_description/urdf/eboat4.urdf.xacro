@@ -75,6 +75,7 @@
     <!--SENSORS-->
     <xacro:bow_camera/>
     <xacro:bow_beam_detector visualize="True"/>
+    <!--<xacro:contact_sensor>-->
 
 
     <!--ROBOT DESCRIPTION-->
