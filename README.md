@@ -75,28 +75,6 @@ Once you have ROS and Gazebo installed, to make the environment run you will nee
 
 ---
 
-### Launching the ocean environment with the control GUI and the sensor HUD
-
-1 - Run the ROS launch file
-
-> $ ```roslaunch eboat_gazebo ocean.launch```
-
-1.1 - If you want a camera following the boat, like a third person game, you must use an alternative launch file
-
-> $ ```roslaunch eboat_gazebo ocean_fixed_cam.launch```
-
-2 - Make the python scripts for the control GUI and the sensor HUD executable
-
-> $ ```chmod +x ~/yara_ws/src/eboat_gz_1/eboat_control/python/scripts/controls_v0.py```
-
-> $ ```chmod +x ~/yara_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor/sensor_array.py```
-
-3 - Run each script in a different terminal
-
-> $ ```~/yara_ws/src/eboat_gz_1/eboat_control/python/scripts/controls_v0.py```
-
-> $ ```~/yara_ws/src/eboat_gz_1/eboat_control/python/projects/ESailor/sensor_array.py```
-
 \\
 
 **OBS 2:** This project contains some gym environments predifined. You can use them or create your own environments for your RL tasks. The environments are stored in ~/yara_ws/src/eboat_gz_1/eboat_gym_gaz/envs/
