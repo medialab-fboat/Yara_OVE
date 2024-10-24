@@ -35,4 +35,31 @@
             </plugin>
         </gazebo>
     </xacro:macro>
+
+    <xacro:macro name="wind_sensor" params="name">
+        <gazebo>
+            <plugin name="wind_sensor_${name}" filename="libWindSensorPlugin.so">
+                <link_name>biruta_link</link_name>
+                <frequency>1</frequency>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="CPS" params="name">
+        <gazebo>
+            <plugin name="CPS_${name}" filename="libCPSPlugin.so">
+                <link_name>base_link</link_name>
+                <frequency>1</frequency>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="bow_vector" params="name">
+        <gazebo>
+            <plugin name="bow_vector_${name}" filename="libBowVectorPlugin.so">
+                <link_name>base_link</link_name>
+                <frequency>1</frequency>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
 </robot>

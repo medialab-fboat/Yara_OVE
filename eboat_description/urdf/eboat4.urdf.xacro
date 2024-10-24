@@ -67,7 +67,10 @@
     <xacro:eboat_windvane_gazebo name="eboat4_windvane"/>
 
     <!--control interfaces-->
-    <xacro:mission_control name="eboat4" />
+    <!--<xacro:mission_control name="eboat4" />-->
+    <xacro:wind_sensor name="eboat4" />
+    <xacro:bow_vector name="eboat4" />
+    <xacro:CPS name="eboat4" />
     <xacro:sail_control_interface name="eboat4" />
     <xacro:rudder_control_interface name="eboat4" />
     <xacro:propulsor_control_interface name="eboat4" />

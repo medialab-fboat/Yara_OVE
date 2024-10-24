@@ -76,3 +76,27 @@ target_link_libraries(MissionControlPlugin ${GAZEBO_LIBRARIES}
                       ${std_msgs_LIBRARIES}
                       ${Boost_LIBRARIES}
                      )
+                     
+## Wind Sensor
+add_library(WindSensorPlugin src/windSensor.cc)
+target_link_libraries(WindSensorPlugin ${GAZEBO_LIBRARIES}
+                      ${roscpp_LIBRARIES}
+                      ${std_msgs_LIBRARIES}
+                      ${Boost_LIBRARIES}
+                     )
+                     
+## "Cartesian Position System" CPS
+add_library(CPSPlugin src/CPS.cc)
+target_link_libraries(CPSPlugin ${GAZEBO_LIBRARIES}
+                      ${roscpp_LIBRARIES}
+                      ${std_msgs_LIBRARIES}
+                      ${Boost_LIBRARIES}
+                     )
+                     
+## Bow Vector - "sailing direction"
+add_library(BowVectorPlugin src/bowVector.cc)
+target_link_libraries(BowVectorPlugin ${GAZEBO_LIBRARIES}
+                      ${roscpp_LIBRARIES}
+                      ${std_msgs_LIBRARIES}
+                      ${Boost_LIBRARIES}
+                     )
