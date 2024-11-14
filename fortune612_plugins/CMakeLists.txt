@@ -28,7 +28,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES eboat_gazebo_plugins
+    LIBRARIES yara_gazebo_plugins
     CATKIN_DEPENDS gazebo_dev gazebo_ros roscpp
 )
 

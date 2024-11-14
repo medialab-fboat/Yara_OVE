@@ -1,16 +1,6 @@
 <?xml version="1.0" ?>
 
-<robot name="boto" xmlns:xacro="http://ros.org/wiki/xacro">
-    <!--MACROS-->
-    <!-- Solid cuboid of length l, width w, height h, and mass m -->
-    <!-- l relates to X axis, d to Z axis, and h to Y axis -->
-    <xacro:macro name="solid_cuboid_inertia" params="m l w h">
-        <inertia  ixx="${(m*(w*w+h*h))/12}" ixy = "0" ixz = "0"
-                iyy="${(m*(l*l+h*h))/12}" iyz = "0"
-                izz="${(m*(l*l+w*w))/12}"
-        />
-    </xacro:macro>
-
+<robot name="fortune612" xmlns:xacro="http://ros.org/wiki/xacro">
     <link name="base_link">
         <origin xyz="0 0 0" rpy="0 0 0" />
     </link>
@@ -25,19 +15,19 @@
         <visual>
             <origin xyz="-0.488788 -0.00436959 -0.0953268" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/hull_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/hull_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.488788 -0.00436959 -0.0953268" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/hull_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/hull_link.stl"/>
             </geometry>
         </collision>
         <visual>
             <origin xyz="-0.488788 -0.00436959 -0.0953268" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/core.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/core.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -51,13 +41,13 @@
         <visual>
             <origin xyz="-0.5235 -5.9848e-17 -0.13959" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/mast_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/mast_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.5235 -5.9848e-17 -0.13959" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/mast_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/mast_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -71,13 +61,13 @@
         <visual>
             <origin xyz="-0.5035 0 -0.237165" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/boom_main_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/boom_main_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.5035 0 -0.237165" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/boom_main_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/boom_main_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -91,13 +81,13 @@
         <visual>
             <origin xyz="-0.5035 0 -0.25459" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/main_sail_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/main_sail_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.5035 0 -0.25459" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/main_sail_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/main_sail_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -138,13 +128,13 @@
         <visual>
             <origin xyz="-0.5085 4.45476e-08 -0.175263" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/deck.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/deck.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.5085 4.45476e-08 -0.175263" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/deck.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/deck.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -167,13 +157,13 @@
         <visual>
             <origin xyz="-0.495 0 -0.01" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/keel_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/keel_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.495 0 -0.01" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/keel_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/keel_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -187,13 +177,13 @@
         <visual>
             <origin xyz="-0.47 0 0.198" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/keel_weight_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/keel_weight_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.47 0 0.198" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/keel_weight_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/keel_weight_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -207,13 +197,13 @@
         <visual>
             <origin xyz="-0.405 0.017 0.227" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/right_wing_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/right_wing_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.405 0.017 0.227" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/right_wing_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/right_wing_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -236,13 +226,13 @@
         <visual>
             <origin xyz="-0.405 -0.017 0.227" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/left_wing_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/left_wing_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.405 -0.017 0.227" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/left_wing_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/left_wing_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -283,13 +273,13 @@
         <visual>
             <origin xyz="-0.13 0 -0.1" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/rudder_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/rudder_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.13 0 -0.1" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/rudder_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/rudder_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -312,13 +302,13 @@
         <visual>
             <origin xyz="-0.967348 0 0.198884" rpy="0.0 0.427464 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/boom_jib_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/boom_jib_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.967348 0 0.198884" rpy="0.0 0.427464 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/boom_jib_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/boom_jib_link.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -332,13 +322,13 @@
         <visual>
             <origin xyz="-0.550683 -6.15827e-17 -0.23459" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/jib_sail_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/jib_sail_link.stl"/>
             </geometry>
         </visual>
         <collision>
             <origin xyz="-0.550683 -6.15827e-17 -0.23459" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/boto/meshes/jib_sail_link.stl"/>
+                <mesh filename="package://yara_description/models/boto/meshes/jib_sail_link.stl"/>
             </geometry>
         </collision>
             <inertial>
@@ -437,25 +427,21 @@
         </plugin>
     </gazebo>
 
-    <!--CONTROLS-->
-    <gazebo> <!--Boom of the Main Sail-->
-        <plugin name="sail_control_interface_boto" filename="libSailControllerPlugin.so">
-            <sail_joint_name>boom_main_joint</sail_joint_name>
-            <ros_topic_id>/boto/control_interface/sail</ros_topic_id>
+    <!--CONTROL LOOP INTERFACE-->
+    <!--<gazebo>
+        <plugin name="ctrl_loop" filename="libControlLoopPlugin.so">
+            <frequency>1</frequency>
         </plugin>
-    </gazebo>
-
-    <gazebo> <!--Boom of the Jib Sail-->
-        <plugin name="sail_control_interface_boto" filename="libSailControllerPlugin.so">
-            <sail_joint_name>boom_jib_joint</sail_joint_name>
-            <ros_topic_id>/boto/control_interface/sail</ros_topic_id>
+    </gazebo>-->
+    <gazebo>
+        <plugin name="rudder_control_interface_boto" filename="libRudderControllerPlugin.so">
+        <rudder_joint_name>rudder_joint</rudder_joint_name>
         </plugin>
     </gazebo>
 
     <gazebo>
-        <plugin name="rudder_control_interface_boto" filename="libRudderControllerPlugin.so">
-        <rudder_joint_name>rudder_joint</rudder_joint_name>
-        <ros_topic_id>/boto/control_interface/rudder</ros_topic_id>
+        <plugin name="sail_control_interface_boto" filename="libSailControllerPlugin.so">
+            <sail_joint_name>boom_main_joint</sail_joint_name>
         </plugin>
     </gazebo>
 

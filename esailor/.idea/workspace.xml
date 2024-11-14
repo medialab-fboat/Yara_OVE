@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8be4a9dd-a09e-4c83-ba59-ebc95a3c6fc1" name="Changes" comment="" />
+    <list default="true" id="8be4a9dd-a09e-4c83-ba59-ebc95a3c6fc1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../eboat_control/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_control/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4.urdf.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4.urdf.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_control_plugins.xacro" beforeDir="false" afterPath="$PROJECT_DIR$/../eboat_description/urdf/eboat4_control_plugins.xacro" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/esailor.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/esailor_gym/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/esailor_gym/envs/eboatEnvs.py" beforeDir="false" afterPath="$PROJECT_DIR$/esailor_gym/envs/eboatEnvs.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,11 +46,16 @@
     &quot;Python.raycast.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;charles&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/eduardo/USVSim/yara_ws/src/Yara_OVE/esailor&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/eduardo/Medialab/rocha_digital_ws/src/rocha_digital/python&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$USER_HOME$/Medialab/rocha_digital_ws/src/rocha_digital/python" />
+    </key>
+  </component>
   <component name="RunManager" selected="Python.generate_figures">
     <configuration name="esailor" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="esailor" />
@@ -166,7 +180,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
+        <option value="bundled-python-sdk-babbdf50b680-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.15989.155" />
       </set>
     </attachedChunks>
   </component>

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(fortune612_description)
+project(yara_description)
 
 find_package(catkin REQUIRED COMPONENTS
     xacro
@@ -12,6 +12,11 @@ catkin_package(
 include_directories(
     ${catkin_INCLUDE_DIRS}
 )
+
+#xacro_add_files(
+#    urdf/eboat_base.urdf.xacro
+#    ${XACRO_INORDER} INSTALL DESTINATION urdf
+#)
 
 install(DIRECTORY launch
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

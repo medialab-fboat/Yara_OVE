@@ -8,7 +8,7 @@
             <visual>
                 <origin xyz="${xyz}" rpy="${rpy}" />
                 <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/${name}.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/${name}.stl"/>
                 </geometry>
             </visual>
         </link>
@@ -27,7 +27,7 @@
             <visual>
                 <origin xyz="${xyz}" rpy="${rpy}" />
                 <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/support_hack_${name}.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/support_hack_${name}.stl"/>
                 </geometry>
                 <material name="support_hack_${name}_material">
                 <color rgba="0 0 0 1.0"/>
@@ -49,11 +49,11 @@
         </joint>
     </xacro:macro>
 
-    <xacro:include filename="$(find eboat_description)/urdf/eboat4_control_plugins.xacro"/>
+    <xacro:include filename="$(find yara_description)/urdf/eboat4_control_plugins.xacro"/>
 
-    <xacro:include filename="$(find eboat_description)/urdf/eboat4_physics_plugins.xacro"/>
+    <xacro:include filename="$(find yara_description)/urdf/eboat4_physics_plugins.xacro"/>
 
-    <xacro:include filename="$(find eboat_description)/urdf/eboat4_sensors_plugins.xacro"/>
+    <xacro:include filename="$(find yara_description)/urdf/eboat4_sensors_plugins.xacro"/>
 
     <xacro:property name="mlength" value="${0.45+2.9+0.2}"/> <!--set the length of the main sail mast-->
 
@@ -97,7 +97,7 @@
         <visual>
             <origin xyz="-1.24471 1.33227e-15 0.199376" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/hull_link.dae"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/hull_link.dae"/>
             </geometry>
         </visual>
         <collision>
@@ -117,7 +117,7 @@
         <visual>
             <origin xyz="-2.48942 0 0.19871" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/bow_link.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/bow_link.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -137,7 +137,7 @@
         <visual>
             <origin xyz="0 -2.14313e-18 0.933" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/mast_link.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/mast_link.stl"/>
             </geometry>
         </visual>
         <collision>
@@ -163,7 +163,7 @@
         <visual>
             <origin xyz="-0.0248 0 0" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/boom_link.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/boom_link.stl"/>
             </geometry>
         </visual>
         <collision>
@@ -192,7 +192,7 @@
         <visual>
             <origin xyz="1.75893 -0.0664151 0" rpy="-1.5708 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/sail.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/sail.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -220,7 +220,7 @@
         <visual>
             <origin xyz="0 -4.51028e-17 -0.98067" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/keel_link.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/keel_link.stl"/>
             </geometry>
         </visual>
         <collision>
@@ -249,7 +249,7 @@
         <visual>
             <origin xyz="-0.02365 -2.14313e-19 -0.84302" rpy="0 -0 0" />
             <geometry>
-            <mesh filename="package://eboat_description/models/eboat4/meshes/rudder_link.stl"/>
+            <mesh filename="package://yara_description/models/eboat4/meshes/rudder_link.stl"/>
             </geometry>
         </visual>
         <collision>
@@ -278,7 +278,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/eletric_engine_base.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/eletric_engine_base.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -298,7 +298,7 @@
         <visual>
             <origin xyz="0.08999 -7.65404e-19 -0.175" rpy="-1.26162e-16 -0 0" />
             <geometry>
-            <mesh filename="package://eboat_description/models/eboat4/meshes/eletric_engine.stl"/>
+            <mesh filename="package://yara_description/models/eboat4/meshes/eletric_engine.stl"/>
             </geometry>
             <material name="eletric_engine_material">
             <color rgba="0.701961 0.682353 0.623529 1.0"/>
@@ -321,7 +321,7 @@
         <visual>
             <origin xyz="0.179673 -9.07103e-17 0.774" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/turbine.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/turbine.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -344,7 +344,7 @@
         <visual>
             <origin xyz="-0.161823 -5.20475e-19 -2.832" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/biruta.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/biruta.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -367,7 +367,7 @@
         <visual>
             <origin xyz="0.053 0 -2.832" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/camera_top.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/camera_top.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -387,7 +387,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-            <mesh filename="package://eboat_description/models/eboat4/meshes/deck.stl"/>
+            <mesh filename="package://yara_description/models/eboat4/meshes/deck.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -431,7 +431,7 @@
         <visual>
             <origin xyz="-2.25991 0.14 -0.976456" rpy="1.5708 -0.372391 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/hack_port.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/hack_port.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -452,7 +452,7 @@
         <visual>
             <origin xyz="-2.25991 -0.14 -0.976456" rpy="-1.5708 -0.372391 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/hack_starboard.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/hack_starboard.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -472,7 +472,7 @@
         <visual>
             <origin xyz="-2.03098 6.90927e-15 -0.125" rpy="0 -0 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/camera_bow.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/camera_bow.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -492,7 +492,7 @@
         <visual>
             <origin xyz="0.0575 -0.77 -2.20943" rpy="-1.5708 -1.5708 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/zed_len_l.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/zed_len_l.stl"/>
             </geometry>
         </visual>
     </link>
@@ -507,7 +507,7 @@
         <visual>
             <origin xyz="-0.0575 -0.77 -2.20943" rpy="-1.5708 -1.5708 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/zed_len_r.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/zed_len_r.stl"/>
             </geometry>
         </visual>
     </link>
@@ -540,7 +540,7 @@
         <visual>
             <origin xyz="-6.68954e-28 -0.77 -2.21543" rpy="-1.5708 -1.5708 0" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/camera_box_windshield.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/camera_box_windshield.stl"/>
             </geometry>
         </visual>
         <inertial>
@@ -560,7 +560,7 @@
         <visual>
             <origin xyz="0.4 -3.9443e-31 0.02158" rpy="0 -0 1.61615e-33" />
             <geometry>
-                <mesh filename="package://eboat_description/models/eboat4/meshes/boom_cable_rigid.stl"/>
+                <mesh filename="package://yara_description/models/eboat4/meshes/boom_cable_rigid.stl"/>
             </geometry>
         </visual>
         <inertial>

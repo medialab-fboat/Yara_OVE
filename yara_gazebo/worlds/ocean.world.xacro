@@ -9,24 +9,24 @@
           </camera>
       </gui>
 
-      <xacro:include filename="$(find eboat_gazebo)/worlds/ocean.xacro" />
+      <xacro:include filename="$(find yara_gazebo)/worlds/ocean.xacro" />
       <xacro:ocean />
 
       <!--WAYPOINT OBJECT-->
         <!--<include>
             <name>wayPointMarker</name>
             <pose>200.0 0.0 0 0 0 0</pose>
-            <uri>$(find eboat_description)/models/wayPointMarker</uri>
+            <uri>$(find yara_description)/models/wayPointMarker</uri>
         </include>-->
         <include>
             <name>redBuoy</name>
             <pose>10.0 0 0 0 0 0</pose>
-            <uri>$(find eboat_description)/models/buoy_red</uri>
+            <uri>$(find yara_description)/models/buoy_red</uri>
         </include>
         <include>
             <name>yacht</name>
             <pose>100.0 0 0 0 0 0</pose>
-            <uri>$(find eboat_description)/models/sailyacht</uri>
+            <uri>$(find yara_description)/models/sailyacht</uri>
         </include>
 
         <!--PHYSICS ENGINE-->
@@ -41,7 +41,7 @@
       </physics>
 
       <!--Wind. Note, wind parameters are set in the plugin.-->
-      <!--<xacro:include filename="$(find eboat_gazebo)/worlds/usv_wind_plugin.xacro"/>
+      <!--<xacro:include filename="$(find yara_gazebo)/worlds/usv_wind_plugin.xacro"/>
       <xacro:usv_wind_gazebo topic_wind_speed="/ocean/debug/wind/speed"
           topic_wind_direction="/ocean/debug/wind/direction"
           direction="270"

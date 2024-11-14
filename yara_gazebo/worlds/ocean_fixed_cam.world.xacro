@@ -17,7 +17,7 @@
             </camera>
         </gui>
         
-        <xacro:include filename="$(find eboat_gazebo)/worlds/ocean.xacro" />
+        <xacro:include filename="$(find yara_gazebo)/worlds/ocean.xacro" />
         <xacro:ocean />
 
         <physics type="ode">

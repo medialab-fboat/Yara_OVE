@@ -7,14 +7,14 @@
             </camera>
         </gui>
 
-        <xacro:include filename="$(find eboat_gazebo)/worlds/ocean.xacro" />
+        <xacro:include filename="$(find yara_gazebo)/worlds/ocean.xacro" />
         <xacro:ocean />
 
         <!--WAYPOINT OBJECT-->
         <include>
             <name>wayPointMarker</name>
             <pose>100.0 0.0 0 0 0 0</pose>
-            <uri>$(find eboat_description)/models/wayPointMarker</uri>
+            <uri>$(find yara_description)/models/wayPointMarker</uri>
         </include>
 
         <!--PHYSICS ENGINE-->

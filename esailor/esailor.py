@@ -167,7 +167,7 @@ class esailor():
         if self._roslaunch == None:
             print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
             self.launchGazeboSimulation(
-                "/home/eduardo/USVSim/yara_ws/src/Yara_OVE/eboat_gazebo/launch/empty_ocean.launch")
+                "/home/eduardo/USVSim/yara_ws/src/Yara_OVE/yara_gazebo/launch/empty_ocean.launch")
             # self.launchGazeboSimulation()
 
         # --> ADJUST PHYSICS PROPERTIES
@@ -197,7 +197,7 @@ class esailor():
         #--> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
         if self._roslaunch == None:
             print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
-            self.launchGazeboSimulation("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/eboat_gazebo/launch/empty_ocean.launch")
+            self.launchGazeboSimulation("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/yara_gazebo/launch/empty_ocean.launch")
             # self.launchGazeboSimulation()
 
         #--> ADJUST PHYSICS PROPERTIES
@@ -851,7 +851,7 @@ class esailor():
         #--> LAUNCH GAZEBO SIMULATION IF IT IS NOT RUNNING YET
         if self._roslaunch == None:
             print("Gazebo simulation was not started by the user.\nStarting simulation with empy ocean world.")
-            self.launchGazeboSimulation("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/eboat_gazebo/launch/empty_ocean.launch")
+            self.launchGazeboSimulation("/home/eduardo/USVSim/yara_ws/src/Yara_OVE/yara_gazebo/launch/empty_ocean.launch")
             # self.launchGazeboSimulation()
 
         #--> ADJUST PHYSICS PROPERTIES
@@ -1088,25 +1088,26 @@ def main(argv):
         rlagent = argv[0]
     print("RL agent :", rlagent)
     
-    # refmodel = PPO.load("./models/PPO/esailor_93_A116_C116_29022024_18_28_51/esailor_model_1001472_steps.zip")
+    # refmodel = PPO.load("./models/PPO/esailor_93_A116_C116_29022024_18_28_51/esailor_model_1001472_steps")
     # if rlagent == "PPO":
-    #     refmodel = PPO.load(f"./models/PPO/esailor_93_A3232_C3232_03032024_19_58_50/esailor_model_501760_steps.zip")
+    #     refmodel = PPO.load(f"./models/PPO/esailor_93_A3232_C3232_03032024_19_58_50/esailor_model_501760_steps")
     # elif rlagent == "SAC":
-    #     refmodel = SAC.load(f"./policy/esailor_53_{rlagent}_A3232_C3232_03032024/esailor_model_501760_steps.zip")
+    #     refmodel = SAC.load(f"./policy/esailor_53_{rlagent}_A3232_C3232_03032024/esailor_model_501760_steps")
     # else:
     #     refmodel = None
-    refmodel = PPO.load(f"./models/PPO/esailor_103_A3232_C3232_11032024_23_02_16/esailor_model_501760_steps.zip")
+    # refmodel = PPO.load(f"./models/PPO/esailor_103_A3232_C3232_11032024_23_02_16/esailor_model_501760_steps")
+    refmodel = None
     agent = esailor()
-    # agent.training(rlagent=rlagent,
-    #                policy="MlpPolicy",
-    #                envid="Eboat103-v1", #"Eboat53-v0",
-    #                numofsteps=(245 * 2048), #489 * 2048,
-    #                refmodel=refmodel,
-    #                actor=[32, 32],
-    #                critic=[32, 32],
-    #                sufix="esailor_103",
-    #                logdir="logs")
-    agent.testModel2(refmodel, rlagent = rlagent, wind_speed = 9, obstacles = True)
+    agent.training(rlagent=rlagent,
+                   policy="MlpPolicy",
+                   envid="Eboat101-v0",
+                   numofsteps=(245 * 2048), #489 * 2048,
+                   refmodel=refmodel,
+                   actor=[32, 32],
+                   critic=[32, 32],
+                   sufix="esailor_101",
+                   logdir="logs")
+    # agent.testModel2(refmodel, rlagent = rlagent, wind_speed = 9, obstacles = True)
     # agent.humanPolicy(envid="Eboat92-v0", numofsteps=120)
     # agent.checkEnv(envid="Eboat103-v1")
     # agent.pidTest()

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-    <name>eboat_gazebo</name>
+    <name>yara_gazebo</name>
     <version>0.0.0</version>
-    <description>The eboat_gazebo package</description>
+    <description>The yara_gazebo package</description>
 
     <maintainer email="evasconcellos@id.uff.br">eduardo</maintainer>
 
@@ -34,8 +34,8 @@
 
     <exec_depend>gazebo_plugins</exec_depend>
     <exec_depend>gazebo_ros_control</exec_depend>
-    <exec_depend>eboat_control</exec_depend>
-    <exec_depend>eboat_description</exec_depend>
+    <exec_depend>yara_control</exec_depend>
+    <exec_depend>yara_description</exec_depend>
 
 
     <!-- The export tag contains other, unspecified, tags -->
