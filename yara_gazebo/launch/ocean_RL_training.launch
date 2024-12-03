@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name="world"             default="$(find eboat_gazebo)/worlds/ocean_RL_training.world" /> <!-- Gazebo world to load -->
+    <arg name="world"             default="$(find yara_gazebo)/worlds/ocean_RL_training.world" /> <!-- Gazebo world to load -->
     <arg name="gui"               default="true" />                                    <!-- If true, run gazebo GUI -->
     <arg name="verbose"           default="true"/>                                     <!-- If true, run gazebo in verbose mode -->
     <arg name="extra_gazebo_args" default=""/>                                         <!-- Set various other gazebo arguments-->
