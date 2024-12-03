@@ -21,7 +21,7 @@
     </include>
 
     <!-- Convert an xacro and put on parameter server -->
-	<param name="robot_description" command="$(find xacro)/xacro $(find eboat_description)/urdf/eboat4.urdf.xacro" />
+	<param name="robot_description" command="$(find xacro)/xacro $(find yara_description)/urdf/eboat4.urdf.xacro" />
 	
 	<!-- Spawn a robot into Gazebo -->
 	<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model eboat" />

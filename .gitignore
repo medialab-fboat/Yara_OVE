@@ -21,11 +21,8 @@ __pycache__/
 
 .vscode/
 
-<<<<<<< HEAD
 .idea/
-=======
 .ipynb_checkpoints/
 
 esailor/.idea/
 esailor/*.urdf
->>>>>>> charles
