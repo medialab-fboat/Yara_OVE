@@ -1,4 +1,5 @@
 # Yara_OVE
+Author: Eduardo Charles Vasconcellos
 
 # YARA Ocean Virtual Environment
 
