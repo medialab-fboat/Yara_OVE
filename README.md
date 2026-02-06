@@ -83,4 +83,4 @@ Once you have ROS and Gazebo installed, to make the environment run you will nee
 \\
 **OBS 3:** The original YML file will install tensorflow-gpu and pythorch-cuda. In case you do not have a compatible GPU available, replace them by the CPU version of each one.
 
-**How to cite this Yara:** Vasconcellos, Eduardo Charles, et al. "Yara: An Ocean Virtual Environment for Research and Development of Autonomous Sailing Robots and Other Unmanned Surface Vessels." Journal of Intelligent & Robotic Systems 111.3 (2025): 1-20.
+**How to cite Yara_OVE:** Vasconcellos, Eduardo Charles, et al. "Yara: An Ocean Virtual Environment for Research and Development of Autonomous Sailing Robots and Other Unmanned Surface Vessels." Journal of Intelligent & Robotic Systems 111.3 (2025): 1-20.
